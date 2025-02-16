@@ -15,4 +15,16 @@ class HookRepository extends CrudRepository
     {
         parent::__construct($registry, Hook::class);
     }
+
+    public function findByDeviceAndProperty(string $device, string $property): array
+    {
+        return $this->createQueryBuilder('hook')
+            ->andWhere('hook.device = :device')
+            ->andWhere('hook.property = :property')
+            ->setParameter('device', $device)
+            ->setParameter('property', $property)
+            ->orderBy('hook.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
