@@ -27,4 +27,17 @@ class HookRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findCurrentPowerByDevice(string $device): array
+    {
+        return $this->createQueryBuilder('hook')
+            ->andWhere('hook.device = :device')
+            ->andWhere('hook.property = :property')
+            ->setParameter('device', $device)
+            ->setParameter('property', 'power')
+            ->orderBy('hook.id', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+    }
 }
