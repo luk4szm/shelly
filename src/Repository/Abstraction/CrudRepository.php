@@ -29,7 +29,7 @@ abstract class CrudRepository extends ServiceEntityRepository
 
     public function detach(object $data): self
     {
-        $this->_em->detach($data);
+        $this->getEntityManager()->detach($data);
 
         return $this;
     }
@@ -45,7 +45,7 @@ abstract class CrudRepository extends ServiceEntityRepository
         }
 
         if ($flush === true) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
@@ -53,7 +53,7 @@ abstract class CrudRepository extends ServiceEntityRepository
     {
         $this->checkEntity($entity);
 
-        $this->_em->$method($entity);
+        $this->getEntityManager()->$method($entity);
     }
 
     private function checkEntity(object $entity): void
