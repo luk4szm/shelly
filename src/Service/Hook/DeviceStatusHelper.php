@@ -8,19 +8,31 @@ class DeviceStatusHelper
 {
     public const BOUNDARY_POWER_CENTRAL_HEATING = 8;
 
-    public function isActive(string $device, Hook $lastHook): bool
+    public function isActive(string $device, Hook $hook): bool
     {
         return match ($device) {
-            'piec'  => (float)$lastHook->getValue() > self::BOUNDARY_POWER_CENTRAL_HEATING,
+            'piec'  => (float)$hook->getValue() > self::BOUNDARY_POWER_CENTRAL_HEATING,
             default => throw new \InvalidArgumentException("Invalid device {$device}"),
         };
     }
 
-    public function getDeviceStatusUnchangedDuration(Hook $lastHook): float
+    public function getDeviceStatusUnchangedDuration(array $hooks): float
     {
-        $interval     = (new \DateTime())->diff($lastHook->getCreatedAt());
+        $firstHook    = $this->getFirstHookOfCurrentStatus($hooks);
+        $interval     = (new \DateTime())->diff($firstHook->getCreatedAt());
         $totalSeconds = $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
 
         return (float)$totalSeconds / 60;
+    }
+
+    private function getFirstHookOfCurrentStatus(array $hooks): Hook
+    {
+        $currentStatus = $this->isActive('piec', $hooks[0]);
+
+        for ($i = 1; $i < count($hooks); $i++) {
+            if ($currentStatus !== $this->isActive('piec', $hooks[$i])) {
+                return $hooks[$i - 1];
+            }
+        }
     }
 }

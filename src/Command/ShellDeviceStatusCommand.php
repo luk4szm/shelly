@@ -56,7 +56,7 @@ class ShellDeviceStatusCommand extends Command
                     : $output->writeln(sprintf('Device status: <info>STANDBY</info> (%.1f W)', $lastHook->getValue()));
         }
 
-        $duration = $this->statusHelper->getDeviceStatusUnchangedDuration($lastHook);
+        $duration = $this->statusHelper->getDeviceStatusUnchangedDuration($hooks);
 
         $output->writeln([sprintf('Last change of status %d minutes ago', $duration), '']);
 
