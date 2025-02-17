@@ -40,4 +40,22 @@ class HookRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findHooksByDeviceAndDate(string $device, \DateTimeInterface $date): array
+    {
+        $startDate = (clone $date)->setTime(0, 0);
+        $endDate = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('hook')
+            ->andWhere('hook.device = :device')
+            ->andWhere('hook.property = :property')
+            ->andWhere('hook.createdAt >= :start')
+            ->andWhere('hook.createdAt <= :end')
+            ->setParameter('device', $device)
+            ->setParameter('property', 'power')
+            ->setParameter('start', $startDate)
+            ->setParameter('end', $endDate)
+            ->getQuery()
+            ->getResult();
+    }
 }
