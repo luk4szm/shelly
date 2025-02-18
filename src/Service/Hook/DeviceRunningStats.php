@@ -22,11 +22,7 @@ class DeviceRunningStats
 
         for ($i = 0; $i < count($hooks); $i++) {
             $isActive = $this->statusHelper->isActive('piec', $hooks[$i]);
-            $duration = $i !== count($hooks) - 1
-                ? $hooks[$i]->getCreatedAt()->diff($hooks[$i + 1]->getCreatedAt())
-                : $hooks[$i]->getCreatedAt()->diff(new \DateTime());
-
-            $duration = $duration->h * 3600 + $duration->i * 60 + $duration->s;
+            $duration = $this->statusHelper->calculateHookDuration($hooks[$i], $hooks[$i+1] ?? null);
 
             $this->energy += $hooks[$i]->getValue() * $duration;
 
