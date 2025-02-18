@@ -45,6 +45,8 @@ class ShellDeviceStatusCommand extends Command
             return self::SUCCESS;
         }
 
+        $output->writeln('Date: ' . (new \DateTime())->format('Y-m-d H:i:s'));
+
         /** @var Hook $lastHook */
         $lastHook = $hooks[0];
         $isActive = $this->statusHelper->isActive($device, $lastHook);
