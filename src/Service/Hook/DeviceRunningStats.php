@@ -48,9 +48,12 @@ class DeviceRunningStats
         return gmdate("H:i:s", $this->runningTime);
     }
 
-    public function getEnergy(): float
+    public function getEnergy(string $unit = 'kWh'): float
     {
-        return number_format($this->energy / 3600000, 2);
+        return match ($unit) {
+            'Wh'    => number_format($this->energy / 3600, 1),
+            default => number_format($this->energy / 3600000, 2), // kWh
+        };
     }
 
     public function getInclusionsCounter(): int

@@ -58,7 +58,7 @@ class ShellyDeviceStatsCommand extends Command
 
         $output->writeln([
             sprintf('Total time of active work: <info>%s</info>', $this->deviceStats->getRunningTime()),
-            sprintf('Total used energy: <info>%.2f kWh</info>', $this->deviceStats->getEnergy()),
+            sprintf('Total used energy: <info>%.1f Wh</info>', $this->deviceStats->getEnergy('Wh')),
             sprintf('Number of active cycles: <info>%d</info>', $this->deviceStats->getInclusionsCounter()),
             ''
         ]);
