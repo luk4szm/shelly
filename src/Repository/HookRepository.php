@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Hook;
 use App\Repository\Abstraction\CrudRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -43,6 +44,22 @@ class HookRepository extends CrudRepository
 
     public function findHooksByDeviceAndDate(string $device, \DateTimeInterface $date): array
     {
+        return $this->createQueryBuilderForHooksByDate($device, $date)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findLastHookOfDay(string $device, \DateTimeInterface $date): ?Hook
+    {
+        return $this->createQueryBuilderForHooksByDate($device, $date)
+            ->orderBy('hook.createdAt', order: 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    private function createQueryBuilderForHooksByDate(string $device, \DateTimeInterface $date): QueryBuilder
+    {
         $startDate = (clone $date)->setTime(0, 0);
         $endDate = (clone $date)->setTime(23, 59, 59);
 
@@ -54,8 +71,6 @@ class HookRepository extends CrudRepository
             ->setParameter('device', $device)
             ->setParameter('property', 'power')
             ->setParameter('start', $startDate)
-            ->setParameter('end', $endDate)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('end', $endDate);
     }
 }

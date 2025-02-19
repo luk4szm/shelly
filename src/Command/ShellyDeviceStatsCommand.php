@@ -54,6 +54,10 @@ class ShellyDeviceStatsCommand extends Command
             return self::SUCCESS;
         }
 
+        if (null !== $lastHookOfDayBefore = $this->repository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
+            array_unshift($hooks, $lastHookOfDayBefore);
+        }
+
         $this->deviceStats->process($date, $hooks);
 
         $output->writeln([

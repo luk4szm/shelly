@@ -2,6 +2,8 @@
 
 namespace App\Service\Hook;
 
+use App\Entity\Hook;
+
 class DeviceRunningStats
 {
     private array $hooks;
@@ -14,9 +16,17 @@ class DeviceRunningStats
     ) {
     }
 
+    /**
+     * @param \DateTimeInterface $date
+     * @param array{Hook}        $hooks
+     * @return void
+     * @throws \DateMalformedStringException
+     */
     public function process(\DateTimeInterface $date, array $hooks): void
     {
-        array_unshift($hooks, (clone $hooks[0])->setCreatedAt($date->setTime(0, 0)));
+        if ($date->format("Y-z") !== $hooks[0]->getCreatedAt()->format("Y-z")) {
+            $hooks[0]->setCreatedAt((clone $date)->setTime(0, 0));
+        }
 
         $this->hooks ??= $hooks;
 
