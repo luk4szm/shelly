@@ -9,6 +9,8 @@ class DeviceRunningStats
     private array $hooks;
     private float $energy            = 0; // Ws
     private int   $runningTime       = 0; // seconds
+    private int   $longestRun        = 0; // seconds
+    private int   $longestPause      = 0; // seconds
     private int   $inclusionsCounter = 0;
 
     public function __construct(
@@ -29,6 +31,8 @@ class DeviceRunningStats
         }
 
         $this->hooks ??= $hooks;
+        $runTime     = 0;
+        $pauseTime   = 0;
 
         for ($i = 0; $i < count($hooks); $i++) {
             $isActive = $this->statusHelper->isActive('piec', $hooks[$i]);
@@ -44,7 +48,27 @@ class DeviceRunningStats
                     $this->inclusionsCounter++;
                 }
 
+                $pauseTime         = 0;
+                $runTime           += $duration;
                 $this->runningTime += $duration;
+
+                if ($runTime > $this->longestRun) {
+                    $this->longestRun = $runTime;
+                }
+            } else {
+                if (
+                    $i !== 0
+                    && $this->statusHelper->isActive('piec', $hooks[$i - 1])
+                ) {
+
+                }
+
+                $runTime   = 0;
+                $pauseTime += $duration;
+
+                if ($pauseTime > $this->longestPause) {
+                    $this->longestPause = $pauseTime;
+                }
             }
         }
     }
@@ -52,6 +76,16 @@ class DeviceRunningStats
     public function getRunningTime(): string
     {
         return gmdate("H:i:s", $this->runningTime);
+    }
+
+    public function getLongestRunTime(): string
+    {
+        return gmdate("H:i:s", $this->longestRun);
+    }
+
+    public function getLongestPauseTime(): string
+    {
+        return gmdate("H:i:s", $this->longestPause);
     }
 
     public function getEnergy(string $unit = 'kWh'): float
