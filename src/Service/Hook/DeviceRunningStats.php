@@ -47,8 +47,8 @@ class DeviceRunningStats
     public function getEnergy(string $unit = 'kWh'): float
     {
         return match ($unit) {
-            'Wh'    => number_format($this->energy / 3600, 1),
-            default => number_format($this->energy / 3600000, 2), // kWh
+            'Wh'    => round($this->energy / 3600, 1),
+            default => round($this->energy / 3600000, 2), // kWh
         };
     }
 
