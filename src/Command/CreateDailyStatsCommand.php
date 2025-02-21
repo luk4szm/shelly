@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\DeviceDailyStats;
+use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
 use App\Service\Hook\DeviceRunningStats;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -12,14 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'shelly:device:stats',
-    description: 'Returns the work statistics of the device for a given day',
+    name: 'app:create:daily-stats',
+    description: 'Downloads data from a given day and calculates statistics',
 )]
-class ShellyDeviceStatsCommand extends Command
+class CreateDailyStatsCommand extends Command
 {
     public function __construct(
-        private readonly HookRepository     $repository,
-        private readonly DeviceRunningStats $deviceStats,
+        private readonly HookRepository             $hookRepository,
+        private readonly DeviceDailyStatsRepository $statsRepository,
+        private readonly DeviceRunningStats         $deviceStats,
     ) {
         parent::__construct();
     }
@@ -38,15 +41,9 @@ class ShellyDeviceStatsCommand extends Command
         $device = $input->getArgument('device');
         $date   = $input->getArgument('date')
             ? new \DateTimeImmutable($input->getArgument('date'))
-            : new \DateTimeImmutable();
+            : new \DateTimeImmutable('yesterday');
 
-        $io->title(sprintf(
-            'Retrieving the statistics of the day (%s) for the "%s" device',
-            $date->format('Y-m-d'),
-            $device
-        ));
-
-        $hooks = $this->repository->findHooksByDeviceAndDate($device, $date);
+        $hooks = $this->hookRepository->findHooksByDeviceAndDate($device, $date);
 
         if (count($hooks) === 0) {
             $io->warning(sprintf('No data found for given date %s', $date->format('Y-m-d')));
@@ -54,20 +51,25 @@ class ShellyDeviceStatsCommand extends Command
             return self::SUCCESS;
         }
 
-        if (null !== $lastHookOfDayBefore = $this->repository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
+        if (null !== $lastHookOfDayBefore = $this->hookRepository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
             array_unshift($hooks, $lastHookOfDayBefore);
         }
 
         $this->deviceStats->process($date, $hooks);
 
-        $output->writeln([
-            sprintf('Total time of active work: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getRunningTime())),
-            sprintf('Longest run time: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getLongestRunTime())),
-            sprintf('Longest pause time: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getLongestPauseTime())),
-            sprintf('Total used energy: <info>%.1f Wh</info>', $this->deviceStats->getEnergy('Wh')),
-            sprintf('Number of active cycles: <info>%d</info>', $this->deviceStats->getInclusionsCounter()),
-            ''
-        ]);
+        $dailyStats = new DeviceDailyStats(
+            $device,
+            $date,
+            $this->deviceStats->getEnergy('Wh'),
+            $this->deviceStats->getInclusionsCounter(),
+            $this->deviceStats->getLongestRunTime(),
+            $this->deviceStats->getLongestPauseTime(),
+            $this->deviceStats->getRunningTime()
+        );
+
+        $this->statsRepository->save($dailyStats);
+
+        $io->success(sprintf('Statistics for %s of %s were successfully calculated', $device, $date->format('Y-m-d')));
 
         return Command::SUCCESS;
     }

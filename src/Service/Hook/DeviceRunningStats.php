@@ -73,19 +73,19 @@ class DeviceRunningStats
         }
     }
 
-    public function getRunningTime(): string
+    public function getRunningTime(): int
     {
-        return gmdate("H:i:s", $this->runningTime);
+        return $this->runningTime;
     }
 
-    public function getLongestRunTime(): string
+    public function getLongestRunTime(): int
     {
-        return gmdate("H:i:s", $this->longestRun);
+        return $this->longestRun;
     }
 
-    public function getLongestPauseTime(): string
+    public function getLongestPauseTime(): int
     {
-        return gmdate("H:i:s", $this->longestPause);
+        return $this->longestPause;
     }
 
     public function getEnergy(string $unit = 'kWh'): float
