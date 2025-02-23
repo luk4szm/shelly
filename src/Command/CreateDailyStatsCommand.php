@@ -49,15 +49,23 @@ class CreateDailyStatsCommand extends Command
             return Command::SUCCESS;
         }
 
-        $dailyStats = new DeviceDailyStats(
-            $device,
-            $date,
-            $this->deviceStats->getEnergy('Wh'),
-            $this->deviceStats->getInclusionsCounter(),
-            $this->deviceStats->getLongestRunTime(),
-            $this->deviceStats->getLongestPauseTime(),
-            $this->deviceStats->getRunningTime()
-        );
+        if (null === $dailyStats = $this->statsRepository->findForDeviceAndDay($device, $date)) {
+            $dailyStats = new DeviceDailyStats(
+                $device,
+                $date,
+                $this->deviceStats->getEnergy('Wh'),
+                $this->deviceStats->getInclusionsCounter(),
+                $this->deviceStats->getLongestRunTime(),
+                $this->deviceStats->getLongestPauseTime(),
+                $this->deviceStats->getRunningTime()
+            );
+        } else {
+            $dailyStats->setEnergy($this->deviceStats->getEnergy('Wh'));
+            $dailyStats->setInclusions($this->deviceStats->getInclusionsCounter());
+            $dailyStats->setLongestRunTime($this->deviceStats->getLongestRunTime());
+            $dailyStats->setLongestPauseTime($this->deviceStats->getLongestPauseTime());
+            $dailyStats->setTotalActiveTime($this->deviceStats->getRunningTime());
+        }
 
         $this->statsRepository->save($dailyStats);
 

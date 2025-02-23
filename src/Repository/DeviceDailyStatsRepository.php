@@ -16,6 +16,17 @@ class DeviceDailyStatsRepository extends CrudRepository
         parent::__construct($registry, DeviceDailyStats::class);
     }
 
+    public function findForDeviceAndDay(string $device, \DateTimeInterface $date): DeviceDailyStats
+    {
+        return $this->createQueryBuilder('dds')
+            ->where('dds.device = :device')
+            ->andWhere('dds.date = :date')
+            ->setParameter('device', $device)
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findForDeviceAndMonth(string $device, \DateTimeInterface $month): array
     {
         $firstDayOfMonth = (clone $month)->modify('first day of this month');
