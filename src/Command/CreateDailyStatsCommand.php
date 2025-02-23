@@ -4,7 +4,6 @@ namespace App\Command;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\DeviceDailyStatsRepository;
-use App\Repository\HookRepository;
 use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +19,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CreateDailyStatsCommand extends Command
 {
     public function __construct(
-        private readonly HookRepository             $hookRepository,
         private readonly DeviceDailyStatsRepository $statsRepository,
         private readonly DeviceDailyStatsCalculator $deviceStats,
     ) {
@@ -43,19 +41,13 @@ class CreateDailyStatsCommand extends Command
             ? new \DateTimeImmutable($input->getArgument('date'))
             : new \DateTimeImmutable('yesterday');
 
-        $hooks = $this->hookRepository->findHooksByDeviceAndDate($device, $date);
+        try {
+            $this->deviceStats->process($device, $date);
+        } catch (\Exception $e) {
+            $io->error($e->getMessage());
 
-        if (count($hooks) === 0) {
-            $io->warning(sprintf('No data found for given date %s', $date->format('Y-m-d')));
-
-            return self::SUCCESS;
+            return Command::SUCCESS;
         }
-
-        if (null !== $lastHookOfDayBefore = $this->hookRepository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
-            array_unshift($hooks, $lastHookOfDayBefore);
-        }
-
-        $this->deviceStats->process($date, $hooks);
 
         $dailyStats = new DeviceDailyStats(
             $device,

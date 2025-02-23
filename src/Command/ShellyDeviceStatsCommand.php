@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Repository\HookRepository;
 use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -18,7 +17,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ShellyDeviceStatsCommand extends Command
 {
     public function __construct(
-        private readonly HookRepository             $repository,
         private readonly DeviceDailyStatsCalculator $deviceStats,
     ) {
         parent::__construct();
@@ -46,19 +44,13 @@ class ShellyDeviceStatsCommand extends Command
             $device
         ));
 
-        $hooks = $this->repository->findHooksByDeviceAndDate($device, $date);
+        try {
+            $this->deviceStats->process($device, $date);
+        } catch (\Exception $e) {
+            $io->warning($e->getMessage());
 
-        if (count($hooks) === 0) {
-            $io->warning(sprintf('No data found for given date %s', $date->format('Y-m-d')));
-
-            return self::SUCCESS;
+            return Command::SUCCESS;
         }
-
-        if (null !== $lastHookOfDayBefore = $this->repository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
-            array_unshift($hooks, $lastHookOfDayBefore);
-        }
-
-        $this->deviceStats->process($date, $hooks);
 
         $output->writeln([
             sprintf('Total time of active work: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getRunningTime())),

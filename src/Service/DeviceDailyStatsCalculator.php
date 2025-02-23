@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Hook;
+use App\Repository\HookRepository;
 use App\Service\Hook\DeviceStatusHelper;
 
 class DeviceDailyStatsCalculator
@@ -16,35 +16,39 @@ class DeviceDailyStatsCalculator
 
     public function __construct(
         private readonly DeviceStatusHelper $statusHelper,
+        private readonly HookRepository     $hookRepository,
     ) {
     }
 
     /**
+     * Processes data from the sensor for the selected device on a given day
+     *
+     * @param string             $device
      * @param \DateTimeInterface $date
-     * @param array{Hook}        $hooks
      * @return void
      * @throws \DateMalformedStringException
      */
-    public function process(\DateTimeInterface $date, array $hooks): void
+    public function process(string $device, \DateTimeInterface $date): void
     {
-        if ($date->format("Y-z") !== $hooks[0]->getCreatedAt()->format("Y-z")) {
-            $hooks[0]->setCreatedAt((clone $date)->setTime(0, 0));
+        $this->getDailyHooks($device, $date);
+
+        if (empty($this->hooks)) {
+            throw new \RuntimeException(sprintf('No data to process for device %s in %s', $device, $date->format('Y-m-d')));
         }
 
-        $this->hooks ??= $hooks;
         $runTime     = 0;
         $pauseTime   = 0;
 
-        for ($i = 0; $i < count($hooks); $i++) {
-            $isActive = $this->statusHelper->isActive('piec', $hooks[$i]);
-            $duration = $this->statusHelper->calculateHookDuration($hooks[$i], $hooks[$i+1] ?? null);
+        for ($i = 0; $i < count($this->hooks); $i++) {
+            $isActive = $this->statusHelper->isActive('piec', $this->hooks[$i]);
+            $duration = $this->statusHelper->calculateHookDuration($this->hooks[$i], $this->hooks[$i+1] ?? null);
 
-            $this->energy += $hooks[$i]->getValue() * $duration;
+            $this->energy += $this->hooks[$i]->getValue() * $duration;
 
             if ($isActive) {
                 if (
                     $i !== 0
-                    && !$this->statusHelper->isActive('piec', $hooks[$i - 1])
+                    && !$this->statusHelper->isActive('piec', $this->hooks[$i - 1])
                 ) {
                     $this->inclusionsCounter++;
                 }
@@ -57,13 +61,6 @@ class DeviceDailyStatsCalculator
                     $this->longestRun = $runTime;
                 }
             } else {
-                if (
-                    $i !== 0
-                    && $this->statusHelper->isActive('piec', $hooks[$i - 1])
-                ) {
-
-                }
-
                 $runTime   = 0;
                 $pauseTime += $duration;
 
@@ -100,5 +97,27 @@ class DeviceDailyStatsCalculator
     public function getInclusionsCounter(): int
     {
         return $this->inclusionsCounter;
+    }
+
+    /**
+     * @param string             $device
+     * @param \DateTimeInterface $date
+     * @return void
+     */
+    private function getDailyHooks(string $device, \DateTimeInterface $date): void
+    {
+        $this->hooks = $this->hookRepository->findHooksByDeviceAndDate($device, $date);
+
+        if (count($this->hooks) === 0) {
+            return;
+        }
+
+        if (null !== $lastHookOfDayBefore = $this->hookRepository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
+            array_unshift($this->hooks, $lastHookOfDayBefore);
+        }
+
+         if ($date->format("Y-z") !== $this->hooks[0]->getCreatedAt()->format("Y-z")) {
+            $this->hooks[0]->setCreatedAt((clone $date)->setTime(0, 0));
+        }
     }
 }
