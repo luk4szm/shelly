@@ -5,7 +5,7 @@ namespace App\Command;
 use App\Entity\DeviceDailyStats;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
-use App\Service\Hook\DeviceRunningStats;
+use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,7 +22,7 @@ class CreateDailyStatsCommand extends Command
     public function __construct(
         private readonly HookRepository             $hookRepository,
         private readonly DeviceDailyStatsRepository $statsRepository,
-        private readonly DeviceRunningStats         $deviceStats,
+        private readonly DeviceDailyStatsCalculator $deviceStats,
     ) {
         parent::__construct();
     }

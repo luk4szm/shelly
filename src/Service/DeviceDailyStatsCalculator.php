@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Service\Hook;
+namespace App\Service;
 
 use App\Entity\Hook;
+use App\Service\Hook\DeviceStatusHelper;
 
-class DeviceRunningStats
+class DeviceDailyStatsCalculator
 {
     private array $hooks;
     private float $energy            = 0; // Ws

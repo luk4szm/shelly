@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Repository\HookRepository;
-use App\Service\Hook\DeviceRunningStats;
+use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,8 +18,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ShellyDeviceStatsCommand extends Command
 {
     public function __construct(
-        private readonly HookRepository     $repository,
-        private readonly DeviceRunningStats $deviceStats,
+        private readonly HookRepository             $repository,
+        private readonly DeviceDailyStatsCalculator $deviceStats,
     ) {
         parent::__construct();
     }
