@@ -45,7 +45,7 @@ class ShellyDeviceStatsCommand extends Command
         ));
 
         try {
-            $this->deviceStats->process($device, $date);
+            $dailyStats = $this->deviceStats->process($device, $date);
         } catch (\Exception $e) {
             $io->warning($e->getMessage());
 
@@ -53,11 +53,11 @@ class ShellyDeviceStatsCommand extends Command
         }
 
         $output->writeln([
-            sprintf('Total time of active work: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getRunningTime())),
-            sprintf('Longest run time: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getLongestRunTime())),
-            sprintf('Longest pause time: <info>%s</info>', gmdate("H:i:s", $this->deviceStats->getLongestPauseTime())),
-            sprintf('Total used energy: <info>%.1f Wh</info>', $this->deviceStats->getEnergy('Wh')),
-            sprintf('Number of active cycles: <info>%d</info>', $this->deviceStats->getInclusionsCounter()),
+            sprintf('Total time of active work: <info>%s</info>', $dailyStats->getTotalActiveTimeReadable()),
+            sprintf('Longest run time: <info>%s</info>', $dailyStats->getLongestRunTimeReadable()),
+            sprintf('Longest pause time: <info>%s</info>', $dailyStats->getLongestPauseTimeReadable()),
+            sprintf('Total used energy: <info>%.1f Wh</info>', $dailyStats->getEnergy()),
+            sprintf('Number of active cycles: <info>%d</info>', $dailyStats->getInclusions()),
             ''
         ]);
 

@@ -33,6 +33,11 @@ class Hook
         $this->value    = $value;
     }
 
+    public function __clone(): void
+    {
+        $this->id = null;
+    }
+
     #[ORM\PrePersist]
     public function prePersist(): void
     {

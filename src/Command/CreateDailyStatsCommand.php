@@ -42,7 +42,7 @@ class CreateDailyStatsCommand extends Command
             : new \DateTimeImmutable('yesterday');
 
         try {
-            $this->deviceStats->process($device, $date);
+            $newDailyStats = $this->deviceStats->process($device, $date);
         } catch (\Exception $e) {
             $io->error($e->getMessage());
 
@@ -50,22 +50,10 @@ class CreateDailyStatsCommand extends Command
         }
 
         if (null === $dailyStats = $this->statsRepository->findForDeviceAndDay($device, $date)) {
-            $dailyStats = new DeviceDailyStats(
-                $device,
-                $date,
-                $this->deviceStats->getEnergy('Wh'),
-                $this->deviceStats->getInclusionsCounter(),
-                $this->deviceStats->getLongestRunTime(),
-                $this->deviceStats->getLongestPauseTime(),
-                $this->deviceStats->getRunningTime()
-            );
-        } else {
-            $dailyStats->setEnergy($this->deviceStats->getEnergy('Wh'));
-            $dailyStats->setInclusions($this->deviceStats->getInclusionsCounter());
-            $dailyStats->setLongestRunTime($this->deviceStats->getLongestRunTime());
-            $dailyStats->setLongestPauseTime($this->deviceStats->getLongestPauseTime());
-            $dailyStats->setTotalActiveTime($this->deviceStats->getRunningTime());
+            $dailyStats = new DeviceDailyStats($device, $date);
         }
+
+        $dailyStats->paste($newDailyStats);
 
         $this->statsRepository->save($dailyStats);
 

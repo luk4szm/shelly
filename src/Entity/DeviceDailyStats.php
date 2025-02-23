@@ -23,39 +23,51 @@ class DeviceDailyStats
 
     #[ORM\Column]
     /** Energy in Wh */
-    private ?float $energy;
+    private ?float $energy = 0;
 
     #[ORM\Column]
-    private ?int $inclusions;
-
-    #[ORM\Column]
-    /** in seconds */
-    private ?int $longestRunTime;
+    private ?int $inclusions = 0;
 
     #[ORM\Column]
     /** in seconds */
-    private ?int $longestPauseTime;
+    private ?int $longestRunTime = 0;
 
     #[ORM\Column]
     /** in seconds */
-    private ?int $totalActiveTime;
+    private ?int $longestPauseTime = 0;
+
+    #[ORM\Column]
+    /** in seconds */
+    private ?int $totalActiveTime = 0;
 
     public function __construct(
         string            $device,
         DateTimeInterface $date,
-        float             $energy,
-        int               $inclusions,
-        int               $longestRunTime,
-        int               $longestPauseTime,
-        int               $totalActiveTime
+        ?float            $energy = null,
+        ?int              $inclusions = null,
+        ?int              $longestRunTime = null,
+        ?int              $longestPauseTime = null,
+        ?int              $totalActiveTime = null,
     ) {
-        $this->device           = $device;
-        $this->date             = $date;
-        $this->energy           = $energy;
-        $this->inclusions       = $inclusions;
-        $this->longestRunTime   = $longestRunTime;
-        $this->longestPauseTime = $longestPauseTime;
-        $this->totalActiveTime  = $totalActiveTime;
+        $this->device = $device;
+        $this->date   = $date;
+
+        $this->setEnergy($energy)
+            ->setInclusions($inclusions)
+            ->setLongestRunTime($longestRunTime)
+            ->setLongestPauseTime($longestPauseTime)
+            ->setTotalActiveTime($totalActiveTime);
+    }
+
+    public function paste(self $dailyStats) : self
+    {
+        $this->setEnergy($dailyStats->getEnergy())
+             ->setInclusions($dailyStats->getInclusions())
+             ->setLongestRunTime($dailyStats->getLongestRunTime())
+             ->setLongestPauseTime($dailyStats->getLongestPauseTime())
+             ->setTotalActiveTime($dailyStats->getTotalActiveTime());
+
+        return $this;
     }
 
     public function getId(): ?int
@@ -92,7 +104,7 @@ class DeviceDailyStats
         return $this->energy;
     }
 
-    public function setEnergy(float $energy): static
+    public function setEnergy(?float $energy): static
     {
         $this->energy = $energy;
 
@@ -104,7 +116,7 @@ class DeviceDailyStats
         return $this->inclusions;
     }
 
-    public function setInclusions(int $inclusions): static
+    public function setInclusions(?int $inclusions): static
     {
         $this->inclusions = $inclusions;
 
@@ -116,7 +128,12 @@ class DeviceDailyStats
         return $this->longestRunTime;
     }
 
-    public function setLongestRunTime(int $longestRunTime): static
+    public function getLongestRunTimeReadable(): string
+    {
+        return gmdate("H:i:s", $this->longestRunTime);
+    }
+
+    public function setLongestRunTime(?int $longestRunTime): static
     {
         $this->longestRunTime = $longestRunTime;
 
@@ -128,7 +145,12 @@ class DeviceDailyStats
         return $this->longestPauseTime;
     }
 
-    public function setLongestPauseTime(int $longestPauseTime): static
+    public function getLongestPauseTimeReadable(): string
+    {
+        return gmdate("H:i:s", $this->longestPauseTime);
+    }
+
+    public function setLongestPauseTime(?int $longestPauseTime): static
     {
         $this->longestPauseTime = $longestPauseTime;
 
@@ -140,7 +162,12 @@ class DeviceDailyStats
         return $this->totalActiveTime;
     }
 
-    public function setTotalActiveTime(int $totalActiveTime): static
+    public function getTotalActiveTimeReadable(): string
+    {
+        return gmdate("H:i:s", $this->totalActiveTime);
+    }
+
+    public function setTotalActiveTime(?int $totalActiveTime): static
     {
         $this->totalActiveTime = $totalActiveTime;
 

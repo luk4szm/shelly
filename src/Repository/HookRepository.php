@@ -52,7 +52,7 @@ class HookRepository extends CrudRepository
     public function findLastHookOfDay(string $device, \DateTimeInterface $date): ?Hook
     {
         return $this->createQueryBuilderForHooksByDate($device, $date)
-            ->orderBy('hook.createdAt', order: 'DESC')
+            ->orderBy('hook.id', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
