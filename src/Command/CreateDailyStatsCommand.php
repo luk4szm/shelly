@@ -49,10 +49,7 @@ class CreateDailyStatsCommand extends Command
             return Command::SUCCESS;
         }
 
-        if (null === $dailyStats = $this->statsRepository->findForDeviceAndDay($device, $date)) {
-            $dailyStats = new DeviceDailyStats($device, $date);
-        }
-
+        $dailyStats = $this->statsRepository->findForDeviceAndDay($device, $date) ?? new DeviceDailyStats($device, $date);
         $dailyStats->paste($newDailyStats);
 
         $this->statsRepository->save($dailyStats);
