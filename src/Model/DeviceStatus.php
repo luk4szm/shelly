@@ -27,7 +27,7 @@ class DeviceStatus
 
     public function getStatusDurationReadable(): string
     {
-        return gmdate("H:i:s", $this->statusDuration);
+        return gmdate("G:i:s", $this->statusDuration);
     }
 
     public function setStatusDuration(int $statusDuration): self

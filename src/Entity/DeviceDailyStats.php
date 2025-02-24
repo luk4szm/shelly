@@ -130,7 +130,7 @@ class DeviceDailyStats
 
     public function getLongestRunTimeReadable(): string
     {
-        return gmdate("H:i:s", $this->longestRunTime);
+        return gmdate("G:i:s", $this->longestRunTime);
     }
 
     public function setLongestRunTime(?int $longestRunTime): static
@@ -147,7 +147,7 @@ class DeviceDailyStats
 
     public function getLongestPauseTimeReadable(): string
     {
-        return gmdate("H:i:s", $this->longestPauseTime);
+        return gmdate("G:i:s", $this->longestPauseTime);
     }
 
     public function setLongestPauseTime(?int $longestPauseTime): static
@@ -164,7 +164,7 @@ class DeviceDailyStats
 
     public function getTotalActiveTimeReadable(): string
     {
-        return gmdate("H:i:s", $this->totalActiveTime);
+        return gmdate("G:i:s", $this->totalActiveTime);
     }
 
     public function setTotalActiveTime(?int $totalActiveTime): static

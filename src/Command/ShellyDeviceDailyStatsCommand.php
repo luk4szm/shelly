@@ -54,9 +54,9 @@ class ShellyDeviceDailyStatsCommand extends Command
                     $stats->getDate()->format('Y-m-d'),
                     sprintf('%.1f Wh', $stats->getEnergy()),
                     $stats->getInclusions(),
-                    gmdate("H:i:s", $stats->getTotalActiveTime()),
-                    gmdate("H:i:s", $stats->getLongestRunTime()),
-                    gmdate("H:i:s", $stats->getLongestPauseTime()),
+                    $stats->getTotalActiveTimeReadable(),
+                    $stats->getLongestRunTimeReadable(),
+                    $stats->getLongestPauseTimeReadable(),
                 ];
             }, $dailyStats)
         );
