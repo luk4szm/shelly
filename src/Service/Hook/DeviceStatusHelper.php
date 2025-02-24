@@ -49,8 +49,8 @@ class DeviceStatusHelper
 
         return (new DeviceStatus())
             ->setStatus($this->isActive('piec', $this->hooks[$this->element]) ? Status::ACTIVE : Status::INACTIVE)
-            ->setStatusDuration($this->getDeviceStatusUnchangedDuration())
             ->setLastValue($this->hooks[$this->element]->getValue())
+            ->setStatusDuration($this->getDeviceStatusUnchangedDuration())
         ;
     }
 
@@ -93,11 +93,10 @@ class DeviceStatusHelper
         return $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
-    private function getDeviceStatusUnchangedDuration(): float
+    private function getDeviceStatusUnchangedDuration(): int
     {
         $reference = $this->element === 0 ? new \DateTime() : $this->hooks[$this->element - 1]->getCreatedAt();
-        $firstHook = $this->getFirstHookOfCurrentStatus();
-        $interval  = $reference->diff($firstHook->getCreatedAt());
+        $interval  = $reference->diff($this->getFirstHookOfCurrentStatus()->getCreatedAt());
 
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
