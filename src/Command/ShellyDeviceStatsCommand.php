@@ -39,7 +39,8 @@ class ShellyDeviceStatsCommand extends Command
             : new \DateTimeImmutable();
 
         $io->title(sprintf(
-            'Retrieving the statistics of the day (%s) for the "%s" device',
+            '[%s] Retrieving the statistics of the day (%s) for the "%s" device',
+            (new \DateTime())->format('H:i:s'),
             $date->format('Y-m-d'),
             $device
         ));
