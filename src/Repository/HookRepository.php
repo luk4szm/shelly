@@ -29,15 +29,16 @@ class HookRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findCurrentPowerByDevice(string $device): array
+    public function findLastActiveByDevice(string $device): array
     {
         return $this->createQueryBuilder('hook')
             ->andWhere('hook.device = :device')
             ->andWhere('hook.property = :property')
+            ->andWhere('hook.createdAt >= :date')
             ->setParameter('device', $device)
             ->setParameter('property', 'power')
+            ->setParameter('date', new \DateTime("-1 day"))
             ->orderBy('hook.id', 'DESC')
-            ->setMaxResults(50)
             ->getQuery()
             ->getResult();
     }

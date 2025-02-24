@@ -3,10 +3,36 @@
 namespace App\Service\Hook;
 
 use App\Entity\Hook;
+use App\Model\DeviceStatus;
+use App\Model\Status;
+use App\Repository\HookRepository;
 
 class DeviceStatusHelper
 {
     public const BOUNDARY_POWER_CENTRAL_HEATING = 8;
+
+    /** @var array{Hook} */
+    public array $hooks;
+
+    public function __construct(
+        private readonly HookRepository $hookRepository,
+    ) {
+    }
+
+    public function getStatus(string $device): ?DeviceStatus
+    {
+        $this->hooks  ??= $this->hookRepository->findLastActiveByDevice($device);
+
+        if (empty($this->hooks)) {
+            return null;
+        }
+
+        return (new DeviceStatus())
+            ->setStatus($this->isActive('piec', $this->hooks[0]) ? Status::ACTIVE : Status::INACTIVE)
+            ->setStatusDuration($this->getDeviceStatusUnchangedDuration(0))
+            ->setLastValue($this->hooks[0]->getValue())
+        ;
+    }
 
     public function isActive(string $device, Hook $hook): bool
     {
@@ -16,13 +42,13 @@ class DeviceStatusHelper
         };
     }
 
-    public function getDeviceStatusUnchangedDuration(array $hooks): float
+    public function getDeviceStatusUnchangedDuration(int $element): float
     {
-        $firstHook    = $this->getFirstHookOfCurrentStatus($hooks);
-        $interval     = (new \DateTime())->diff($firstHook->getCreatedAt());
-        $totalSeconds = $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+        $firstHook = $this->getFirstHookOfCurrentStatus($element);
+        $reference = $element === 0 ? new \DateTime() : $this->hooks[$element]->getCreatedAt();
+        $interval  = $reference->diff($firstHook->getCreatedAt());
 
-        return (float)$totalSeconds / 60;
+        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
     /**
@@ -56,13 +82,13 @@ class DeviceStatusHelper
         return $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
-    private function getFirstHookOfCurrentStatus(array $hooks): Hook
+    private function getFirstHookOfCurrentStatus(int $element): Hook
     {
-        $currentStatus = $this->isActive('piec', $hooks[0]);
+        $currentStatus = $this->isActive('piec', $this->hooks[$element]);
 
-        for ($i = 1; $i < count($hooks); $i++) {
-            if ($currentStatus !== $this->isActive('piec', $hooks[$i])) {
-                return $hooks[$i - 1];
+        for ($i = $element + 1; $i < count($this->hooks); $i++) {
+            if ($currentStatus !== $this->isActive('piec', $this->hooks[$i])) {
+                return $this->hooks[$i - 1];
             }
         }
     }

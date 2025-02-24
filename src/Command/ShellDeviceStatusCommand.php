@@ -2,8 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\Hook;
-use App\Repository\HookRepository;
+use App\Model\Status;
 use App\Service\Hook\DeviceStatusHelper;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,7 +18,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ShellDeviceStatusCommand extends Command
 {
     public function __construct(
-        private readonly HookRepository     $hookRepository,
         private readonly DeviceStatusHelper $statusHelper,
     ) {
         parent::__construct();
@@ -35,32 +33,23 @@ class ShellDeviceStatusCommand extends Command
     {
         $io     = new SymfonyStyle($input, $output);
         $device = $input->getArgument('device');
-        $hooks  = $this->hookRepository->findCurrentPowerByDevice($device);
 
-        $io->title(sprintf('Checking status of the "%s" device', $device));
-
-        if (count($hooks) === 0) {
+        if (null === $deviceStatus = $this->statusHelper->getStatus($device)) {
             $io->warning('No device information found');
 
             return self::SUCCESS;
         }
 
-        $output->writeln('Date: ' . (new \DateTime())->format('Y-m-d H:i:s'));
-
-        /** @var Hook $lastHook */
-        $lastHook = $hooks[0];
-        $isActive = $this->statusHelper->isActive($device, $lastHook);
+        $io->title(sprintf('[%s] Checking status of the "%s" device', (new \DateTime())->format('H:i:s'), $device));
 
         switch ($device) {
             case 'piec':
-                $isActive
-                    ? $output->writeln(sprintf('Device status: <info>RUNNING</info> (%.1f W)', $lastHook->getValue()))
-                    : $output->writeln(sprintf('Device status: <info>STANDBY</info> (%.1f W)', $lastHook->getValue()));
+                $deviceStatus->getStatus() === Status::ACTIVE
+                    ? $output->writeln(sprintf('Device status: <info>RUNNING</info> (%s)', $deviceStatus->getLastValueReadable()))
+                    : $output->writeln(sprintf('Device status: <info>STANDBY</info> (%s)', $deviceStatus->getLastValueReadable()));
         }
 
-        $duration = $this->statusHelper->getDeviceStatusUnchangedDuration($hooks);
-
-        $output->writeln([sprintf('Last change of status %d minutes ago', $duration), '']);
+        $output->writeln([sprintf('Current status duration: <info>%s</info>', $deviceStatus->getStatusDurationReadable()), '']);
 
         return Command::SUCCESS;
     }
