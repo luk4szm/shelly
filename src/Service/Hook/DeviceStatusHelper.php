@@ -91,5 +91,7 @@ class DeviceStatusHelper
                 return $this->hooks[$i - 1];
             }
         }
+
+        throw new \RuntimeException('First hook of actual status not found');
     }
 }
