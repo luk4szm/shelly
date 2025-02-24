@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\DeviceDailyStatsRepository;
+use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,6 +20,7 @@ class ShellyDeviceDailyStatsCommand extends Command
 {
     public function __construct(
         private readonly DeviceDailyStatsRepository $dailyStatsRepository,
+        private readonly DeviceDailyStatsCalculator $dailyStatsCalculator,
     ) {
         parent::__construct();
     }
@@ -40,6 +42,10 @@ class ShellyDeviceDailyStatsCommand extends Command
             : new \DateTimeImmutable();
 
         $dailyStats = $this->dailyStatsRepository->findForDeviceAndMonth($device, $date);
+
+        if (end($dailyStats)->getDate() !== $date) {
+            $dailyStats[] = $this->dailyStatsCalculator->process($device, new \DateTime());
+        }
 
         $io->table(
             ['date', 'energy', 'inclusions', 'running time', 'longest run', 'longest pause'],
