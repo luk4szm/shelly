@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Service\Hook\DeviceStatusHelper;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -34,7 +35,7 @@ class ShellDeviceStatusCommand extends Command
         $io     = new SymfonyStyle($input, $output);
         $device = $input->getArgument('device');
 
-        if (null === $deviceStatus = $this->statusHelper->getStatus($device)) {
+        if (null === $deviceHistory = $this->statusHelper->getHistory($device)) {
             $io->warning('No device information found');
 
             return self::SUCCESS;
@@ -42,14 +43,16 @@ class ShellDeviceStatusCommand extends Command
 
         $io->title(sprintf('[%s] Checking status of the "%s" device', (new \DateTime())->format('H:i:s'), $device));
 
-        switch ($device) {
-            case 'piec':
-                $deviceStatus->getStatus() === Status::ACTIVE
-                    ? $output->writeln(sprintf('Device status: <info>RUNNING</info> (%s)', $deviceStatus->getLastValueReadable()))
-                    : $output->writeln(sprintf('Device status: <info>STANDBY</info> (%s)', $deviceStatus->getLastValueReadable()));
-        }
+        /** @var DeviceStatus $actualStatus */
+        $actualStatus   = $deviceHistory->first();
+        $previousStatus = $deviceHistory->next();
 
-        $output->writeln([sprintf('Current status duration: <info>%s</info>', $deviceStatus->getStatusDurationReadable()), '']);
+        $output->writeln([
+            sprintf('Device status: <info>%s</info> (%s)', strtoupper($actualStatus->getStatus()->value), $actualStatus->getLastValueReadable()),
+            sprintf('Current status duration: <info>%s</info>', $actualStatus->getStatusDurationReadable()),
+            sprintf('Previous status duration: <info>%s</info>', $previousStatus->getStatusDurationReadable()),
+            ''
+        ]);
 
         return Command::SUCCESS;
     }

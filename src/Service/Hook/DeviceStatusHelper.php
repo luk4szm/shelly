@@ -6,31 +6,51 @@ use App\Entity\Hook;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Repository\HookRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class DeviceStatusHelper
 {
-    public const BOUNDARY_POWER_CENTRAL_HEATING = 8;
+    private const BOUNDARY_POWER_CENTRAL_HEATING = 8;
 
     /** @var array{Hook} */
-    public array $hooks;
+    private array $hooks;
+    private int   $element = 0;
 
     public function __construct(
         private readonly HookRepository $hookRepository,
-    ) {
+    ) {}
+
+    public function getHistory(string $device, int $elements = 2): ?ArrayCollection
+    {
+        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($device);
+
+        if (empty($this->hooks)) {
+            return null;
+        }
+
+        $history = new ArrayCollection();
+
+        for ($i = 0; $i < $elements; $i++) {
+            $history->add($this->getStatus($device));
+
+            $this->element++;
+        }
+
+        return $history;
     }
 
     public function getStatus(string $device): ?DeviceStatus
     {
-        $this->hooks  ??= $this->hookRepository->findLastActiveByDevice($device);
+        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($device);
 
         if (empty($this->hooks)) {
             return null;
         }
 
         return (new DeviceStatus())
-            ->setStatus($this->isActive('piec', $this->hooks[0]) ? Status::ACTIVE : Status::INACTIVE)
-            ->setStatusDuration($this->getDeviceStatusUnchangedDuration(0))
-            ->setLastValue($this->hooks[0]->getValue())
+            ->setStatus($this->isActive('piec', $this->hooks[$this->element]) ? Status::ACTIVE : Status::INACTIVE)
+            ->setStatusDuration($this->getDeviceStatusUnchangedDuration())
+            ->setLastValue($this->hooks[$this->element]->getValue())
         ;
     }
 
@@ -40,15 +60,6 @@ class DeviceStatusHelper
             'piec'  => (float)$hook->getValue() > self::BOUNDARY_POWER_CENTRAL_HEATING,
             default => throw new \InvalidArgumentException("Invalid device {$device}"),
         };
-    }
-
-    public function getDeviceStatusUnchangedDuration(int $element): float
-    {
-        $firstHook = $this->getFirstHookOfCurrentStatus($element);
-        $reference = $element === 0 ? new \DateTime() : $this->hooks[$element]->getCreatedAt();
-        $interval  = $reference->diff($firstHook->getCreatedAt());
-
-        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
     /**
@@ -82,12 +93,23 @@ class DeviceStatusHelper
         return $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
-    private function getFirstHookOfCurrentStatus(int $element): Hook
+    private function getDeviceStatusUnchangedDuration(): float
     {
-        $currentStatus = $this->isActive('piec', $this->hooks[$element]);
+        $reference = $this->element === 0 ? new \DateTime() : $this->hooks[$this->element - 1]->getCreatedAt();
+        $firstHook = $this->getFirstHookOfCurrentStatus();
+        $interval  = $reference->diff($firstHook->getCreatedAt());
 
-        for ($i = $element + 1; $i < count($this->hooks); $i++) {
+        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+    }
+
+    private function getFirstHookOfCurrentStatus(): Hook
+    {
+        $currentStatus = $this->isActive('piec', $this->hooks[$this->element]);
+
+        for ($i = $this->element + 1; $i < count($this->hooks); $i++) {
             if ($currentStatus !== $this->isActive('piec', $this->hooks[$i])) {
+                $this->element = $i - 1;
+
                 return $this->hooks[$i - 1];
             }
         }
