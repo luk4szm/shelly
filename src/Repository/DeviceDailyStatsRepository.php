@@ -16,7 +16,7 @@ class DeviceDailyStatsRepository extends CrudRepository
         parent::__construct($registry, DeviceDailyStats::class);
     }
 
-    public function findForDeviceAndDay(string $device, \DateTimeInterface $date): DeviceDailyStats
+    public function findForDeviceAndDay(string $device, \DateTimeInterface $date): ?DeviceDailyStats
     {
         return $this->createQueryBuilder('dds')
             ->where('dds.device = :device')
