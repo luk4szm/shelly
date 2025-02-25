@@ -96,7 +96,7 @@ class DeviceDailyStatsCalculator
 
         if (null !== $lastHookOfDayBefore = $this->hookRepository->findLastHookOfDay($device, (clone $date)->modify("-1 day"))) {
             $virtualFirstHook = clone $lastHookOfDayBefore;
-            $virtualFirstHook->setCreatedAt((clone $date)->setTime(0, 0));
+            $virtualFirstHook->setCreatedAt(new \DateTimeImmutable((clone $date)->format('Y-m-d')));
 
             array_unshift($this->hooks, $virtualFirstHook);
         }
