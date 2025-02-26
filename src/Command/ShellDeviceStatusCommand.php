@@ -3,25 +3,25 @@
 namespace App\Command;
 
 use App\Model\DeviceStatus;
-use App\Model\Status;
-use App\Service\Hook\DeviceStatusHelper;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 #[AsCommand(
     name: 'shelly:device:status',
     description: 'Show the current status of the device and provide information',
 )]
-class ShellDeviceStatusCommand extends Command
+class ShellDeviceStatusCommand extends ShellyCommand
 {
     public function __construct(
-        private readonly DeviceStatusHelper $statusHelper,
+        #[AutowireIterator('app.shelly.device_status_helper')]
+        iterable $statusHelpers,
     ) {
-        parent::__construct();
+        parent::__construct($statusHelpers);
     }
 
     protected function configure(): void
@@ -32,10 +32,11 @@ class ShellDeviceStatusCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io     = new SymfonyStyle($input, $output);
-        $device = $input->getArgument('device');
+        $io           = new SymfonyStyle($input, $output);
+        $device       = $input->getArgument('device');
+        $statusHelper = $this->getDeviceHelper($device);
 
-        if (null === $deviceHistory = $this->statusHelper->getHistory($device)) {
+        if (null === $deviceHistory = $statusHelper->getHistory()) {
             $io->warning('No device information found');
 
             return self::SUCCESS;

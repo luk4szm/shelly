@@ -2,24 +2,25 @@
 
 namespace App\Command;
 
-use App\Service\DeviceDailyStatsCalculator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 #[AsCommand(
     name: 'shelly:device:stats',
     description: 'Returns the work statistics of the device for a given day',
 )]
-class ShellyDeviceStatsCommand extends Command
+class ShellyDeviceStatsCommand extends ShellyCommand
 {
     public function __construct(
-        private readonly DeviceDailyStatsCalculator $deviceStats,
+        #[AutowireIterator('app.shelly.device_status_helper')]
+        iterable $statusHelpers,
     ) {
-        parent::__construct();
+        parent::__construct($statusHelpers);
     }
 
     protected function configure(): void
@@ -32,9 +33,10 @@ class ShellyDeviceStatsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io     = new SymfonyStyle($input, $output);
-        $device = $input->getArgument('device');
-        $date   = $input->getArgument('date')
+        $io           = new SymfonyStyle($input, $output);
+        $device       = $input->getArgument('device');
+        $statusHelper = $this->getDeviceHelper($device);
+        $date         = $input->getArgument('date')
             ? new \DateTimeImmutable($input->getArgument('date'))
             : new \DateTimeImmutable();
 
@@ -46,7 +48,7 @@ class ShellyDeviceStatsCommand extends Command
         ));
 
         try {
-            $dailyStats = $this->deviceStats->process($device, $date);
+            $dailyStats = $statusHelper->calculateDailyStats($device, $date);
         } catch (\Exception $e) {
             $io->warning($e->getMessage());
 
