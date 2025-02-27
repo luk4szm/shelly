@@ -27,13 +27,13 @@ class ShellDeviceStatusCommand extends ShellyCommand
     protected function configure(): void
     {
         $this
-            ->addArgument('device', InputArgument::REQUIRED, 'Device name');
+            ->addArgument('device', InputArgument::OPTIONAL, 'Device name');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io           = new SymfonyStyle($input, $output);
-        $device       = $input->getArgument('device');
+        $device       = $this->getDevice($input, $output);
         $statusHelper = $this->getDeviceHelper($device);
 
         if (null === $deviceHistory = $statusHelper->getHistory()) {

@@ -26,7 +26,7 @@ class ShellyDeviceStatsCommand extends ShellyCommand
     protected function configure(): void
     {
         $this
-            ->addArgument('device', InputArgument::REQUIRED, 'Device name')
+            ->addArgument('device', InputArgument::OPTIONAL, 'Device name')
             ->addArgument('date', InputArgument::OPTIONAL, 'The day you want to see statistics (YYYY-MM-DD)')
         ;
     }
@@ -34,7 +34,7 @@ class ShellyDeviceStatsCommand extends ShellyCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io           = new SymfonyStyle($input, $output);
-        $device       = $input->getArgument('device');
+        $device       = $this->getDevice($input, $output);
         $statusHelper = $this->getDeviceHelper($device);
         $date         = $input->getArgument('date')
             ? new \DateTimeImmutable($input->getArgument('date'))

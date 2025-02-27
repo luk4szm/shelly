@@ -19,6 +19,11 @@ abstract class DeviceStatusHelper
         protected readonly HookRepository $hookRepository,
     ) {}
 
+    public function getDeviceName(): string
+    {
+        return $this::DEVICE_NAME;
+    }
+
     public function getHistory(int $elements = 2): ?ArrayCollection
     {
         $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this::DEVICE_NAME);
