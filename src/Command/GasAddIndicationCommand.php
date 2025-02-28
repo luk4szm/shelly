@@ -35,7 +35,7 @@ class GasAddIndicationCommand extends Command
 
         $indication = $input->getArgument('indication')
             ?: $io->ask('Please provide the gas meter indication', null, function (string $indication): float {
-                if (!is_numeric($indication)) {
+                if (!is_numeric($indication = str_replace(',', '.', $indication))) {
                     throw new \RuntimeException('You must type a number.');
                 }
 
