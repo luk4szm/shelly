@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\DeviceStatusHelper;
+namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;

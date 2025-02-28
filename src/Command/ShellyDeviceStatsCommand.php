@@ -19,8 +19,10 @@ class ShellyDeviceStatsCommand extends ShellyCommand
     public function __construct(
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable $statusHelpers,
+        #[AutowireIterator('app.shelly.daily_stats')]
+        iterable $dailyStatsCalculators,
     ) {
-        parent::__construct($statusHelpers);
+        parent::__construct($statusHelpers, $dailyStatsCalculators);
     }
 
     protected function configure(): void
@@ -33,10 +35,10 @@ class ShellyDeviceStatsCommand extends ShellyCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io           = new SymfonyStyle($input, $output);
-        $device       = $this->getDevice($input, $output);
-        $statusHelper = $this->getDeviceHelper($device);
-        $date         = $input->getArgument('date')
+        $io         = new SymfonyStyle($input, $output);
+        $device     = $this->getDevice($input, $output);
+        $calculator = $this->getDeviceDailyStatsCalculator($device);
+        $date       = $input->getArgument('date')
             ? new \DateTimeImmutable($input->getArgument('date'))
             : new \DateTimeImmutable();
 
@@ -48,7 +50,7 @@ class ShellyDeviceStatsCommand extends ShellyCommand
         ));
 
         try {
-            $dailyStats = $statusHelper->calculateDailyStats($device, $date);
+            $dailyStats = $calculator->calculateDailyStats($date);
         } catch (\Exception $e) {
             $io->warning($e->getMessage());
 

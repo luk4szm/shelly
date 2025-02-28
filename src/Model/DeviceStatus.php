@@ -5,6 +5,7 @@ namespace App\Model;
 class DeviceStatus
 {
     private Status $status;
+    private array  $hooks;
     private int    $statusDuration; // seconds
     private float  $lastValue; // W
 
@@ -16,6 +17,18 @@ class DeviceStatus
     public function setStatus(Status $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getHooks(): array
+    {
+        return $this->hooks;
+    }
+
+    public function setHooks(array $hooks): self
+    {
+        $this->hooks = $hooks;
 
         return $this;
     }

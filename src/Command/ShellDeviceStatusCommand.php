@@ -20,8 +20,10 @@ class ShellDeviceStatusCommand extends ShellyCommand
     public function __construct(
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable $statusHelpers,
+        #[AutowireIterator('app.shelly.daily_stats')]
+        iterable $dailyStatsCalculators,
     ) {
-        parent::__construct($statusHelpers);
+        parent::__construct($statusHelpers, $dailyStatsCalculators);
     }
 
     protected function configure(): void

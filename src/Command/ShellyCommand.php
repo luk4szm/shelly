@@ -2,7 +2,8 @@
 
 namespace App\Command;
 
-use App\Service\DeviceStatusHelper\DeviceStatusHelperInterface;
+use App\Service\DailyStats\DailyStatsCalculatorInterface;
+use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,6 +15,8 @@ abstract class ShellyCommand extends Command
     public function __construct(
         #[AutowireIterator('app.shelly.device_status_helper')]
         private readonly iterable $statusHelpers,
+        #[AutowireIterator('app.shelly.daily_stats')]
+        private readonly iterable $dailyStatsCalculators,
     ) {
         parent::__construct();
     }
@@ -28,6 +31,18 @@ abstract class ShellyCommand extends Command
         }
 
         throw new \RuntimeException(sprintf('There is no configured helper for the device called "%s"', $deviceName));
+    }
+
+    protected function getDeviceDailyStatsCalculator(string $deviceName): DailyStatsCalculatorInterface
+    {
+        /** @var DeviceStatusHelperInterface $helper */
+        foreach ($this->dailyStatsCalculators as $statsCalculator) {
+            if ($statsCalculator->supports($deviceName)) {
+                return $statsCalculator->getCalculatorInstance();
+            }
+        }
+
+        throw new \RuntimeException(sprintf('There is no configured daily stats calculator for the device called "%s"', $deviceName));
     }
 
     protected function getDevice(InputInterface $input, OutputInterface $output): string
