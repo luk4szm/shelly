@@ -6,13 +6,12 @@ use App\Model\Device\Solars;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\SolarsStatusHelper;
 
-class SolarsDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class SolarsDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
 {
-public function __construct(
-        HookRepository $hookRepository,
+    public function __construct(
+        HookRepository     $hookRepository,
         SolarsStatusHelper $solarsHelper,
-    )
-    {
+    ) {
         parent::__construct($hookRepository, $solarsHelper);
     }
 

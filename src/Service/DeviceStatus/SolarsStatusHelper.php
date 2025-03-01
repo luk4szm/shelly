@@ -5,7 +5,7 @@ namespace App\Service\DeviceStatus;
 use App\Entity\Hook;
 use App\Model\Device\Solars;
 
-class SolarsStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
+final class SolarsStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
     public function supports(string $device): bool
     {
