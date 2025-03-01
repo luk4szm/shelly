@@ -8,7 +8,7 @@ use App\Model\Status;
 use App\Repository\HookRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 
-abstract class DeviceStatusHelper
+abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 {
     /** @var array{Hook} */
     protected array $hooks;
@@ -18,14 +18,9 @@ abstract class DeviceStatusHelper
         protected readonly HookRepository $hookRepository,
     ) {}
 
-    public function getDeviceName(): string
-    {
-        return $this::DEVICE_NAME;
-    }
-
     public function getHistory(int $elements = 2): ?ArrayCollection
     {
-        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this::DEVICE_NAME);
+        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
 
         if (empty($this->hooks)) {
             return null;
@@ -44,7 +39,7 @@ abstract class DeviceStatusHelper
 
     public function getStatus(): ?DeviceStatus
     {
-        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this::DEVICE_NAME);
+        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
 
         if (empty($this->hooks)) {
             return null;

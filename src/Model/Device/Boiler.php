@@ -2,7 +2,8 @@
 
 namespace App\Model\Device;
 
-class Boiler extends Device implements DeviceInterface
+final class Boiler extends Device implements DeviceInterface
 {
-    public const NAME = 'piec';
+    public const NAME           = 'piec';
+    public const BOUNDARY_POWER = 10;
 }

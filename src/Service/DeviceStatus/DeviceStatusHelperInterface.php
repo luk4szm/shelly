@@ -10,5 +10,7 @@ interface DeviceStatusHelperInterface
 {
     public function supports(string $device): bool;
 
+    public function getDeviceName(): string;
+
     public function isActive(Hook $hook): bool;
 }

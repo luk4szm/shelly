@@ -7,16 +7,18 @@ use App\Model\Device\Boiler;
 
 final class BoilerDeviceStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
-    protected const DEVICE_NAME    = Boiler::NAME;
-    private const   BOUNDARY_POWER = 10;
-
     public function supports(string $device): bool
     {
-        return $device === Boiler::NAME;
+        return $device === self::getDeviceName();
+    }
+
+    public function getDeviceName(): string
+    {
+        return Boiler::NAME;
     }
 
     public function isActive(Hook $hook): bool
     {
-        return (float)$hook->getValue() > self::BOUNDARY_POWER;
+        return (float)$hook->getValue() > Boiler::BOUNDARY_POWER;
     }
 }
