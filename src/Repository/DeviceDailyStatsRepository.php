@@ -27,6 +27,23 @@ class DeviceDailyStatsRepository extends CrudRepository
             ->getOneOrNullResult();
     }
 
+    public function findForDeviceFromLastDays(string $device, int $days = 30): array
+    {
+        $to   = (new \DateTime());
+        $from = (clone $to)->modify(sprintf("- %d days", $days));
+
+        return $this->createQueryBuilder('dds')
+            ->where('dds.device = :device')
+            ->andWhere('dds.date >= :from')
+            ->andWhere('dds.date <= :to')
+            ->setParameter('device', $device)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('dds.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findForDeviceAndMonth(string $device, \DateTimeInterface $month): array
     {
         $firstDayOfMonth = (clone $month)->modify('first day of this month');

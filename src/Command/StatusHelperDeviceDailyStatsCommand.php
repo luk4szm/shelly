@@ -45,7 +45,13 @@ class StatusHelperDeviceDailyStatsCommand extends DailyStatsCommand
             ? new \DateTimeImmutable($input->getArgument('date'))
             : new \DateTimeImmutable();
 
-        $dailyStats = $this->dailyStatsRepository->findForDeviceAndMonth($device, $date);
+        $dailyStats = $this->dailyStatsRepository->findForDeviceFromLastDays($device);
+
+        if (empty($dailyStats)) {
+            $io->warning('No device daily stats found for given time period');
+
+            return self::SUCCESS;
+        }
 
         if (end($dailyStats)->getDate() !== $date) {
             $dailyStats[] = $calculator->calculateDailyStats(new \DateTime());
