@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\DeviceDailyStatsRepository;
+use App\Service\Device\DeviceFinder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -16,16 +17,15 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
     name: 'app:create:daily-stats',
     description: 'Downloads data from a given day and calculates statistics',
 )]
-class CreateDailyStatsCommand extends ShellyCommand
+class CreateDailyStatsCommand extends DailyStatsCommand
 {
     public function __construct(
-        private readonly DeviceDailyStatsRepository $statsRepository,
-        #[AutowireIterator('app.shelly.device_status_helper')]
-        iterable $statusHelpers,
         #[AutowireIterator('app.shelly.daily_stats')]
-        iterable $dailyStatsCalculators,
+        iterable                                    $dailyStatsCalculators,
+        DeviceFinder                                $deviceFinder,
+        private readonly DeviceDailyStatsRepository $statsRepository,
     ) {
-        parent::__construct($statusHelpers, $dailyStatsCalculators);
+        parent::__construct($dailyStatsCalculators, $deviceFinder);
     }
 
     protected function configure(): void

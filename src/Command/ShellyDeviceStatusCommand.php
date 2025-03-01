@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Model\DeviceStatus;
+use App\Service\Device\DeviceFinder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,15 +16,14 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
     name: 'shelly:device:status',
     description: 'Show the current status of the device and provide information',
 )]
-class ShellDeviceStatusCommand extends ShellyCommand
+class ShellyDeviceStatusCommand extends StatusHelperCommand
 {
     public function __construct(
         #[AutowireIterator('app.shelly.device_status_helper')]
-        iterable $statusHelpers,
-        #[AutowireIterator('app.shelly.daily_stats')]
-        iterable $dailyStatsCalculators,
+        iterable     $statusHelpers,
+        DeviceFinder $deviceFinder,
     ) {
-        parent::__construct($statusHelpers, $dailyStatsCalculators);
+        parent::__construct($statusHelpers, $deviceFinder);
     }
 
     protected function configure(): void
