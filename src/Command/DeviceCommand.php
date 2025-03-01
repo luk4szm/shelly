@@ -17,6 +17,13 @@ abstract class DeviceCommand extends Command
 
     protected function getDevice(InputInterface $input, OutputInterface $output): string
     {
+        if (
+            (null !== $device = $input->getArgument('device'))
+            && in_array($device, $this->deviceFinder->getDeviceNames(), true)
+        ) {
+            return $device;
+        }
+
         $io = new SymfonyStyle($input, $output);
 
         return $io->choice('Please select the device', $this->deviceFinder->getDeviceNames(), 0);
