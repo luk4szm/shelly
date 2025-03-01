@@ -50,12 +50,23 @@ class ShellyDeviceStatusCommand extends StatusHelperCommand
         $actualStatus   = $deviceHistory->first();
         $previousStatus = $deviceHistory->next();
 
-        $output->writeln([
-            sprintf('Device status: <info>%s</info> (%s)', strtoupper($actualStatus->getStatus()->value), $actualStatus->getLastValueReadable()),
-            sprintf('Current status duration: <info>%s</info>', $actualStatus->getStatusDurationReadable()),
-            sprintf('Previous status duration: <info>%s</info>', $previousStatus->getStatusDurationReadable()),
-            ''
-        ]);
+        $output->writeln(
+            sprintf('Device status: <info>%s</info> (%s)', strtoupper($actualStatus->getStatus()->value), $actualStatus->getLastValueReadable())
+        );
+
+        if ($actualStatus->getStatusDuration() !== null) {
+            $output->writeln(
+                sprintf('Current status duration: <info>%s</info>', $actualStatus->getStatusDurationReadable())
+            );
+        }
+
+        if ($previousStatus !== null) {
+            $output->writeln(
+                sprintf('Previous status duration: <info>%s</info>', $previousStatus->getStatusDurationReadable())
+            );
+        }
+
+        $output->writeln('');
 
         return Command::SUCCESS;
     }

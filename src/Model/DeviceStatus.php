@@ -6,7 +6,7 @@ class DeviceStatus
 {
     private Status $status;
     private array  $hooks;
-    private int    $statusDuration; // seconds
+    private ?int   $statusDuration; // seconds
     private float  $lastValue; // W
 
     public function getStatus(): Status
@@ -33,17 +33,17 @@ class DeviceStatus
         return $this;
     }
 
-    public function getStatusDuration(): int
+    public function getStatusDuration(): ?int
     {
         return $this->statusDuration;
     }
 
-    public function getStatusDurationReadable(): string
+    public function getStatusDurationReadable(): ?string
     {
-        return gmdate("G:i:s", $this->statusDuration);
+        return $this->statusDuration ? gmdate("G:i:s", $this->statusDuration) : null;
     }
 
-    public function setStatusDuration(int $statusDuration): self
+    public function setStatusDuration(?int $statusDuration): self
     {
         $this->statusDuration = $statusDuration;
 

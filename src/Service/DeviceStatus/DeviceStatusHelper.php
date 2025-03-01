@@ -45,9 +45,13 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             return null;
         }
 
+        if (!isset($this->hooks[$this->element])) {
+            return null;
+        }
+
         return (new DeviceStatus())
             ->setStatus($this->isActive($this->hooks[$this->element]) ? Status::ACTIVE : Status::INACTIVE)
-            ->setLastValue($this->hooks[$this->element]->getValue())
+            ->setLastValue($this->hooks[$this->element]?->getValue())
             ->setStatusDuration($this->getDeviceStatusUnchangedDuration())
         ;
     }
@@ -57,15 +61,20 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return $this;
     }
 
-    private function getDeviceStatusUnchangedDuration(): int
+    private function getDeviceStatusUnchangedDuration(): ?int
     {
         $reference = $this->element === 0 ? new \DateTime() : $this->hooks[$this->element - 1]->getCreatedAt();
-        $interval  = $reference->diff($this->getFirstHookOfCurrentStatus()->getCreatedAt());
+
+        if (null === $firstHook = $this->getFirstHookOfCurrentStatus()) {
+            return null;
+        }
+
+        $interval = $reference->diff($firstHook->getCreatedAt());
 
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
-    private function getFirstHookOfCurrentStatus(): Hook
+    private function getFirstHookOfCurrentStatus(): ?Hook
     {
         $currentStatus = $this->isActive($this->hooks[$this->element]);
 
@@ -77,6 +86,6 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             }
         }
 
-        throw new \RuntimeException('First hook of actual status not found');
+        return null;
     }
 }
