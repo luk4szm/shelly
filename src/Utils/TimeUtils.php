@@ -6,6 +6,6 @@ class TimeUtils
 {
     public static function getReadableTime(int $seconds): string
     {
-        return @gmdate("G:i:s", $seconds);
+        return date("G:i:s", $seconds);
     }
 }
