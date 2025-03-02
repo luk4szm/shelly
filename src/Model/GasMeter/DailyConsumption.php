@@ -44,7 +44,7 @@ class DailyConsumption
 
     public function getBoilerAverageRuntimeReadable(): string
     {
-        return TimeUtils::getReadableTime($this->boilerActiveTime / $this->boilerInclusions);
+        return TimeUtils::getReadableTime((int)($this->boilerActiveTime / $this->boilerInclusions));
     }
 
     public function setEnergyUsed(float $energyUsed): static
