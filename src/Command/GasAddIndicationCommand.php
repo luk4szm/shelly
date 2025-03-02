@@ -25,23 +25,31 @@ class GasAddIndicationCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('indication', InputArgument::OPTIONAL, 'Gas meter indication')
-        ;
+            ->addArgument('indication', InputArgument::OPTIONAL, 'Gas meter indication');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $indication = $input->getArgument('indication')
-            ?: $io->ask('Please provide the gas meter indication', null, function (string $indication): float {
-                if (!is_numeric($indication = str_replace(',', '.', $indication))) {
-                    throw new \RuntimeException('You must type a number.');
-                }
+        $previousIndication = $this->repository->findLast();
 
-                return (float)$indication;
-            })
-        ;
+        $indication = $input->getArgument('indication')
+            ?: $io->ask(
+                sprintf('Please provide the gas meter indication [previous: %.3f]', $previousIndication->getIndication()),
+                null,
+                function (string $indication) use ($previousIndication): float {
+                    if (!is_numeric($indication = str_replace(',', '.', $indication))) {
+                        throw new \RuntimeException('You must type a number.');
+                    }
+
+                    if ($previousIndication->getIndication() > $indication) {
+                        throw new \RuntimeException('The current indication cannot be smaller than the previous one!');
+                    }
+
+                    return (float)$indication;
+                }
+            );
 
         $gasMeter = new GasMeter($indication);
 

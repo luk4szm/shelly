@@ -15,4 +15,13 @@ class GasMeterRepository extends CrudRepository
     {
         parent::__construct($registry, GasMeter::class);
     }
+
+    public function findLast(): ?GasMeter
+    {
+        return $this->createQueryBuilder('g')
+            ->orderBy('g.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
