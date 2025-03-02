@@ -59,7 +59,9 @@ class StatusHelperDeviceDailyStatsCommand extends DailyStatsCommand
             $input->getArgument('date') === null
             && end($dailyStats)->getDate() !== $date
         ) {
-            $dailyStats[] = $calculator->calculateDailyStats(new \DateTime());
+            try {
+                $dailyStats[] = $calculator->calculateDailyStats(new \DateTime());
+            } catch (\Exception $e) {}
         }
 
         $io->table(

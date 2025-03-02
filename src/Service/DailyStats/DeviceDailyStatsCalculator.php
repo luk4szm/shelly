@@ -29,6 +29,7 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
      * @param \DateTimeInterface $date
      * @return DeviceDailyStats
      * @throws \DateMalformedStringException
+     * @throws \RuntimeException
      */
     public function calculateDailyStats(\DateTimeInterface $date): DeviceDailyStats
     {
