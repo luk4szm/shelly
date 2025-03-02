@@ -11,8 +11,8 @@ abstract class DailyStatsCommand extends DeviceCommand
 {
     public function __construct(
         #[AutowireIterator('app.shelly.daily_stats')]
-        private readonly iterable $dailyStatsCalculators,
-        DeviceFinder $deviceFinder,
+        protected readonly iterable $dailyStatsCalculators,
+        DeviceFinder                $deviceFinder,
     ) {
         parent::__construct($deviceFinder);
     }

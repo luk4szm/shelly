@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\DeviceDailyStats;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Service\Device\DeviceFinder;
+use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -31,34 +32,42 @@ class CreateDailyStatsCommand extends DailyStatsCommand
     protected function configure(): void
     {
         $this
-            ->addArgument('device', InputArgument::OPTIONAL, 'Device name')
             ->addArgument('date', InputArgument::OPTIONAL, 'The day you want to see statistics (YYYY-MM-DD)')
+            ->addArgument('device', InputArgument::OPTIONAL, 'Device name')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io         = new SymfonyStyle($input, $output);
-        $device     = $this->getDevice($input, $output);
-        $calculator = $this->getDeviceDailyStatsCalculator($device);
-        $date       = $input->getArgument('date')
+        $io     = new SymfonyStyle($input, $output);
+        $device = $input->getArgument('device') ? $this->getDevice($input, $output) : null;
+        $date   = $input->getArgument('date')
             ? new \DateTimeImmutable($input->getArgument('date'))
             : new \DateTimeImmutable('yesterday');
 
-        try {
-            $newDailyStats = $calculator->calculateDailyStats($date);
-        } catch (\Exception $e) {
-            $io->error($e->getMessage());
+        /** @var DeviceStatusHelperInterface $helper */
+        foreach ($this->dailyStatsCalculators as $statsCalculator) {
+            if (
+                null !== $device
+                && !$statsCalculator->supports($device)
+            ) {
+                continue;
+            }
 
-            return Command::SUCCESS;
+            try {
+                $newDailyStats = $statsCalculator->calculateDailyStats($date);
+            } catch (\RuntimeException $e) {
+                $io->warning($e->getMessage());
+
+                continue;
+            }
+
+            $dailyStats = $this->statsRepository->findForDeviceAndDay($statsCalculator->getDeviceName(), $date)
+                          ?? new DeviceDailyStats($statsCalculator->getDeviceName(), $date);
+            $dailyStats->paste($newDailyStats);
+
+            $this->statsRepository->save($dailyStats);
         }
-
-        $dailyStats = $this->statsRepository->findForDeviceAndDay($device, $date) ?? new DeviceDailyStats($device, $date);
-        $dailyStats->paste($newDailyStats);
-
-        $this->statsRepository->save($dailyStats);
-
-        $io->success(sprintf('Statistics for %s of %s were successfully calculated', $device, $date->format('Y-m-d')));
 
         return Command::SUCCESS;
     }
