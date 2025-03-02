@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\DeviceDailyStatsRepository;
+use App\Utils\TimeUtils;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -130,7 +131,7 @@ class DeviceDailyStats
 
     public function getLongestRunTimeReadable(): string
     {
-        return gmdate("G:i:s", $this->longestRunTime);
+        return TimeUtils::getReadableTime($this->longestRunTime);
     }
 
     public function setLongestRunTime(?int $longestRunTime): static
@@ -147,7 +148,7 @@ class DeviceDailyStats
 
     public function getLongestPauseTimeReadable(): string
     {
-        return gmdate("G:i:s", $this->longestPauseTime);
+        return TimeUtils::getReadableTime($this->longestPauseTime);
     }
 
     public function setLongestPauseTime(?int $longestPauseTime): static
@@ -164,7 +165,7 @@ class DeviceDailyStats
 
     public function getTotalActiveTimeReadable(): string
     {
-        return gmdate("G:i:s", $this->totalActiveTime);
+        return TimeUtils::getReadableTime($this->totalActiveTime);
     }
 
     public function setTotalActiveTime(?int $totalActiveTime): static

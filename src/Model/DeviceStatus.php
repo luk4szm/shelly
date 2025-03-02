@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Utils\TimeUtils;
+
 class DeviceStatus
 {
     private Status $status;
@@ -40,7 +42,7 @@ class DeviceStatus
 
     public function getStatusDurationReadable(): ?string
     {
-        return $this->statusDuration ? gmdate("G:i:s", $this->statusDuration) : null;
+        return $this->statusDuration ? TimeUtils::getReadableTime($this->statusDuration) : null;
     }
 
     public function setStatusDuration(?int $statusDuration): self

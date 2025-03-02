@@ -5,7 +5,7 @@ namespace App\Service\GasMeter;
 use App\Entity\GasMeter;
 use App\Model\GasMeter\DailyConsumption;
 use App\Repository\GasMeterRepository;
-//use App\Repository\HookRepository;
+use App\Service\DailyStats\BoilerDailyStatsCalculator;
 
 class GasIndicationDailyStatsCalculator
 {
@@ -15,22 +15,24 @@ class GasIndicationDailyStatsCalculator
     private array $indications;
 
     public function __construct(
-//        private readonly HookRepository     $hookRepository,
-        private readonly GasMeterRepository $gasRepository,
+        private readonly BoilerDailyStatsCalculator $boilerDailyStatsCalculator,
+        private readonly GasMeterRepository         $gasRepository,
     ) {
     }
 
     public function getDailyConsumption($date): DailyConsumption
     {
-        $this->date             = $date;
-        $this->dailyConsumption = new DailyConsumption();
-        $this->indications      ??= $this->getFullDayIndications();
+        $this->date        = $date;
+        $this->indications ??= $this->getFullDayIndications();
+        $boilerDailyStats  = $this->boilerDailyStatsCalculator->calculateDailyStats($this->date);
 
-        $this->dailyConsumption->setConsumption(
-            round(end($this->indications)->getIndication() - $this->indications[0]->getIndication(), 3)
-        );
+        $dailyConsumption = (new DailyConsumption())
+            ->setConsumption(end($this->indications)->getIndication() - $this->indications[0]->getIndication())
+            ->setBoilerInclusions($boilerDailyStats->getInclusions())
+            ->setBoilerActiveTime($boilerDailyStats->getTotalActiveTime())
+            ->setEnergyUsed($boilerDailyStats->getEnergy());
 
-        return $this->dailyConsumption;
+        return $this->dailyConsumption = $dailyConsumption;
     }
 
     private function getFullDayIndications(): array
@@ -43,7 +45,7 @@ class GasIndicationDailyStatsCalculator
             $previous instanceof GasMeter
             && (!empty($dayIndications) || $next instanceof GasMeter)
         ) {
-            $startIndication = $this->interpoleIndicationLinear($previous, $dayIndications[0] ?: $next, $this->date);
+            $startIndication = $this->interpolateIndicationLinear($previous, $dayIndications[0] ?: $next, $this->date);
         } elseif (count($dayIndications) > 1 || (count($dayIndications) == 1 && $next instanceof GasMeter)) {
             $startIndication = $this->extrapolateIndicationLinear($dayIndications[0], $dayIndications[1] ?: $next, $this->date);
         } else {
@@ -54,7 +56,7 @@ class GasIndicationDailyStatsCalculator
             $next instanceof GasMeter
             && (!empty($dayIndications) || $previous instanceof GasMeter)
         ) {
-            $endIndication = $this->interpoleIndicationLinear(
+            $endIndication = $this->interpolateIndicationLinear(
                 end($dayIndications) ?: $previous,
                 $next,
                 (clone $this->date)->setTime(23, 59, 59)
@@ -76,7 +78,7 @@ class GasIndicationDailyStatsCalculator
         );
     }
 
-    private function interpoleIndicationLinear(
+    private function interpolateIndicationLinear(
         GasMeter  $indicationFrom,
         GasMeter  $indicationTo,
         \DateTime $targetDateTime,
@@ -94,6 +96,6 @@ class GasIndicationDailyStatsCalculator
         GasMeter  $indicationTo,
         \DateTime $targetDateTime,
     ): float {
-        return $this->interpoleIndicationLinear($indicationFrom, $indicationTo, $targetDateTime);
+        return $this->interpolateIndicationLinear($indicationFrom, $indicationTo, $targetDateTime);
     }
 }

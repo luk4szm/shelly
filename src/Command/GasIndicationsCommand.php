@@ -38,11 +38,25 @@ class GasIndicationsCommand extends Command
             ? new \DateTime($input->getArgument('date'))
             : (new \DateTime())->setTime(0, 0);
 
+        $io->title(sprintf(
+            '[%s] Retrieving the statistics of the day (%s) for gas consume',
+            (new \DateTime())->format('H:i:s'),
+            $date->format('Y-m-d'),
+        ));
+
         $dailyConsumption = $this->indicationDailyStats->getDailyConsumption($date);
 
-        dd($dailyConsumption);
-
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        $output->writeln([
+            sprintf('Total fuel consume: <info>%.2f m3</info>', $dailyConsumption->getConsumption()),
+            sprintf('Total used energy: <info>%.1f Wh</info>', $dailyConsumption->getEnergyUsed()),
+            sprintf('Estimated cost: <info>%.2f zł</info>', $dailyConsumption->getEstimatedCost()),
+            sprintf('Total active time: <info>%s</info>', $dailyConsumption->getBoilerActiveTimeReadable()),
+            sprintf('Number of active cycles: <info>%d</info>', $dailyConsumption->getBoilerInclusions()),
+            sprintf('Average runtime: <info>%s</info>', $dailyConsumption->getBoilerAverageRuntimeReadable()),
+            sprintf('Average fuel consume per runtime: <info>%.3f m3</info>', $dailyConsumption->getAverageFuelConsumePerRuntime()),
+            sprintf('Estimated cost: <info>%.2f zł</info>', $dailyConsumption->getEstimatedCost()),
+            '',
+        ]);
 
         return Command::SUCCESS;
     }
