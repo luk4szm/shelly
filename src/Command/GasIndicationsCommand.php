@@ -54,7 +54,6 @@ class GasIndicationsCommand extends Command
             sprintf('Number of active cycles: <info>%d</info>', $dailyConsumption->getBoilerInclusions()),
             sprintf('Average runtime: <info>%s</info>', $dailyConsumption->getBoilerAverageRuntimeReadable()),
             sprintf('Average fuel consume per runtime: <info>%.3f m3</info>', $dailyConsumption->getAverageFuelConsumePerRuntime()),
-            sprintf('Estimated cost: <info>%.2f zł</info>', $dailyConsumption->getEstimatedCost()),
             '',
         ]);
 
