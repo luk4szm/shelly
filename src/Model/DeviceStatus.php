@@ -7,7 +7,8 @@ use App\Utils\TimeUtils;
 class DeviceStatus
 {
     private Status $status;
-    private array  $hooks;
+    private bool   $isOngoing = false;
+    private array  $hooks     = [];
     private ?int   $statusDuration; // seconds
     private float  $lastValue; // W
 
@@ -21,6 +22,18 @@ class DeviceStatus
         $this->status = $status;
 
         return $this;
+    }
+
+    public function setIsOngoing(bool $isOngoing): static
+    {
+        $this->isOngoing = $isOngoing;
+
+        return $this;
+    }
+
+    public function isOngoing(): bool
+    {
+        return $this->isOngoing;
     }
 
     public function getHooks(): array

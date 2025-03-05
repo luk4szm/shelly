@@ -37,7 +37,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.createdAt >= :date')
             ->setParameter('device', $device)
             ->setParameter('property', 'power')
-            ->setParameter('date', new \DateTime("-1 day"))
+            ->setParameter('date', new \DateTime("-5 day"))
             ->orderBy('hook.id', 'DESC')
             ->getQuery()
             ->getResult();

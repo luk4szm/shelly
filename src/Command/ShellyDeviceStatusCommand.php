@@ -38,7 +38,7 @@ class ShellyDeviceStatusCommand extends StatusHelperCommand
         $device       = $this->getDevice($input, $output);
         $statusHelper = $this->getDeviceHelper($device);
 
-        if (null === $deviceHistory = $statusHelper->getHistory()) {
+        if (null === $deviceHistory = $statusHelper->getHistory(2)) {
             $io->warning('No device information found');
 
             return self::SUCCESS;

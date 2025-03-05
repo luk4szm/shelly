@@ -12,13 +12,15 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 {
     /** @var array{Hook} */
     protected array $hooks;
-    private int     $element = 0;
+    private int     $pointer = 0;
+    private bool    $isFirst = true;
 
     public function __construct(
         protected readonly HookRepository $hookRepository,
-    ) {}
+    ) {
+    }
 
-    public function getHistory(int $elements = 2): ?ArrayCollection
+    public function getHistory(int $elements = 0): ?ArrayCollection
     {
         $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
 
@@ -28,10 +30,30 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 
         $history = new ArrayCollection();
 
-        for ($i = 0; $i < $elements; $i++) {
-            $history->add($this->getStatus());
+        if ($elements > 0) {
+            for ($i = 0; $i < $elements; $i++) {
+                if (null === $deviceStatus = $this->getStatus()) {
+                    break;
+                }
 
-            $this->element++;
+                $history->add($deviceStatus);
+
+                $this->setPointerOnNextHook($deviceStatus);
+
+                $this->isFirst = false;
+            }
+        } else {
+            while ($this->pointer <= count($this->hooks)) {
+                if (null === $deviceStatus = $this->getStatus()) {
+                    break;
+                }
+
+                $history->add($deviceStatus);
+
+                $this->setPointerOnNextHook($deviceStatus);
+
+                $this->isFirst = false;
+            }
         }
 
         return $history;
@@ -41,19 +63,25 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     {
         $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
 
-        if (empty($this->hooks)) {
+        if (
+            empty($this->hooks)
+            || !isset($this->hooks[$this->pointer])
+            || null === $firstHookNo = $this->findFirstHookOfCurrentStatus()
+        ) {
             return null;
         }
 
-        if (!isset($this->hooks[$this->element])) {
-            return null;
-        }
+        $lastHookNo  = $this->pointer;
+        $statusHooks = $this->isFirst
+            ? array_reverse(array_slice($this->hooks, $lastHookNo, $firstHookNo + 1))
+            : array_reverse(array_slice($this->hooks, $lastHookNo - 1, $firstHookNo - $lastHookNo + 2));
 
         return (new DeviceStatus())
-            ->setStatus($this->isActive($this->hooks[$this->element]) ? Status::ACTIVE : Status::INACTIVE)
-            ->setLastValue($this->hooks[$this->element]?->getValue())
-            ->setStatusDuration($this->getDeviceStatusUnchangedDuration())
-        ;
+            ->setIsOngoing($this->isFirst)
+            ->setStatus($this->isActive($this->hooks[$firstHookNo]) ? Status::ACTIVE : Status::INACTIVE)
+            ->setHooks($statusHooks)
+            ->setLastValue(end($statusHooks)->getValue())
+            ->setStatusDuration($this->countStatusDuration($statusHooks));
     }
 
     public function getStatusHelperInstance(): static
@@ -61,31 +89,31 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return $this;
     }
 
-    private function getDeviceStatusUnchangedDuration(): ?int
+    private function countStatusDuration(array $hooks): int
     {
-        $reference = $this->element === 0 ? new \DateTime() : $this->hooks[$this->element - 1]->getCreatedAt();
-
-        if (null === $firstHook = $this->getFirstHookOfCurrentStatus()) {
-            return null;
-        }
-
-        $interval = $reference->diff($firstHook->getCreatedAt());
+        $reference = $this->pointer === 0 ? new \DateTime() : end($hooks)->getCreatedAt();
+        $interval  = $reference->diff($hooks[0]->getCreatedAt());
 
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
 
-    private function getFirstHookOfCurrentStatus(): ?Hook
+    private function findFirstHookOfCurrentStatus(): ?int
     {
-        $currentStatus = $this->isActive($this->hooks[$this->element]);
-
-        for ($i = $this->element + 1; $i < count($this->hooks); $i++) {
-            if ($currentStatus !== $this->isActive($this->hooks[$i])) {
-                $this->element = $i - 1;
-
-                return $this->hooks[$i - 1];
+        for ($i = $this->pointer; $i < count($this->hooks); $i++) {
+            if ($this->isActive($this->hooks[$this->pointer]) !== $this->isActive($this->hooks[$i])) {
+                // the state changes
+                return $i - 1;
             }
         }
 
+        // no change in the state was found
         return null;
+    }
+
+    private function setPointerOnNextHook(DeviceStatus $deviceStatus): void
+    {
+        $this->pointer = $this->isFirst
+            ? count($deviceStatus->getHooks())
+            : $this->pointer + count($deviceStatus->getHooks()) - 1;
     }
 }
