@@ -8,31 +8,33 @@
         <div class="row">
             {% for name, statuses in devices %}
                 <div class="col-xl-4 col-md-6 col-12 g-3">
-                    <div class="card">
-                        <div class="card-header text-capitalize fw-bold">
-                            {{ name }}
-                        </div>
-                        <div id="{{ name }}_device_card_body" class="card-body p-4">
-                            {% for deviceStatus in statuses %}
-                                {% if loop.first %}
-                                    {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
-                                        <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
-                                            RUNNING
-                                        </button>
+                    <div id="{{ name }}_device_card">
+                        <div class="card">
+                            <div class="card-header text-capitalize fw-bold">
+                                {{ name }}
+                            </div>
+                            <div class="card-body">
+                                {% for deviceStatus in statuses %}
+                                    {% if loop.first %}
+                                        {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
+                                            <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
+                                                RUNNING
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
+                                                STANDBY
+                                            </button>
+                                        {% endif %}
+                                        <br>Status duration:
+                                        <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|date("G:i:s") }}</span>
+                                        <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                     {% else %}
-                                        <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
-                                            STANDBY
-                                        </button>
+                                        <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
                                     {% endif %}
-                                    <br>Status duration:
-                                    <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|date("G:i:s") }}</span>
-                                    <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                 {% else %}
-                                    <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
-                                {% endif %}
-                            {% else %}
-                                <small>brak danych</small>
-                            {% endfor %}
+                                    <small>brak danych</small>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -55,7 +57,7 @@
                 const deviceNames = deviceNamesString.split('|');
 
                 deviceNames.forEach(deviceName => {
-                    const selector = `#${deviceName}_device_card_body`;
+                    const selector = `#${deviceName}_device_card`;
                     refreshDeviceCard(selector);
                 });
             }
