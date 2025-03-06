@@ -49,7 +49,12 @@
             setInterval(refreshDeviceCards, 60000);
 
             function refreshDeviceCard(selector) {
-                $(selector).load(location.href + " " + selector);
+                $(selector).load(location.href + " " + selector, function () {
+                    // Po załadowaniu elementu, ponownie uruchamiamy updateElapsedTime
+                    $(selector).find('.current_status_duration').each(function () {
+                        updateElapsedTime(this);
+                    });
+                });
             }
 
             function refreshDeviceCards() {
@@ -84,7 +89,6 @@
                         }
                     }
 
-                    // Formatowanie czasu do G:MM:SS
                     let formattedHours = hours.toString();
                     let formattedMinutes = minutes < 10 ? '0' + minutes : minutes.toString();
                     let formattedSeconds = seconds < 10 ? '0' + seconds : seconds.toString();
@@ -92,7 +96,11 @@
                     $(element).text(formattedHours + ':' + formattedMinutes + ':' + formattedSeconds);
                 }
 
-                setInterval(incrementTime, 1000); // Aktualizacja co sekundę
+                // Usuwamy istniejący interwał przed ustawieniem nowego
+                clearInterval($(element).data('intervalId'));
+
+                const intervalId = setInterval(incrementTime, 1000);
+                $(element).data('intervalId', intervalId);
             }
         });
     </script>
