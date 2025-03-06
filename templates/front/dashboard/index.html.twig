@@ -8,16 +8,25 @@
             {% for name, statuses in devices %}
                 <div class="col-xl-4 col-md-6 col-12 g-3">
                     <div class="card">
-                        <div class="card-header text-capitalize d-flex justify-content-between">
-                            <b>{{ name }}</b>
-                            <span class="badge badge-pill badge-info">{{ statuses ? statuses[0].lastValue ~ ' W' : null }}</span>
+                        <div class="card-header text-capitalize fw-bold">
+                            {{ name }}
                         </div>
                         <div class="card-body">
                             {% for deviceStatus in statuses %}
                                 {% if loop.first %}
-                                    Status: <b>{{ deviceStatus.status.value }}</b>
-                                    <br>Duration: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
-                                    <br>Last value: <b>{{ deviceStatus.lastValue }} W</b>
+                                    {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
+                                        <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
+                                            RUNNING
+                                        </button>
+                                    {% else %}
+                                        <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
+                                            STANDBY
+                                        </button>
+                                    {% endif %}
+                                    <br>Status duration: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
+                                    <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
+                                {% else %}
+                                    <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
                                 {% endif %}
                             {% else %}
                                 <small>brak danych</small>
