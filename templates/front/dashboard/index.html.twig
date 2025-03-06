@@ -3,6 +3,7 @@
 {% block title %}{{ parent() }}{% endblock %}
 
 {% block body %}
+    <div data-device-names="{{ devices|map((deviceData, name) => name)|join('|') }}"></div>
     <div class="container">
         <div class="row">
             {% for name, statuses in devices %}
@@ -11,7 +12,7 @@
                         <div class="card-header text-capitalize fw-bold">
                             {{ name }}
                         </div>
-                        <div class="card-body">
+                        <div id="{{ name }}_device_card_body" class="card-body p-4">
                             {% for deviceStatus in statuses %}
                                 {% if loop.first %}
                                     {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
@@ -43,6 +44,22 @@
 {% block body_javascripts %}
     <script>
         $(document).ready(function () {
+            setInterval(refreshDeviceCards, 60000);
+
+            function refreshDeviceCard(selector) {
+                $(selector).load(location.href + " " + selector);
+            }
+
+            function refreshDeviceCards() {
+                const deviceNamesString = $('[data-device-names]').data('device-names');
+                const deviceNames = deviceNamesString.split('|');
+
+                deviceNames.forEach(deviceName => {
+                    const selector = `#${deviceName}_device_card_body`;
+                    refreshDeviceCard(selector);
+                });
+            }
+
             $('.current_status_duration').each(function () {
                 updateElapsedTime(this);
             });
