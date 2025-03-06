@@ -23,7 +23,8 @@
                                             STANDBY
                                         </button>
                                     {% endif %}
-                                    <br>Status duration: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
+                                    <br>Status duration:
+                                    <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|date("G:i:s") }}</span>
                                     <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                 {% else %}
                                     <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
@@ -37,4 +38,43 @@
             {% endfor %}
         </div>
     </div>
+{% endblock %}
+
+{% block body_javascripts %}
+    <script>
+        $(document).ready(function () {
+            $('.current_status_duration').each(function () {
+                updateElapsedTime(this);
+            });
+
+            function updateElapsedTime(element) {
+                let timeString = $(element).text();
+                let parts = timeString.split(':');
+                let hours = parseInt(parts[0], 10);
+                let minutes = parseInt(parts[1], 10);
+                let seconds = parseInt(parts[2], 10);
+
+                function incrementTime() {
+                    seconds++;
+                    if (seconds >= 60) {
+                        seconds = 0;
+                        minutes++;
+                        if (minutes >= 60) {
+                            minutes = 0;
+                            hours++;
+                        }
+                    }
+
+                    // Formatowanie czasu do G:MM:SS
+                    let formattedHours = hours.toString();
+                    let formattedMinutes = minutes < 10 ? '0' + minutes : minutes.toString();
+                    let formattedSeconds = seconds < 10 ? '0' + seconds : seconds.toString();
+
+                    $(element).text(formattedHours + ':' + formattedMinutes + ':' + formattedSeconds);
+                }
+
+                setInterval(incrementTime, 1000); // Aktualizacja co sekundę
+            }
+        });
+    </script>
 {% endblock %}
