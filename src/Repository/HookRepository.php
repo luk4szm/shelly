@@ -29,15 +29,21 @@ class HookRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findLastActiveByDevice(string $device): array
+    public function findLastPowerHookForDevice(string $device): array
     {
-        return $this->createQueryBuilder('hook')
-            ->andWhere('hook.device = :device')
-            ->andWhere('hook.property = :property')
+        $hooks = $this->createQueryBuilderForHooksByDevice($device)
             ->andWhere('hook.createdAt >= :date')
-            ->setParameter('device', $device)
-            ->setParameter('property', 'power')
-            ->setParameter('date', new \DateTime("-5 day"))
+            ->setParameter('date', new \DateTime("-1 day"))
+            ->orderBy('hook.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        if (!count($hooks) < 100) {
+            return $hooks;
+        }
+
+        return $this->createQueryBuilderForHooksByDevice($device)
+            ->setMaxResults(100)
             ->orderBy('hook.id', 'DESC')
             ->getQuery()
             ->getResult();
@@ -45,33 +51,38 @@ class HookRepository extends CrudRepository
 
     public function findHooksByDeviceAndDate(string $device, \DateTimeInterface $date): array
     {
-        return $this->createQueryBuilderForHooksByDate($device, $date)
+        return $this->createQueryBuilderForHooksByDevice($device, $date)
             ->getQuery()
             ->getResult();
     }
 
     public function findLastHookOfDay(string $device, \DateTimeInterface $date): ?Hook
     {
-        return $this->createQueryBuilderForHooksByDate($device, $date)
+        return $this->createQueryBuilderForHooksByDevice($device, $date)
             ->orderBy('hook.id', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    private function createQueryBuilderForHooksByDate(string $device, \DateTimeInterface $date): QueryBuilder
+    private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder
     {
-        $startDate = (clone $date)->setTime(0, 0);
-        $endDate = (clone $date)->setTime(23, 59, 59);
-
-        return $this->createQueryBuilder('hook')
+        $qb = $this->createQueryBuilder('hook')
             ->andWhere('hook.device = :device')
             ->andWhere('hook.property = :property')
-            ->andWhere('hook.createdAt >= :start')
-            ->andWhere('hook.createdAt <= :end')
             ->setParameter('device', $device)
-            ->setParameter('property', 'power')
-            ->setParameter('start', $startDate)
-            ->setParameter('end', $endDate);
+            ->setParameter('property', 'power');
+
+        if ($date !== null) {
+            $startDate = (clone $date)->setTime(0, 0);
+            $endDate   = (clone $date)->setTime(23, 59, 59);
+
+            $qb = $qb->andWhere('hook.createdAt >= :start')
+                ->andWhere('hook.createdAt <= :end')
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate);
+        }
+
+        return $qb;
     }
 }

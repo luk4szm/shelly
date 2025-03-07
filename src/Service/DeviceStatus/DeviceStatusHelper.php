@@ -21,7 +21,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 
     public function getHistory(int $elements = 0): ?ArrayCollection
     {
-        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
+        $this->hooks ??= $this->hookRepository->findLastPowerHookForDevice($this->getDeviceName());
 
         if (empty($this->hooks)) {
             return null;
@@ -45,7 +45,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 
     public function getStatus(): ?DeviceStatus
     {
-        $this->hooks ??= $this->hookRepository->findLastActiveByDevice($this->getDeviceName());
+        $this->hooks ??= $this->hookRepository->findLastPowerHookForDevice($this->getDeviceName());
 
         if (
             empty($this->hooks)
