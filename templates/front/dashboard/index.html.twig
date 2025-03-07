@@ -26,10 +26,10 @@
                                             </button>
                                         {% endif %}
                                         <br>Status duration:
-                                        <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|date("G:i:s") }}</span>
+                                        <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
                                         <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                     {% else %}
-                                        <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|date("G:i:s") }}</b>
+                                        <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
                                     {% endif %}
                                 {% else %}
                                     <small>brak danych</small>
@@ -73,10 +73,19 @@
 
             function updateElapsedTime(element) {
                 let timeString = $(element).text();
-                let parts = timeString.split(':');
-                let hours = parseInt(parts[0], 10);
-                let minutes = parseInt(parts[1], 10);
-                let seconds = parseInt(parts[2], 10);
+                let parts = timeString.split(' '); // Rozdzielamy na dni i resztę
+                let days = 0;
+                let timePart = parts[0]; // Domyślnie bierzemy pierwszą część
+
+                if (parts.length > 1) { // Jeśli są dni
+                    days = parseInt(parts[0].replace('d', ''), 10); // Wyciągamy liczbę dni
+                    timePart = parts[1]; // Bierzemy część godzinową
+                }
+
+                let timeParts = timePart.split(':');
+                let hours = parseInt(timeParts[0], 10);
+                let minutes = parseInt(timeParts[1], 10);
+                let seconds = parseInt(timeParts[2], 10);
 
                 function incrementTime() {
                     seconds++;
@@ -93,7 +102,12 @@
                     let formattedMinutes = minutes < 10 ? '0' + minutes : minutes.toString();
                     let formattedSeconds = seconds < 10 ? '0' + seconds : seconds.toString();
 
-                    $(element).text(formattedHours + ':' + formattedMinutes + ':' + formattedSeconds);
+                    let formattedTime = formattedHours + ':' + formattedMinutes + ':' + formattedSeconds;
+                    if (days > 0) {
+                        $(element).text(days + 'd ' + formattedTime);
+                    } else {
+                        $(element).text(formattedTime);
+                    }
                 }
 
                 // Usuwamy istniejący interwał przed ustawieniem nowego
