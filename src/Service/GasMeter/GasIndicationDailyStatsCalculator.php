@@ -38,8 +38,11 @@ class GasIndicationDailyStatsCalculator
     private function getFullDayIndications(): array
     {
         $dayIndications = $this->gasRepository->findForDate($this->date);
-        $previous       = $this->gasRepository->findFirstPreviousToDate($this->date);
-        $next           = $this->gasRepository->findFirstNextToDate($this->date);
+        $previous       = $this->gasRepository->findPreviousToDate($this->date, empty($dayIndications) ? 2 : 1);
+        $next           = $this->gasRepository->findNextToDate($this->date, empty($dayIndications) ? 2 : 1);
+
+        $previous = count($previous) === 1 ? $previous[0] : $previous;
+        $next     = count($next) === 1 ? $next[0] : $next;
 
         if (
             $previous instanceof GasMeter
@@ -48,6 +51,8 @@ class GasIndicationDailyStatsCalculator
             $startIndication = $this->interpolateIndicationLinear($previous, $dayIndications[0] ?: $next, $this->date);
         } elseif (count($dayIndications) > 1 || (count($dayIndications) == 1 && $next instanceof GasMeter)) {
             $startIndication = $this->extrapolateIndicationLinear($dayIndications[0], $dayIndications[1] ?: $next, $this->date);
+        } elseif (is_array($previous) && !empty($previous)) {
+            $startIndication = $this->extrapolateIndicationLinear($previous[0], $previous[1], $this->date);
         } else {
             throw new \Exception(sprintf('Cannot interpolate start indication for %s', $this->date->format('Y-m-d')));
         }
@@ -65,6 +70,12 @@ class GasIndicationDailyStatsCalculator
             $endIndication = $this->extrapolateIndicationLinear(
                 $dayIndications[count($dayIndications) - 2] ?? end($dayIndications),
                 end($dayIndications) ?: $next,
+                (clone $this->date)->setTime(23, 59, 59)
+            );
+        } elseif (is_array($previous) && !empty($previous)) {
+            $endIndication = $this->extrapolateIndicationLinear(
+                $previous[0],
+                $previous[1],
                 (clone $this->date)->setTime(23, 59, 59)
             );
         } else {

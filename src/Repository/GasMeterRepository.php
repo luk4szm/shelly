@@ -36,25 +36,25 @@ class GasMeterRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findFirstPreviousToDate(\DateTimeInterface $date): ?GasMeter
+    public function findPreviousToDate(\DateTimeInterface $date, int $limit = 1): ?array
     {
         return $this->createQueryBuilder('g')
             ->where('g.createdAt < :date')
             ->setParameter('date', (clone $date)->setTime(0, 0))
             ->orderBy('g.createdAt', 'DESC')
-            ->setMaxResults(1)
+            ->setMaxResults($limit)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 
-    public function findFirstNextToDate(\DateTimeInterface $date): ?GasMeter
+    public function findNextToDate(\DateTimeInterface $date, int $limit = 1): ?array
     {
         return $this->createQueryBuilder('g')
             ->where('g.createdAt > :date')
             ->setParameter('date', (clone $date)->setTime(23, 59, 59))
             ->orderBy('g.createdAt', 'ASC')
-            ->setMaxResults(1)
+            ->setMaxResults($limit)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 }
