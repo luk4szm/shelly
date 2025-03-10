@@ -9,6 +9,7 @@
     {% block head_javascripts %}{% endblock %}
 </head>
 <body>
+{% include 'front/_partials/flashes.html.twig' %}
 {% block body %}{% endblock %}
 <script src="{{ asset('assets/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ asset('assets/bootstrap.bundle.js') }}"></script>

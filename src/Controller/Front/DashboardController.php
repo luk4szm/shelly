@@ -2,6 +2,8 @@
 
 namespace App\Controller\Front;
 
+use App\Form\GasMeterIndicationType;
+use App\Repository\GasMeterRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -13,16 +15,25 @@ final class DashboardController extends AbstractController
     #[Route('/', name: 'app_front_dashboard')]
     public function index(
         #[AutowireIterator('app.shelly.device_status_helper')]
-        iterable $statusHelpers,
+        iterable           $statusHelpers,
+        GasMeterRepository $gasMeterRepository,
     ): Response
     {
+        $lastGasMeterIndication = $gasMeterRepository->findLast();
+
+        $gasMeterForm = $this->createForm(GasMeterIndicationType::class, options: [
+            'lastIndication' => $lastGasMeterIndication->getIndication(),
+        ]);
+
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
             $devices[$helper->getDeviceName()] = $helper->getHistory(2);
         }
 
         return $this->render('front/dashboard/index.html.twig', [
-            'devices' => $devices ?? [],
+            'devices'                => $devices ?? [],
+            'gasMeterForm'           => $gasMeterForm->createView(),
+            'lastGasMeterIndication' => $lastGasMeterIndication,
         ]);
     }
 }

@@ -20,7 +20,7 @@ class GasMeter
     #[ORM\Column]
     private ?\DateTime $createdAt = null;
 
-    public function __construct(float $indication)
+    public function __construct(?float $indication = null)
     {
         $this->indication = $indication;
     }

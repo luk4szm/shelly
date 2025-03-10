@@ -3,9 +3,9 @@
 {% block title %}{{ parent() }}{% endblock %}
 
 {% block body %}
-    <div data-device-names="{{ devices|map((deviceData, name) => name)|join('|') }}"></div>
     <div class="container">
         <div class="row">
+            <div data-device-names="{{ devices|map((deviceData, name) => name)|join('|') }}"></div>
             {% for name, statuses in devices %}
                 <div class="col-xl-4 col-md-6 col-12 g-3">
                     <div id="{{ name }}_device_card">
@@ -39,6 +39,20 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
+        <div class="row">
+            <div class="col-12 g-3">
+                <div class="card">
+                    <div class="card-header fw-bold">
+                        Gazomierz
+                    </div>
+                    <div class="card-body">
+                        {% include 'front/forms/gas_meter_form.html.twig' with {
+                            'form': gasMeterForm
+                        } %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
