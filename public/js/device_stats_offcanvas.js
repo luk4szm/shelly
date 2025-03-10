@@ -2,6 +2,7 @@ $(document).on('click', 'a[data-bs-toggle="offcanvas"]', function () {
     let deviceName = $(this).data('device-name');
 
     $('#offcanvasDeviceStatsLabel').html(deviceName);
+    $('#offcanvasDeviceStatsBody').html();
 
     $.ajax({
         type: "GET",
