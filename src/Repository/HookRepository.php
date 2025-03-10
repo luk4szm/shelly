@@ -33,17 +33,17 @@ class HookRepository extends CrudRepository
     {
         $hooks = $this->createQueryBuilderForHooksByDevice($device)
             ->andWhere('hook.createdAt >= :date')
-            ->setParameter('date', new \DateTime("-1 day"))
+            ->setParameter('date', new \DateTime("-7 day"))
             ->orderBy('hook.id', 'DESC')
             ->getQuery()
             ->getResult();
 
-        if (!count($hooks) < 100) {
+        if (!count($hooks) < 250) {
             return $hooks;
         }
 
         return $this->createQueryBuilderForHooksByDevice($device)
-            ->setMaxResults(100)
+            ->setMaxResults(250)
             ->orderBy('hook.id', 'DESC')
             ->getQuery()
             ->getResult();
