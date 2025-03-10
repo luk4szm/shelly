@@ -14,26 +14,33 @@
                                 {{ name }}
                             </div>
                             <div class="card-body">
-                                {% for deviceStatus in statuses %}
-                                    {% if loop.first %}
-                                        {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
-                                            <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
-                                                RUNNING
-                                            </button>
+                                {% if statuses is not empty %}
+                                    {% for deviceStatus in statuses %}
+                                        {% if loop.first %}
+                                            {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
+                                                <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
+                                                    RUNNING
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
+                                                    STANDBY
+                                                </button>
+                                            {% endif %}
+                                            <br>Status duration:
+                                            <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
+                                            <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                         {% else %}
-                                            <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
-                                                STANDBY
-                                            </button>
+                                            <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
                                         {% endif %}
-                                        <br>Status duration:
-                                        <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
-                                        <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
-                                    {% else %}
-                                        <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
-                                    {% endif %}
+                                    {% endfor %}
+                                    <div class="text-center mt-2">
+                                        <a data-bs-toggle="offcanvas" href="#offcanvasDeviceStats" data-device-name="{{ name }}">
+                                            Zobacz więcej statystyk
+                                        </a>
+                                    </div>
                                 {% else %}
                                     <small>brak danych</small>
-                                {% endfor %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -57,7 +64,12 @@
     </div>
 {% endblock %}
 
+{% block offcanvas %}
+    {% include 'front/_offcanvas/device_stats_offcanvas.html.twig' %}
+{% endblock %}
+
 {% block body_javascripts %}
+    <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script>
         $(document).ready(function () {
             setInterval(refreshDeviceCards, 60000);

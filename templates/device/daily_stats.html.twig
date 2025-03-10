@@ -1,0 +1,11 @@
+<p>
+    {% if dailyStats is not empty %}
+        Total used energy: <b>{{ dailyStats.energy|number_format("1") }} Wh</b><br />
+        Inclusions: <b>{{ dailyStats.inclusions }}</b><br />
+        Total active time: <b>{{ dailyStats.totalActiveTimeReadable }}</b><br />
+        Longest run time: <b>{{ dailyStats.longestRunTimeReadable }}</b><br />
+        Longest pause time: <b>{{ dailyStats.longestPauseTimeReadable }}</b><br />
+    {% else %}
+        brak danych
+    {% endif %}
+</p>
