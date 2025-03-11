@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Hook;
+use App\Model\DateRange;
 use App\Repository\Abstraction\CrudRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -44,6 +45,18 @@ class HookRepository extends CrudRepository
 
         return $this->createQueryBuilderForHooksByDevice($device)
             ->setMaxResults(100)
+            ->orderBy('hook.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findHooksByDeviceForDateRange(string $device, DateRange $dateRange): array
+    {
+        return $this->createQueryBuilderForHooksByDevice($device)
+            ->andWhere('hook.createdAt >= :from')
+            ->andWhere('hook.createdAt <= :to')
+            ->setParameter('from', $dateRange->getFrom())
+            ->setParameter('to', $dateRange->getTo())
             ->orderBy('hook.id', 'DESC')
             ->getQuery()
             ->getResult();

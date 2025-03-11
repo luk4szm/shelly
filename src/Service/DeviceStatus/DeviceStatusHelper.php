@@ -3,6 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
+use App\Model\DateRange;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Repository\HookRepository;
@@ -11,24 +12,25 @@ use Doctrine\Common\Collections\ArrayCollection;
 abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 {
     /** @var array{Hook} */
-    protected array $hooks;
-    private int     $pointer = 0;
+    protected array    $hooks;
+    private ?DateRange $dateRange;
+    private int        $pointer = 0;
 
     public function __construct(
         protected readonly HookRepository $hookRepository,
     ) {
     }
 
-    public function getHistory(int $elements = 0): ?ArrayCollection
+    public function getHistory(int $historyLimit = 0, DateRange $dateRange = null): ?ArrayCollection
     {
-        $this->hooks ??= $this->hookRepository->findLastPowerHookForDevice($this->getDeviceName());
+        $this->dateRange = $dateRange;
 
-        if (empty($this->hooks)) {
+        if (empty($this->hooks = $this->getHooks())) {
             return null;
         }
 
         $history       = new ArrayCollection();
-        $maxIterations = ($elements > 0) ? $elements : count($this->hooks);
+        $maxIterations = ($historyLimit > 0) ? $historyLimit : count($this->hooks);
 
         for ($i = 0; $i < $maxIterations; $i++) {
             if (null === $deviceStatus = $this->getStatus()) {
@@ -43,10 +45,13 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return $history;
     }
 
-    public function getStatus(): ?DeviceStatus
+    public function getStatusHelperInstance(): static
     {
-        $this->hooks ??= $this->hookRepository->findLastPowerHookForDevice($this->getDeviceName());
+        return $this;
+    }
 
+    private function getStatus(): ?DeviceStatus
+    {
         if (
             empty($this->hooks)
             || !isset($this->hooks[$this->pointer])
@@ -68,15 +73,20 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             ->setStatusDuration($this->countStatusDuration($statusHooks));
     }
 
-    public function getStatusHelperInstance(): static
+    private function getHooks(): array
     {
-        return $this;
+        return $this->dateRange
+            ? $this->hookRepository->findHooksByDeviceForDateRange($this->getDeviceName(), $this->dateRange)
+            : $this->hookRepository->findLastPowerHookForDevice($this->getDeviceName());
     }
 
     private function countStatusDuration(array $hooks): int
     {
-        $reference = $this->pointer === 0 ? new \DateTime() : end($hooks)->getCreatedAt();
-        $interval  = $reference->diff($hooks[0]->getCreatedAt());
+        $reference = $this->pointer === 0
+            ? $this->dateRange ? $this->dateRange->getTo() : new \DateTime()
+            : end($hooks)->getCreatedAt();
+
+        $interval = $reference->diff($hooks[0]->getCreatedAt());
 
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }

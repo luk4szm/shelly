@@ -81,4 +81,16 @@ class DeviceStatus
 
         return $this;
     }
+
+    public function getStartTime(): ?\DateTimeInterface
+    {
+        return $this->getHooks() ? $this->getHooks()[0]->getCreatedAt() : null;
+    }
+
+    public function getEndTime(): ?\DateTimeInterface
+    {
+        return $this->getStartTime()
+            ? (clone $this->getStartTime())->modify("+ $this->statusDuration seconds")
+            : null;
+    }
 }
