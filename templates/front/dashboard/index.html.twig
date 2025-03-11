@@ -33,9 +33,12 @@
                                             <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
                                         {% endif %}
                                     {% endfor %}
-                                    <div class="text-center mt-2">
-                                        <a data-bs-toggle="offcanvas" href="#offcanvasDeviceStats" data-device-name="{{ name }}">
-                                            Zobacz więcej statystyk
+                                    <div class="d-flex justify-content-around">
+                                        <a data-bs-toggle="offcanvas" data-action="stats" href="#offcanvasDeviceStats" data-device-name="{{ name }}">
+                                            Statystyki dnia
+                                        </a>
+                                        <a data-bs-toggle="offcanvas" data-action="history" href="#offcanvasDeviceHistory" data-device-name="{{ name }}">
+                                            Historia
                                         </a>
                                     </div>
                                 {% else %}
@@ -66,9 +69,11 @@
 
 {% block offcanvas %}
     {% include 'front/_offcanvas/device_stats_offcanvas.html.twig' %}
+    {% include 'front/_offcanvas/device_history_offcanvas.html.twig' %}
 {% endblock %}
 
 {% block body_javascripts %}
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
 {% endblock %}

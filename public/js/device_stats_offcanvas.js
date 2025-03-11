@@ -1,4 +1,4 @@
-$(document).on('click', 'a[data-bs-toggle="offcanvas"]', function () {
+$(document).on('click', 'a[data-bs-toggle="offcanvas"][data-action="stats"]', function () {
     let deviceName = $(this).data('device-name');
 
     $('#offcanvasDeviceStatsLabel').html(deviceName);
