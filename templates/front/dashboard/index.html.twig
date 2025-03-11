@@ -14,26 +14,33 @@
                                 {{ name }}
                             </div>
                             <div class="card-body">
-                                {% for deviceStatus in statuses %}
-                                    {% if loop.first %}
-                                        {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
-                                            <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
-                                                RUNNING
-                                            </button>
+                                {% if statuses is not empty %}
+                                    {% for deviceStatus in statuses %}
+                                        {% if loop.first %}
+                                            {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
+                                                <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
+                                                    RUNNING
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
+                                                    STANDBY
+                                                </button>
+                                            {% endif %}
+                                            <br>Status duration:
+                                            <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
+                                            <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
                                         {% else %}
-                                            <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
-                                                STANDBY
-                                            </button>
+                                            <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
                                         {% endif %}
-                                        <br>Status duration:
-                                        <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
-                                        <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
-                                    {% else %}
-                                        <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
-                                    {% endif %}
+                                    {% endfor %}
+                                    <div class="text-center mt-2">
+                                        <a data-bs-toggle="offcanvas" href="#offcanvasDeviceStats" data-device-name="{{ name }}">
+                                            Zobacz więcej statystyk
+                                        </a>
+                                    </div>
                                 {% else %}
                                     <small>brak danych</small>
-                                {% endfor %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -57,79 +64,11 @@
     </div>
 {% endblock %}
 
+{% block offcanvas %}
+    {% include 'front/_offcanvas/device_stats_offcanvas.html.twig' %}
+{% endblock %}
+
 {% block body_javascripts %}
-    <script>
-        $(document).ready(function () {
-            setInterval(refreshDeviceCards, 60000);
-
-            function refreshDeviceCard(selector) {
-                $(selector).load(location.href + " " + selector, function () {
-                    // Po załadowaniu elementu, ponownie uruchamiamy updateElapsedTime
-                    $(selector).find('.current_status_duration').each(function () {
-                        updateElapsedTime(this);
-                    });
-                });
-            }
-
-            function refreshDeviceCards() {
-                const deviceNamesString = $('[data-device-names]').data('device-names');
-                const deviceNames = deviceNamesString.split('|');
-
-                deviceNames.forEach(deviceName => {
-                    const selector = `#${deviceName}_device_card`;
-                    refreshDeviceCard(selector);
-                });
-            }
-
-            $('.current_status_duration').each(function () {
-                updateElapsedTime(this);
-            });
-
-            function updateElapsedTime(element) {
-                let timeString = $(element).text();
-                let parts = timeString.split(' '); // Rozdzielamy na dni i resztę
-                let days = 0;
-                let timePart = parts[0]; // Domyślnie bierzemy pierwszą część
-
-                if (parts.length > 1) { // Jeśli są dni
-                    days = parseInt(parts[0].replace('d', ''), 10); // Wyciągamy liczbę dni
-                    timePart = parts[1]; // Bierzemy część godzinową
-                }
-
-                let timeParts = timePart.split(':');
-                let hours = parseInt(timeParts[0], 10);
-                let minutes = parseInt(timeParts[1], 10);
-                let seconds = parseInt(timeParts[2], 10);
-
-                function incrementTime() {
-                    seconds++;
-                    if (seconds >= 60) {
-                        seconds = 0;
-                        minutes++;
-                        if (minutes >= 60) {
-                            minutes = 0;
-                            hours++;
-                        }
-                    }
-
-                    let formattedHours = hours.toString();
-                    let formattedMinutes = minutes < 10 ? '0' + minutes : minutes.toString();
-                    let formattedSeconds = seconds < 10 ? '0' + seconds : seconds.toString();
-
-                    let formattedTime = formattedHours + ':' + formattedMinutes + ':' + formattedSeconds;
-                    if (days > 0) {
-                        $(element).text(days + 'd ' + formattedTime);
-                    } else {
-                        $(element).text(formattedTime);
-                    }
-                }
-
-                // Usuwamy istniejący interwał przed ustawieniem nowego
-                clearInterval($(element).data('intervalId'));
-
-                const intervalId = setInterval(incrementTime, 1000);
-                $(element).data('intervalId', intervalId);
-            }
-        });
-    </script>
+    <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
 {% endblock %}
