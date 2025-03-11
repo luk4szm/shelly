@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Device;
 
+use App\Repository\DeviceDailyStatsRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -15,9 +16,10 @@ final class DailyStatsController extends AbstractController
 {
     #[Route('/device/daily-stats', name: 'app_device_daily_stats_index', methods: ['GET'])]
     public function index(
-        Request  $request,
+        Request                    $request,
+        DeviceDailyStatsRepository $statsRepository,
         #[AutowireIterator('app.shelly.daily_stats')]
-        iterable $dailyStatsCalculators,
+        iterable                   $dailyStatsCalculators,
     ): Response {
         $deviceName = $request->query->get('device');
 
@@ -34,7 +36,8 @@ final class DailyStatsController extends AbstractController
 
         return $this->json([
             'content' => $this->renderView('device/daily_stats.html.twig', [
-                'dailyStats' => $dailyStats ?? null,
+                'todayStats'     => $dailyStats ?? null,
+                'historicalData' => array_reverse($statsRepository->findForDeviceFromLastDays($deviceName)),
             ]),
         ]);
     }

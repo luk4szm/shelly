@@ -1,11 +1,49 @@
-<p>
-    {% if dailyStats is not empty %}
-        Total used energy: <b>{{ dailyStats.energy|number_format("1") }} Wh</b><br />
-        Inclusions: <b>{{ dailyStats.inclusions }}</b><br />
-        Total active time: <b>{{ dailyStats.totalActiveTimeReadable }}</b><br />
-        Longest run time: <b>{{ dailyStats.longestRunTimeReadable }}</b><br />
-        Longest pause time: <b>{{ dailyStats.longestPauseTimeReadable }}</b><br />
+{#<div class="container">#}
+    {% if todayStats is not empty %}
+        <div class="row">
+            <div class="col">Total used energy:</div>
+            <div class="col fw-bold text-end">{{ todayStats.energy|number_format("1") }} Wh</div>
+        </div>
+        <div class="row">
+            <div class="col">Inclusions:</div>
+            <div class="col fw-bold text-end">{{ todayStats.inclusions }}</div>
+        </div>
+        <div class="row">
+            <div class="col">Total active time:</div>
+            <div class="col fw-bold text-end">{{ todayStats.totalActiveTimeReadable }}</div>
+        </div>
+        <div class="row">
+            <div class="col">Longest run time:</div>
+            <div class="col fw-bold text-end">{{ todayStats.longestRunTimeReadable }}</div>
+        </div>
+        <div class="row">
+            <div class="col">Longest pause time:</div>
+            <div class="col fw-bold text-end">{{ todayStats.longestPauseTimeReadable }}</div>
+        </div>
     {% else %}
-        brak danych
+        brak danych z dzisiaj
     {% endif %}
-</p>
+{#</div>#}
+
+{% if historicalData is not empty %}
+    <table class="table table-sm table-striped mt-5">
+        <thead>
+        <tr>
+            <th scope="col">Data</th>
+            <th class="text-center" scope="col">Inclusions</th>
+            <th class="text-end" scope="col">Energy</th>
+            <th class="text-center" scope="col">Active time</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for stats in historicalData %}
+            <tr>
+                <td>{{ stats.date|date("d.m.Y") }}</td>
+                <td class="text-center">{{ stats.inclusions }}</td>
+                <td class="text-end">{{ stats.energy|number_format(0) }} Wh</td>
+                <td class="text-center">{{ stats.totalActiveTimeReadable }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
