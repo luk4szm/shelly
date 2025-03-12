@@ -21,7 +21,11 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     ) {
     }
 
-    public function getHistory(int $historyLimit = 0, DateRange $dateRange = null): ?ArrayCollection
+    public function getHistory(
+        int       $historyLimit = 0,
+        DateRange $dateRange    = null,
+        bool      $grouped      = false,
+    ): ?ArrayCollection
     {
         $this->dateRange = $dateRange;
 
@@ -42,7 +46,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             $this->setPointerOnNextHook($deviceStatus);
         }
 
-        return $history;
+        return $grouped ? $this->groupHistory($history) : $history;
     }
 
     public function getStatusHelperInstance(): static
@@ -71,6 +75,22 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             ->setHooks($statusHooks)
             ->setLastValue(end($statusHooks)->getValue())
             ->setStatusDuration($this->countStatusDuration($statusHooks));
+    }
+
+    private function groupHistory(ArrayCollection $history): ArrayCollection
+    {
+        $i = 0;
+
+        /** @var DeviceStatus $status */
+        foreach ($history as $status) {
+            if ($status->getStatus() === Status::INACTIVE) {
+                $i++;
+            }
+
+            $grouped[$i][$status->getStatus()->value] = $status;
+        }
+
+        return new ArrayCollection(array_values($grouped ?? []));
     }
 
     private function getHooks(): array
