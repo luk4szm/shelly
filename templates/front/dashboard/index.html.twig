@@ -64,7 +64,28 @@
             {% endfor %}
         </div>
         <div class="row">
-            <div class="col-12 g-3">
+            <div class="col-md-4 col-12 g-3">
+                <div id="temperatures_card">
+                    <div class="card">
+                        <div class="card-header fw-bold">
+                            Temperatury
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for location in ['bufor', 'zasilanie', 'powrot'] %}
+                                    <div class="col-4 text-center">
+                                        {% for device in temperatures|filter(v => v.device == location) %}
+                                            <div>{{ location|trans }}</div>
+                                            <div class="fw-bold fs-5">{{ device.value }} °C</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-12 g-3">
                 <div class="card">
                     <div class="card-header fw-bold">
                         Gazomierz
@@ -89,4 +110,5 @@
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/refresh_temperatures_card.js') }}"></script>
 {% endblock %}
