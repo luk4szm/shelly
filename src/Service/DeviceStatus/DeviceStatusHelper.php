@@ -74,7 +74,9 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
             ->setStatus($this->isActive($this->hooks[$firstHookNo]) ? Status::ACTIVE : Status::INACTIVE)
             ->setHooks($statusHooks)
             ->setLastValue(end($statusHooks)->getValue())
-            ->setStatusDuration($this->countStatusDuration($statusHooks));
+            ->setStatusDuration($this->countStatusDuration($statusHooks))
+            ->setUsedEnergy($this->calculateUsedEnergy($statusHooks))
+        ;
     }
 
     private function groupHistory(ArrayCollection $history): ArrayCollection
@@ -109,6 +111,23 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         $interval = $reference->diff($hooks[0]->getCreatedAt());
 
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+    }
+
+    private function calculateUsedEnergy(array $hooks): float
+    {
+        $usedEnergy  = 0; // Ws
+        $endDateTime = $this->pointer === 0
+            ? $this->dateRange ? $this->dateRange->getTo() : new \DateTime()
+            : end($hooks)->getCreatedAt();
+
+        /** @var Hook $hook */
+        foreach ($hooks as $i => $hook) {
+            $endOfHook    = isset($hooks[$i + 1]) ? $hooks[$i + 1]->getCreatedAt() : $endDateTime;
+            $hookDuration = $hook->getCreatedAt()->diff($endOfHook);
+            $usedEnergy   += $hook->getValue() * ($hookDuration->h * 3600 + $hookDuration->i * 60 + $hookDuration->s);
+        }
+
+        return $usedEnergy / 3600; // Wh
     }
 
     private function findFirstHookOfCurrentStatus(): ?int

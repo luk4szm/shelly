@@ -11,6 +11,11 @@ class DeviceStatus
     private array  $hooks     = [];
     private ?int   $statusDuration; // seconds
     private float  $lastValue; // W
+    private float  $usedEnergy; // Wh
+
+    /**
+     * PROPERTY GETTERS and SETTERS
+     */
 
     public function getStatus(): Status
     {
@@ -53,11 +58,6 @@ class DeviceStatus
         return $this->statusDuration;
     }
 
-    public function getStatusDurationReadable(): ?string
-    {
-        return $this->statusDuration ? TimeUtils::getReadableTime($this->statusDuration) : null;
-    }
-
     public function setStatusDuration(?int $statusDuration): self
     {
         $this->statusDuration = $statusDuration;
@@ -70,16 +70,37 @@ class DeviceStatus
         return $this->lastValue;
     }
 
-    public function getLastValueReadable(): string
-    {
-        return number_format($this->lastValue, 1) . ' W';
-    }
-
     public function setLastValue(float $lastValue): self
     {
         $this->lastValue = $lastValue;
 
         return $this;
+    }
+
+    public function setUsedEnergy(float $usedEnergy): self
+    {
+        $this->usedEnergy = $usedEnergy;
+
+        return $this;
+    }
+
+    public function getUsedEnergy(): float
+    {
+        return $this->usedEnergy;
+    }
+
+    /**
+     * CUSTOM METHODS
+     */
+
+    public function getStatusDurationReadable(): ?string
+    {
+        return $this->statusDuration ? TimeUtils::getReadableTime($this->statusDuration) : null;
+    }
+
+    public function getLastValueReadable(): string
+    {
+        return number_format($this->lastValue, 1) . ' W';
     }
 
     public function getStartTime(): ?\DateTimeInterface
