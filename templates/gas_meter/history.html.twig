@@ -1,0 +1,33 @@
+{% if history is not empty %}
+    <table class="table table-sm table-striped">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Data</th>
+            <th scope="col">Odczyt <small>(m<sup>3</sup>)</small></th>
+            <th scope="col">Zużycie <small>(m<sup>3</sup>/h)</small></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for index, indication in history %}
+            <tr class="lh-1">
+                <th scope="row">{{ loop.index }}</th>
+                <td>
+                    {{ indication.createdAt|date('d.m.Y') }}
+                    <small>{{ indication.createdAt|date('H:i') }}</small>
+                </td>
+                <td class="text-end">
+                    {{ indication.indication|number_format(3, '.', '') }}
+                </td>
+                <td class="text-end">
+                    {% if history[index + 1] is defined %}
+                        {{ (indication.indication - history[index + 1].indication)|number_format(3) }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    brak danych
+{% endif %}

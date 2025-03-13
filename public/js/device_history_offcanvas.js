@@ -6,7 +6,7 @@ $(document).on('click', 'button[data-bs-toggle="offcanvas"][data-action="history
 
     $.ajax({
         type: "GET",
-        url: "/device/history/",
+        url: deviceName === 'gasMeter' ? '/gas/meter/history' : '/device/history',
         data: {"device": deviceName},
         success: function (result) {
             $('#offcanvasDeviceHistoryBody').html(result.content);

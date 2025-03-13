@@ -36,6 +36,16 @@ class GasMeterRepository extends CrudRepository
             ->getResult();
     }
 
+    public function findForLastMonth(): array
+    {
+        return $this->createQueryBuilder('g')
+            ->where('g.createdAt >= :from')
+            ->setParameter('from', (new \DateTime("-30 days"))->setTime(0, 0))
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findPreviousToDate(\DateTimeInterface $date, int $limit = 1): ?array
     {
         return $this->createQueryBuilder('g')
