@@ -2,8 +2,8 @@
 
 namespace App\Command;
 
-use App\Model\DeviceStatus;
 use App\Service\Device\DeviceFinder;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -29,9 +29,7 @@ class ShellyDeviceDailyHistoryCommand extends StatusHelperCommand
     protected function configure(): void
     {
         $this
-            ->addArgument('device', InputArgument::OPTIONAL, 'Device name')
-            ->addArgument('date', InputArgument::OPTIONAL, 'The day you want to see statistics (YYYY-MM-DD)')
-        ;
+            ->addArgument('device', InputArgument::OPTIONAL, 'Device name');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -40,19 +38,31 @@ class ShellyDeviceDailyHistoryCommand extends StatusHelperCommand
         $device       = $this->getDevice($input, $output);
         $statusHelper = $this->getDeviceHelper($device);
 
-        if (null === $deviceHistory = $statusHelper->getHistory()) {
+        /** @var ArrayCollection $history */
+        if (null === $history = $statusHelper->getHistory(grouped: true)) {
             $io->warning('No device information found');
 
             return self::SUCCESS;
         }
 
-        $io->title(sprintf('[%s] Retrieving history of the "%s" device', (new \DateTime())->format('H:i:s'), $device));
+        $io->title(
+            sprintf(
+                '[%s] Retrieving history of the "%s" device',
+                (new \DateTime())->format('H:i:s'),
+                $device
+            )
+        );
 
-        dump(array_map(function (DeviceStatus $deviceStatus) {
-            return $deviceStatus->getStatus()->value . ' ' .$deviceStatus->getStatusDurationReadable();
-        }, $deviceHistory->toArray()));
-
-        // TODO: handle and return results
+        $io->table(
+            ['date', 'runtime', 'pause'],
+            $history->map(function (array $entry) {
+                return [
+                    isset($entry['running']) ? $entry['running']->getStartTime()->format('d.m.Y H:i:s') : null,
+                    isset($entry['running']) ? $entry['running']->getStatusDurationReadable() : null,
+                    isset($entry['standby']) ? $entry['standby']->getStatusDurationReadable() : null,
+                ];
+            })->toArray()
+        );
 
         return Command::SUCCESS;
     }
