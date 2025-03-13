@@ -15,9 +15,15 @@
                             </div>
                             <div class="card-body">
                                 {% if statuses is not empty %}
-                                    {% for deviceStatus in statuses %}
-                                        {% if loop.first %}
-                                            {% if deviceStatus.status == constant('App\\Model\\Status::ACTIVE') %}
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <button class="btn btn-light" data-action="stats" data-device-name="{{ name }}"
+                                                    data-bs-toggle="offcanvas" href="#offcanvasDeviceStats">
+                                                &#128202;
+                                            </button>
+                                        </div>
+                                        <div class="col">
+                                            {% if statuses[0].status == constant('App\\Model\\Status::ACTIVE') %}
                                                 <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
                                                     RUNNING
                                                 </button>
@@ -26,21 +32,28 @@
                                                     STANDBY
                                                 </button>
                                             {% endif %}
-                                            <br>Status duration:
-                                            <span class="fw-bold current_status_duration">{{ deviceStatus.statusDuration|readableDurationTime }}</span>
-                                            <br>Current energy consumption: <b>{{ deviceStatus.lastValue }} W</b>
-                                        {% else %}
-                                            <br>Duration of the previous status: <b>{{ deviceStatus.statusDuration|readableDurationTime }}</b>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <div class="d-flex justify-content-around">
-                                        <a data-bs-toggle="offcanvas" data-action="stats" href="#offcanvasDeviceStats" data-device-name="{{ name }}">
-                                            Statystyki dnia
-                                        </a>
-                                        <a data-bs-toggle="offcanvas" data-action="history" href="#offcanvasDeviceHistory" data-device-name="{{ name }}">
-                                            Historia
-                                        </a>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-light" data-action="history" data-device-name="{{ name }}"
+                                                    data-bs-toggle="offcanvas" href="#offcanvasDeviceHistory">
+                                                &#128338;
+                                            </button>
+                                        </div>
                                     </div>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Status duration:</td>
+                                            <td class="text-end"><span class="fw-bold current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current energy consumption:</td>
+                                            <td class="text-end"><span class="fw-bold">{{ statuses[0].lastValue }} W</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Duration of the previous status: </td>
+                                            <td class="text-end"><span class="fw-bold">{{ statuses[1].statusDuration|readableDurationTime }}</span></td>
+                                        </tr>
+                                    </table>
                                 {% else %}
                                     <small>brak danych</small>
                                 {% endif %}
@@ -51,7 +64,28 @@
             {% endfor %}
         </div>
         <div class="row">
-            <div class="col-12 g-3">
+            <div class="col-md-4 col-12 g-3">
+                <div id="temperatures_card">
+                    <div class="card">
+                        <div class="card-header fw-bold">
+                            Temperatury
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for location in ['bufor', 'zasilanie', 'powrot'] %}
+                                    <div class="col-4 text-center">
+                                        {% for device in temperatures|filter(v => v.device == location) %}
+                                            <div>{{ location|trans }}</div>
+                                            <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-12 g-3">
                 <div class="card">
                     <div class="card-header fw-bold">
                         Gazomierz
@@ -76,4 +110,5 @@
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/refresh_temperatures_card.js') }}"></script>
 {% endblock %}

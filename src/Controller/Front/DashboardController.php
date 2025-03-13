@@ -4,6 +4,7 @@ namespace App\Controller\Front;
 
 use App\Form\GasMeterIndicationType;
 use App\Repository\GasMeterRepository;
+use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -17,6 +18,7 @@ final class DashboardController extends AbstractController
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable           $statusHelpers,
         GasMeterRepository $gasMeterRepository,
+        HookRepository     $hookRepository,
     ): Response
     {
         $lastGasMeterIndication = $gasMeterRepository->findLast();
@@ -34,6 +36,7 @@ final class DashboardController extends AbstractController
             'devices'                => $devices ?? [],
             'gasMeterForm'           => $gasMeterForm->createView(),
             'lastGasMeterIndication' => $lastGasMeterIndication,
+            'temperatures'           => $hookRepository->findActualTemps(),
         ]);
     }
 }
