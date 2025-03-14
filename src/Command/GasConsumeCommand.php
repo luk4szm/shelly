@@ -40,7 +40,9 @@ class GasConsumeCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $indications = $this->gasMeterRepository->findForLastMonth();
+//        $date = new \DateTime('13.03.2025');
+//        $indications = $this->gasMeterRepository->findForDate($date);
+        $indications = array_reverse($this->gasMeterRepository->findForLastMonth());
 
         /** @var GasMeter $indication */
         foreach ($indications as $i => $indication) {
@@ -50,8 +52,8 @@ class GasConsumeCommand extends Command
 
             $usedEnergy  = 0;
             $runtime     = 0;
-            $dateRange   = new DateRange($indications[$i + 1]->getCreatedAt(), $indication->getCreatedAt());
-            $gasConsumed = $indication->getIndication() - $indications[$i + 1]->getIndication();
+            $dateRange   = new DateRange($indication->getCreatedAt(), $indications[$i + 1]->getCreatedAt());
+            $gasConsumed = $indications[$i + 1]->getIndication() - $indication->getIndication();
             $history     = $this->boilerStatusHelper->getHistory(dateRange: $dateRange);
 
             if ($history === null || $history->isEmpty()) {
@@ -73,7 +75,9 @@ class GasConsumeCommand extends Command
 
             $io->writeln([
                 sprintf('Date range %s - %s', $dateRange->getFrom()->format('Y-m-d H:i'), $dateRange->getTo()->format('Y-m-d H:i')),
-                sprintf('Active runtimes: %d', $activeStatuses->count()),
+                sprintf('Inclusions: %d', $activeStatuses->count()),
+                sprintf('Runtime: %.2f min', $runtime / 60),
+                sprintf('Gas consumed: %.3f m3', $gasConsumed),
                 sprintf('Gas consumed per runtime: %.3f m3', $gasConsumed / $activeStatuses->count()),
                 sprintf('Gas consumed per Wh: %.3f m3', $gasConsumed / $usedEnergy),
                 sprintf('Gas consumed active hour: %.3f m3', $gasConsumed / ($runtime / 3600)),

@@ -14,7 +14,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     /** @var array{Hook} */
     protected array    $hooks;
     private ?DateRange $dateRange;
-    private int        $pointer = 0;
+    private int        $pointer;
 
     public function __construct(
         protected readonly HookRepository $hookRepository,
@@ -28,6 +28,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     ): ?ArrayCollection
     {
         $this->dateRange = $dateRange;
+        $this->pointer   = 0;
 
         if (empty($this->hooks = $this->getHooks())) {
             return null;
