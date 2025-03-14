@@ -2,8 +2,8 @@
     <table class="table table-sm table-striped">
         <thead>
         <tr>
-            <th scope="col">#</th>
             <th scope="col">Data</th>
+            <th scope="col">Energy</th>
             <th scope="col">Runtime</th>
             <th scope="col">Pause</th>
         </tr>
@@ -11,8 +11,8 @@
         <tbody>
         {% for row in history %}
             <tr>
-                <th scope="row">{{ loop.index }}</th>
                 <td>{{ row.running is defined ? row.running.startTime|date('d.m.Y H:i:s') : ''}}</td>
+                <td>{{ row.running is defined ? row.running.usedEnergy|number_format(2) ~ 'Wh' : '' }}</td>
                 <td>{{ row.running is defined ? row.running.statusDurationReadable : '' }}</td>
                 <td>{{ row.standby is defined ? row.standby.statusDurationReadable : '' }}</td>
             </tr>
