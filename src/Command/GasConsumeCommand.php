@@ -42,19 +42,19 @@ class GasConsumeCommand extends Command
 
         $indications = $this->gasMeterRepository->findForLastMonth();
 
-        $io->comment(count($indications));
-
         /** @var GasMeter $indication */
-        foreach ($this->gasMeterRepository->findForLastMonth() as $i => $indication) {
+        foreach ($indications as $i => $indication) {
             if (!isset($indications[$i + 1])) {
                 break;
             }
 
-            $usedEnergy = 0;
-            $dateRange  = new DateRange($indications[$i + 1]->getCreatedAt(), $indication->getCreatedAt());
-            $history    = $this->boilerStatusHelper->getHistory(dateRange: $dateRange);
+            $usedEnergy  = 0;
+            $runtime     = 0;
+            $dateRange   = new DateRange($indications[$i + 1]->getCreatedAt(), $indication->getCreatedAt());
+            $gasConsumed = $indication->getIndication() - $indications[$i + 1]->getIndication();
+            $history     = $this->boilerStatusHelper->getHistory(dateRange: $dateRange);
 
-            if ($history->isEmpty()) {
+            if ($history === null || $history->isEmpty()) {
                 continue;
             }
 
@@ -66,11 +66,19 @@ class GasConsumeCommand extends Command
                 continue;
             }
 
-            $activeStatuses->map(function (DeviceStatus $deviceStatus) use (&$usedEnergy){
+            $activeStatuses->map(function (DeviceStatus $deviceStatus) use (&$usedEnergy, &$runtime){
                 $usedEnergy += $deviceStatus->getUsedEnergy();
+                $runtime    += $deviceStatus->getStatusDuration();
             });
 
-            dump($dateRange, $usedEnergy);
+            $io->writeln([
+                sprintf('Date range %s - %s', $dateRange->getFrom()->format('Y-m-d H:i'), $dateRange->getTo()->format('Y-m-d H:i')),
+                sprintf('Active runtimes: %d', $activeStatuses->count()),
+                sprintf('Gas consumed per runtime: %.3f m3', $gasConsumed / $activeStatuses->count()),
+                sprintf('Gas consumed per Wh: %.3f m3', $gasConsumed / $usedEnergy),
+                sprintf('Gas consumed active hour: %.3f m3', $gasConsumed / ($runtime / 3600)),
+                ''
+            ]);
         }
 
         return Command::SUCCESS;
