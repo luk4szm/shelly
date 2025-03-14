@@ -25,6 +25,10 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+###> front assets ###
+/node_modules/
+###< front assets ###
+
 ###> PHPstorm files ###
 /.idea/
 ###< PHPstorm files ###
