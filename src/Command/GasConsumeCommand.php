@@ -80,7 +80,7 @@ class GasConsumeCommand extends Command
                 sprintf('Gas consumed: %.3f m3', $gasConsumed),
                 sprintf('Gas consumed per runtime: %.3f m3', $gasConsumed / $activeStatuses->count()),
                 sprintf('Gas consumed per Wh: %.3f m3', $gasConsumed / $usedEnergy),
-                sprintf('Gas consumed active hour: %.3f m3', $gasConsumed / ($runtime / 3600)),
+                sprintf('Gas consumed per active hour: %.3f m3', $gasConsumed / ($runtime / 3600)),
                 ''
             ]);
         }
