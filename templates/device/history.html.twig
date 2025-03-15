@@ -12,7 +12,7 @@
         {% for row in history %}
             <tr>
                 <td>{{ row.running is defined ? row.running.startTime|date('d.m.Y H:i:s') : ''}}</td>
-                <td>{{ row.running is defined ? row.running.usedEnergy|number_format(2) ~ 'Wh' : '' }}</td>
+                <td>{{ row.running is defined ? row.running.usedEnergy|format_energy : '' }}</td>
                 <td>{{ row.running is defined ? row.running.statusDurationReadable : '' }}</td>
                 <td>{{ row.standby is defined ? row.standby.statusDurationReadable : '' }}</td>
             </tr>

@@ -2,7 +2,7 @@
     {% if todayStats is not empty %}
         <div class="row">
             <div class="col">Total used energy:</div>
-            <div class="col fw-bold text-end">{{ todayStats.energy|number_format("1") }} Wh</div>
+            <div class="col fw-bold text-end">{{ todayStats.energy|format_energy }}</div>
         </div>
         <div class="row">
             <div class="col">Inclusions:</div>
@@ -40,7 +40,7 @@
             <tr>
                 <td>{{ stats.date|date("d.m.Y") }}</td>
                 <td class="text-center">{{ stats.inclusions }}</td>
-                <td class="text-end">{{ stats.energy|number_format(0) }} Wh</td>
+                <td class="text-end">{{ stats.energy|format_energy }}</td>
                 <td class="text-center">{{ stats.totalActiveTimeReadable }}</td>
             </tr>
         {% endfor %}
