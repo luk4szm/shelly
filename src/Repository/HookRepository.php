@@ -95,6 +95,20 @@ class HookRepository extends CrudRepository
         return $temps;
     }
 
+    public function findLocationTemperatures(string $location, \DateTime $from): array
+    {
+        return $this->createQueryBuilder('hook')
+            ->where('hook.device = :location')
+            ->andWhere('hook.property >= :property')
+            ->andWhere('hook.createdAt >= :from')
+            ->setParameter('location', $location)
+            ->setParameter('property', 'temp')
+            ->setParameter('from', $from)
+            ->orderBy('hook.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('hook')

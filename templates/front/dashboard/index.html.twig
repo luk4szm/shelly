@@ -75,8 +75,14 @@
                                 {% for location in ['bufor', 'zasilanie', 'powrot'] %}
                                     <div class="col-4 text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}
-                                            <div>{{ location|trans }}</div>
+                                            <div> {{ location|trans }}</div>
                                             <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"
+                                                        data-bs-toggle="modal" data-bs-target="#temperatureChartModal">
+                                                    &#128202;
+                                                </button>
+                                            </div>
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -106,9 +112,14 @@
     {% include 'front/_offcanvas/device_history_offcanvas.html.twig' %}
 {% endblock %}
 
+{% block modals %}
+    {% include 'front/_modals/temperature_chart_modal.html.twig' %}
+{% endblock %}
+
 {% block body_javascripts %}
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_temperatures_card.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/location_temp_chart_modal.js') }}"></script>
 {% endblock %}
