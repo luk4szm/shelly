@@ -36,6 +36,7 @@ final class DailyStatsController extends AbstractController
 
         return $this->json([
             'content' => $this->renderView('device/daily_stats.html.twig', [
+                'device'         => $deviceName,
                 'todayStats'     => $dailyStats ?? null,
                 'historicalData' => array_reverse($statsRepository->findForDeviceFromLastDays($deviceName)),
             ]),
