@@ -28,7 +28,7 @@ $(document).ready(function () {
 
                 if (temperatureChart) {
                     temperatureChart.data.datasets = datasets;
-                    temperatureChart.update();
+                    temperatureChart.update('none');
                 } else {
                     temperatureChart = new Chart(ctx, {
                         type: 'line',
