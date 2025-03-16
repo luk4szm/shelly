@@ -12,6 +12,12 @@
             <div class="col">Total active time:</div>
             <div class="col fw-bold text-end">{{ todayStats.totalActiveTimeReadable }}</div>
         </div>
+        {% if device == 'piec' %}
+            <div class="row">
+                <div class="col">Est. fuel consume:</div>
+                <div class="col fw-bold text-end">{{ (todayStats.energy * 0.02)|number_format(1) ~ ' m³' }}</div>
+            </div>
+        {% endif %}
         <div class="row">
             <div class="col">Longest run time:</div>
             <div class="col fw-bold text-end">{{ todayStats.longestRunTimeReadable }}</div>
