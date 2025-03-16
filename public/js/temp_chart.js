@@ -8,9 +8,8 @@ $(document).ready(function () {
         dataType: 'json',
         success: function (data) {
             const datasets = [];
-            const colors = ['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)']; // Dodaj więcej kolorów, jeśli masz więcej urządzeń
+            const colors = ['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)'];
 
-            // Przetwarzanie danych dla każdego urządzenia
             Object.keys(data).forEach((deviceName, index) => {
                 const chartData = data[deviceName].map(item => ({
                     x: new Date(item.datetime),
@@ -34,6 +33,7 @@ $(document).ready(function () {
                 options: {
                     pointStyle: false,
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
                             type: 'time',
