@@ -15,7 +15,7 @@ class LocationTemperatureController extends AbstractController
     #[Route('/data/temp/{location}', name: 'app_data_location_temperature_index', methods: ['GET'])]
     public function index(string $location, HookRepository $hookRepository): Response
     {
-        $hooks = $hookRepository->findLocationTemperatures($location, new \DateTime("-12 hours"));
+        $hooks = $hookRepository->findLocationTemperatures($location, new \DateTime("-18 hours"));
 
         return $this->json(
             array_map(function (Hook $hook) {
