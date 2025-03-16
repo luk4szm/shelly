@@ -83,7 +83,7 @@ class HookRepository extends CrudRepository
         foreach (['bufor', 'zasilanie', 'powrot'] as $location) {
             $temps[] = $this->createQueryBuilder('hook')
                 ->where('hook.device = :device')
-                ->andWhere('hook.property >= :property')
+                ->andWhere('hook.property = :property')
                 ->setParameter('device', $location)
                 ->setParameter('property', 'temp')
                 ->orderBy('hook.id', 'DESC')
@@ -95,18 +95,29 @@ class HookRepository extends CrudRepository
         return $temps;
     }
 
-    public function findLocationTemperatures(string $location, \DateTime $from): array
+    public function findLocationTemperatures(
+        string    $location = null,
+        \DateTime $from = new \DateTime("-6 hours"),
+        \DateTime $to   = new \DateTime(),
+    ): array
     {
-        return $this->createQueryBuilder('hook')
-            ->where('hook.device = :location')
-            ->andWhere('hook.property >= :property')
-            ->andWhere('hook.createdAt >= :from')
-            ->setParameter('location', $location)
+        $qb = $this->createQueryBuilder('hook')
+            ->where('hook.property = :property')
             ->setParameter('property', 'temp')
-            ->setParameter('from', $from)
             ->orderBy('hook.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+        ;
+
+        if ($location) {
+            $qb->andWhere('hook.device = :location')
+               ->setParameter('location', $location);
+        }
+
+        $qb->andWhere('hook.createdAt >= :from')
+           ->andWhere('hook.createdAt <= :to')
+           ->setParameter('from', $from)
+           ->setParameter('to', $to);
+
+        return $qb->getQuery()->getResult();
     }
 
     private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder

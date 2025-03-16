@@ -1,38 +1,35 @@
-const myModalEl = document.getElementById('locationTemperatureChartModal')
-
-myModalEl.addEventListener('hidden.bs.modal', event => {
-    $('#location_temperature_chart_modal_content').html('<canvas id="locationTemperatureChart"></canvas>');
-});
-
-$(document).on('click', 'button[data-bs-toggle="modal"][data-action="history"]', function () {
-    loadTemperatureData($(this).data('location'));
-});
-
-// Funkcja ładująca dane i renderująca wykres
-function loadTemperatureData(location) {
-    let ctx = document.getElementById('locationTemperatureChart').getContext('2d');
-    let locationTemperatureChart;
+$(document).ready(function () {
+    let ctx = document.getElementById('temperatureChart').getContext('2d');
+    let temperatureChart;
 
     $.ajax({
-        url: '/data/temp/' + location,
+        url: '/data/temp',
         method: 'GET',
         dataType: 'json',
         success: function (data) {
-            const chartData = data.map(item => ({
-                x: new Date(item.datetime),
-                y: item.value
-            }));
+            const datasets = [];
+            const colors = ['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)']; // Dodaj więcej kolorów, jeśli masz więcej urządzeń
 
-            locationTemperatureChart = new Chart(ctx, {
+            // Przetwarzanie danych dla każdego urządzenia
+            Object.keys(data).forEach((deviceName, index) => {
+                const chartData = data[deviceName].map(item => ({
+                    x: new Date(item.datetime),
+                    y: item.value
+                }));
+
+                datasets.push({
+                    label: `${deviceName} (°C)`,
+                    data: chartData,
+                    borderColor: colors[index % colors.length],
+                    tension: 0.1,
+                    fill: false,
+                });
+            });
+
+            temperatureChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: chartData,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1,
-                        fill: false,
-                    }]
+                    datasets: datasets
                 },
                 options: {
                     pointStyle: false,
@@ -46,7 +43,7 @@ function loadTemperatureData(location) {
                                 }
                             },
                             time: {
-                                unit: 'hour', // Możesz zmienić na 'minute', 'day' itp.
+                                unit: 'hour',
                                 displayFormats: {
                                     hour: 'HH:mm'
                                 },
@@ -84,4 +81,4 @@ function loadTemperatureData(location) {
             console.error('Błąd ładowania danych:', error);
         }
     });
-}
+});
