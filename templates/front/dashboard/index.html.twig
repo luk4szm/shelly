@@ -11,21 +11,23 @@
                         Temperatury
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            {% for location in ['bufor', 'zasilanie', 'powrot'] %}
-                                <div class="col-4 text-center">
-                                    {% for device in temperatures|filter(v => v.device == location) %}
-                                        <div> {{ location|trans }}</div>
-                                        <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
-                                        <div>
-                                            <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"
-                                                    data-bs-toggle="modal" data-bs-target="#locationTemperatureChartModal">
-                                                &#128202;
-                                            </button>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
+                        <div class="temperatures_card">
+                            <div class="row">
+                                {% for location in ['bufor', 'zasilanie', 'powrot'] %}
+                                    <div class="col-4 text-center">
+                                        {% for device in temperatures|filter(v => v.device == location) %}
+                                            <div> {{ location|trans }}</div>
+                                            <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"
+                                                        data-bs-toggle="modal" data-bs-target="#locationTemperatureChartModal">
+                                                    &#128202;
+                                                </button>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
                         <div id="temperature_chart_modal_content">
                             <canvas id="temperatureChart" style="width: 100%; max-height: 400px;"></canvas>
