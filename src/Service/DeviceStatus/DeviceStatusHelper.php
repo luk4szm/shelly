@@ -7,6 +7,7 @@ use App\Model\DateRange;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Repository\HookRepository;
+use App\Utils\TimeUtils;
 use Doctrine\Common\Collections\ArrayCollection;
 
 abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
@@ -111,7 +112,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 
         $interval = $reference->diff($hooks[0]->getCreatedAt());
 
-        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+        return TimeUtils::convertIntervalToSeconds($interval);
     }
 
     private function calculateUsedEnergy(array $hooks): float
@@ -125,7 +126,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         foreach ($hooks as $i => $hook) {
             $endOfHook    = isset($hooks[$i + 1]) ? $hooks[$i + 1]->getCreatedAt() : $endDateTime;
             $hookDuration = $hook->getCreatedAt()->diff($endOfHook);
-            $usedEnergy   += $hook->getValue() * ($hookDuration->h * 3600 + $hookDuration->i * 60 + $hookDuration->s);
+            $usedEnergy   += $hook->getValue() * TimeUtils::convertIntervalToSeconds($hookDuration);
         }
 
         return $usedEnergy / 3600; // Wh

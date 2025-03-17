@@ -3,6 +3,7 @@
 namespace App\Utils\Hook;
 
 use App\Entity\Hook;
+use App\Utils\TimeUtils;
 
 class HookDurationUtil
 {
@@ -34,6 +35,6 @@ class HookDurationUtil
             );
         }
 
-        return $interval->h * 3600 + $interval->i * 60 + $interval->s;
+        return TimeUtils::convertIntervalToSeconds($interval);
     }
 }

@@ -17,4 +17,9 @@ class TimeUtils
             ? sprintf('%dd %d:%02d:%02d', $days, $hours, $minutes, $seconds)
             : sprintf('%d:%02d:%02d', $hours, $minutes, $seconds);
     }
+
+    public static function convertIntervalToSeconds(\DateInterval $interval): int
+    {
+        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+    }
 }
