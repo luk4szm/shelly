@@ -17,6 +17,11 @@ final class HookController extends AbstractController
 
         $repository->save($hook);
 
+        // temp
+        if ($device === 'sypialnia') {
+            mail('lukasz@mikowski.pl', 'shelly h&t report', $value);
+        }
+
         return $this->json($hook);
     }
 }
