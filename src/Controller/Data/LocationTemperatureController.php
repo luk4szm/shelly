@@ -13,16 +13,26 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class LocationTemperatureController extends AbstractController
 {
-    #[Route('/data/temp/{location}', name: 'app_data_location_temperature_index', methods: ['GET'])]
+    #[Route('/data/temp/{location}/{from}/{to}', name: 'app_data_location_temperature_index', methods: ['GET'])]
     public function index(
         HookRepository          $hookRepository,
         TemperatureGraphHandler $graphHandler,
         ?string                 $location = null,
+        ?string                 $from = null,
+        ?string                 $to = null,
     ): Response
     {
-        $hooks = $hookRepository->findLocationTemperatures($location);
+        $location = $location === null ? 'all' : $location;
+        $from     = $from === null ? new \DateTime("-8 hours") : new \DateTime($from);
+        $to       = $to === null ? new \DateTime() : new \DateTime($to);
 
-        if ($location === null) {
+        $hooks = $hookRepository->findLocationTemperatures($from, $to, $location);
+
+        if (empty($hooks)) {
+            return $this->json([]);
+        }
+
+        if ($location === 'all') {
             return $this->json($graphHandler->prepareGroupedHooks($hooks));
         }
 
