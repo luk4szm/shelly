@@ -80,7 +80,7 @@ class HookRepository extends CrudRepository
     
     public function findActualTemps(): array
     {
-        foreach (['bufor', 'zasilanie', 'powrot'] as $location) {
+        foreach (['bufor', 'zasilanie', 'powrot', 'salon'] as $location) {
             $temps[] = $this->createQueryBuilder('hook')
                 ->where('hook.device = :device')
                 ->andWhere('hook.property = :property')
