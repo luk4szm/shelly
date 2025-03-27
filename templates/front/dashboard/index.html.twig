@@ -14,7 +14,7 @@
                         <div id="temperatures_card">
                             <div class="row">
                                 {% for location in ['bufor', 'zasilanie', 'powrot', 'salon'] %}
-                                    <div class="col-4 text-center">
+                                    <div class="col-3 text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}
                                             <div> {{ location|trans }}</div>
                                             <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
