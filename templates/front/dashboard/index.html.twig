@@ -13,6 +13,13 @@
                     <div class="card-body">
                         <div id="temperatures_card">
                             <div class="row">
+                                <div class="col d-flex justify-content-around">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_8h">Ostatnie 8h</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_day">Ostatnia doba</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_week">Ostatni tydzień</button>
+                                </div>
+                            </div>
+                            <div class="row">
                                 {% for location in locations %}
                                     <div class="col-3 text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}

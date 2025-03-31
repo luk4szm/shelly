@@ -1,12 +1,17 @@
 $(document).ready(function () {
     let ctx = document.getElementById('temperatureChart').getContext('2d');
     let temperatureChart;
+    let intervalId;
+    let prevTimeRange;
 
-    function updateChart() {
+    function updateChart(timeRange) {
+        prevTimeRange = timeRange;
+
         $.ajax({
             url: '/data/temp',
             method: 'GET',
             dataType: 'json',
+            data: {'timeRange': timeRange},
             success: function (data) {
                 if (data.length === 0) {
                     $('#temperature_chart_modal_content').html('<h5 class="text-center my-5">Brak danych dla zadanego okresu</h5>');
@@ -96,8 +101,17 @@ $(document).ready(function () {
     }
 
     // Pierwsze załadowanie danych
-    updateChart();
+    updateChart(prevTimeRange);
 
     // Ustawienie interwału aktualizacji co 30 sekund
-    setInterval(updateChart, 30000);
+    intervalId = setInterval(() => updateChart(prevTimeRange), 30000);
+
+    $('.btn[data-time-range]').click(function() {
+        let timeRange = $(this).data('time-range');
+
+        clearInterval(intervalId);
+        updateChart(timeRange);
+
+        intervalId = setInterval(() => updateChart(prevTimeRange), 30000);
+    });
 });
