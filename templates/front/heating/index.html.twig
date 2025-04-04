@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 g-3">
+                <div class="card">
+                    <div class="card-header text-capitalize fw-bold">
+                        Temperatury
+                    </div>
+                    <div class="card-body">
+                        <div id="temperatures_card">
+                            <div class="row">
+                                <div class="col d-flex justify-content-around">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="today">Dzisiaj</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_8h">Ostatnie 8h</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_day">Ostatnia doba</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="prev_day">Poprzedni dzień</button>
+                                    <input id="input_date" class="form-control" type="date" min="2025-03-12" max="{{ "now"|date('Y-m-d') }}" value="{{ "now"|date('Y-m-d') }}" style="width: 200px">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="next_day">Następny dzień</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="temperature_chart_modal_content">
+                            <canvas id="temperatureChart" style="width: 100%; max-height: 400px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+    {% include 'front/_modals/temperature_chart_modal.html.twig' %}
+{% endblock %}
+
+{% block body_javascripts %}
+    <script type="text/javascript" src="{{ asset('js/temp_chart.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/location_temp_chart_modal.js') }}"></script>
+{% endblock %}

@@ -4,11 +4,56 @@ $(document).ready(function () {
     let intervalId;
     let prevTimeRange;
 
+    let urlSegments = window.location.pathname.split('/');
+    let lastSegment = urlSegments[urlSegments.length - 1]; // Pobiera ostatni segment
+    let ajaxUrl;
+
+    if (lastSegment === 'heating') {
+        ajaxUrl = '/data/temp/heating';
+    } else {
+        ajaxUrl = '/data/temp';
+    }
+
+    $('#input_date').change(function () {
+        var date = $(this).val();
+
+        updateChart(date);
+    });
+
+    $('#prev_day').click(function () {
+        changeDate(-1);
+    });
+
+    $('#next_day').click(function () {
+        changeDate(1);
+    });
+
+    function changeDate(days) {
+        var inputDate = $('#input_date').val();
+
+        console.log(inputDate);
+
+        if (inputDate) {
+            var date = new Date(inputDate);
+            date.setDate(date.getDate() + days);
+
+            // Formatowanie daty do YYYY-MM-DD
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            var formattedDate = year + '-' + month + '-' + day;
+
+            $('#input_date').val(formattedDate);
+
+            updateChart(formattedDate);
+        }
+    }
+
     function updateChart(timeRange) {
         prevTimeRange = timeRange;
 
         $.ajax({
-            url: '/data/temp',
+            url: ajaxUrl,
             method: 'GET',
             dataType: 'json',
             data: {'timeRange': timeRange},

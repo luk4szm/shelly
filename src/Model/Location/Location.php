@@ -8,4 +8,13 @@ abstract class Location
     {
         return $this::NAME;
     }
+
+    public static function getHeatingLocations(): array
+    {
+        return [
+            Buffer::NAME,
+            FloorSupply::NAME,
+            FloorReturn::NAME,
+        ];
+    }
 }
