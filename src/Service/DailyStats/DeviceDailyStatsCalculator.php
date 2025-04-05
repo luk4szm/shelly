@@ -52,7 +52,6 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
         for ($i = 0; $i < count($this->hooks); $i++) {
             $isActive = $this->statusHelper->isActive($this->hooks[$i]);
             $duration = HookDurationUtil::calculateHookDuration($this->hooks[$i], $this->hooks[$i + 1] ?? null);
-            $energy   += $this->hooks[$i]->getValue() * $duration;
 
             if ($isActive) {
                 if (
@@ -65,6 +64,7 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
                 $pauseTime      = 0;
                 $runTime        += $duration;
                 $activeTime     += $duration;
+                $energy         += $this->hooks[$i]->getValue() * $duration;
                 $longestRunTime = max($longestRunTime, $runTime);
             } else {
                 $runTime          = 0;
