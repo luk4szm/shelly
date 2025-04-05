@@ -3,9 +3,13 @@
 start_date="2025-02-16"
 end_date=$(date -d "yesterday" +%Y-%m-%d)
 
-current_date="$start_date"
+start_timestamp=$(date -d "$start_date" +%s)
+end_timestamp=$(date -d "$end_date" +%s)
 
-while [[ "$current_date" <= "$end_date" ]]; do
+current_timestamp="$start_timestamp"
+
+while [[ "$current_timestamp" -le "$end_timestamp" ]]; do
+  current_date=$(date -d "@$current_timestamp" +%Y-%m-%d)
   php bin/console app:create:daily-stats "$current_date"
-  current_date=$(date -d "$current_date + 1 day" +%Y-%m-%d)
+  current_timestamp=$((current_timestamp + 86400)) # Dodaj 1 dzień (86400 sekund)
 done
