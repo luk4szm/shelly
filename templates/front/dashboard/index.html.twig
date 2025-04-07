@@ -9,28 +9,22 @@
                 <div class="card">
                     <div class="card-header text-capitalize fw-bold">
                         Temperatury
+                        <a class="float-end link-secondary" href="{{ path('app_front_heating') }}">Heating</a>
                     </div>
                     <div class="card-body">
                         <div id="temperatures_card">
-                            <div class="row">
-                                <div class="col d-flex justify-content-around">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_8h">Ostatnie 8h</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_day">Ostatnia doba</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_week">Ostatni tydzień</button>
-                                </div>
-                            </div>
                             <div class="row">
                                 {% for location in locations %}
                                     <div class="col-3 text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}
                                             <div> {{ location|trans }}</div>
                                             <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
-                                            <div>
-                                                <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"
-                                                        data-bs-toggle="modal" data-bs-target="#locationTemperatureChartModal">
-                                                    &#128202;
-                                                </button>
-                                            </div>
+{#                                            <div>#}
+{#                                                <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"#}
+{#                                                        data-bs-toggle="modal" data-bs-target="#locationTemperatureChartModal">#}
+{#                                                    &#128202;#}
+{#                                                </button>#}
+{#                                            </div>#}
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -63,12 +57,16 @@
                                         </div>
                                         <div class="col">
                                             {% if statuses[0].status == constant('App\\Model\\Status::ACTIVE') %}
-                                                <button type="button" class="btn btn-success w-100 fw-bold mb-2" style="cursor: default">
+                                                <button type="button" class="btn btn-success w-100 fw-bold text-nowrap" style="cursor: default">
                                                     RUNNING
+                                                    [<span class="current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span>]
+                                                    {{ statuses[0].lastValue }} W
                                                 </button>
                                             {% else %}
-                                                <button type="button" class="btn btn-warning w-100 fw-bold mb-2" style="cursor: default">
+                                                <button type="button" class="btn btn-warning w-100 fw-bold text-nowrap" style="cursor: default">
                                                     STANDBY
+                                                    [<span class="current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span>]
+                                                    {{ statuses[0].lastValue }} W
                                                 </button>
                                             {% endif %}
                                         </div>
@@ -79,20 +77,20 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td>Status duration:</td>
-                                            <td class="text-end"><span class="fw-bold current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current energy consumption:</td>
-                                            <td class="text-end"><span class="fw-bold">{{ statuses[0].lastValue }} W</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Duration of the previous status: </td>
-                                            <td class="text-end"><span class="fw-bold">{{ statuses[1].statusDuration|readableDurationTime }}</span></td>
-                                        </tr>
-                                    </table>
+{#                                    <table class="table table-sm">#}
+{#                                        <tr>#}
+{#                                            <td>Status duration:</td>#}
+{#                                            <td class="text-end"><span class="fw-bold current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span></td>#}
+{#                                        </tr>#}
+{#                                        <tr>#}
+{#                                            <td>Current energy consumption:</td>#}
+{#                                            <td class="text-end"><span class="fw-bold">{{ statuses[0].lastValue }} W</span></td>#}
+{#                                        </tr>#}
+{#                                        <tr>#}
+{#                                            <td>Duration of the previous status: </td>#}
+{#                                            <td class="text-end"><span class="fw-bold">{{ statuses[1].statusDuration|readableDurationTime }}</span></td>#}
+{#                                        </tr>#}
+{#                                    </table>#}
                                 {% else %}
                                     <small>brak danych</small>
                                 {% endif %}

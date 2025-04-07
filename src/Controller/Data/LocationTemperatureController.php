@@ -26,33 +26,31 @@ class LocationTemperatureController extends AbstractController
         $timeRange = $request->get('timeRange');
         $location  = $location === null ? 'all' : $location;
 
-        switch ($timeRange) {
-            case 'today':
-                $from = (new \DateTime())->setTime(0, 0);
-                $to   = new \DateTime();
-                break;
-            case 'last_day':
-                $from = new \DateTime("-1 day");
-                $to   = new \DateTime();
-                break;
-            case 'last_week':
-                $from = new \DateTime("-7 days");
-                $to   = new \DateTime();
-                break;
-            case 'last_8h':
-                $from = new \DateTime("-8 hours");
-                $to   = new \DateTime();
-                break;
-            default:
-                if (is_string($timeRange)) {
-                    $from = (new \DateTime($timeRange))->setTime(0, 0);
-                    $to   = (new \DateTime($timeRange))->setTime(23, 59, 59);
-                } else {
+        if ($timeRange !== null) {
+            switch ($timeRange) {
+                case 'today':
                     $from = (new \DateTime())->setTime(0, 0);
                     $to   = new \DateTime();
-                }
-
-                break;
+                    break;
+                case 'last_day':
+                    $from = new \DateTime("-1 day");
+                    $to   = new \DateTime();
+                    break;
+                case 'last_week':
+                    $from = new \DateTime("-7 days");
+                    $to   = new \DateTime();
+                    break;
+                case 'last_8h':
+                    $from = new \DateTime("-8 hours");
+                    $to   = new \DateTime();
+                    break;
+                default:
+                    $from = (new \DateTime($timeRange))->setTime(0, 0);
+                    $to   = (new \DateTime($timeRange))->setTime(23, 59, 59);
+            }
+        } else {
+            $from = new \DateTime("-8 hours");
+            $to   = new \DateTime();
         }
 
         $hooks = $location === 'heating'
