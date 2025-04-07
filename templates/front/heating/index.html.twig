@@ -14,12 +14,10 @@
                         <div id="temperatures_card">
                             <div class="row">
                                 <div class="col d-flex justify-content-around">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="today">Dzisiaj</button>
                                     <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_8h">Ostatnie 8h</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_day">Ostatnia doba</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" id="prev_day">Poprzedni dzień</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="prev_day"><</button>
                                     <input id="input_date" class="form-control" type="date" min="2025-03-12" max="{{ "now"|date('Y-m-d') }}" value="{{ "now"|date('Y-m-d') }}" style="width: 200px">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" id="next_day">Następny dzień</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="next_day">></button>
                                 </div>
                             </div>
                         </div>
