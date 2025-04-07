@@ -49,13 +49,13 @@
                             <div class="card-body">
                                 {% if statuses is not empty %}
                                     <div class="row">
-                                        <div class="col-auto">
+                                        <div class="col-auto pe-1">
                                             <button class="btn btn-light" data-action="stats" data-device-name="{{ name }}"
                                                     data-bs-toggle="offcanvas" href="#offcanvasDeviceStats">
                                                 &#128202;
                                             </button>
                                         </div>
-                                        <div class="col">
+                                        <div class="col px-1">
                                             {% if statuses[0].status == constant('App\\Model\\Status::ACTIVE') %}
                                                 <button type="button" class="btn btn-success w-100 fw-bold text-nowrap" style="cursor: default">
                                                     RUNNING
@@ -70,7 +70,7 @@
                                                 </button>
                                             {% endif %}
                                         </div>
-                                        <div class="col-auto">
+                                        <div class="col-auto ps-1">
                                             <button class="btn btn-light" data-action="history" data-device-name="{{ name }}"
                                                     data-bs-toggle="offcanvas" href="#offcanvasDeviceHistory">
                                                 &#128338;
