@@ -2,7 +2,7 @@
     {% if todayStats is not empty %}
         <div class="row">
             <div class="col">Total used energy:</div>
-            <div class="col fw-bold text-end">{{ todayStats.energy|format_energy }}</div>
+            <div class="col fw-bold text-end text-nowrap">{{ todayStats.energy|format_energy }}</div>
         </div>
         <div class="row">
             <div class="col">Inclusions:</div>
@@ -49,7 +49,7 @@
             <tr>
                 <td>{{ stats.date|date("d.m.Y") }}</td>
                 <td class="text-center">{{ stats.inclusions }}</td>
-                <td class="text-end">{{ stats.energy|format_energy }}</td>
+                <td class="text-end text-nowrap">{{ stats.energy|format_energy }}</td>
                 <td class="text-center">{{ stats.totalActiveTimeReadable }}</td>
                 {% if device == 'piec' %}
                     <td class="text-center">{{ (stats.energy * 0.024)|number_format(1) ~ ' m³' }}</td>
