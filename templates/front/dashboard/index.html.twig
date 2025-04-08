@@ -17,14 +17,15 @@
                                 {% for location in locations %}
                                     <div class="col-3 text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}
-                                            <div> {{ location|trans }}</div>
-                                            <div class="fw-bold fs-5">{{ device.value|number_format(1) }} °C</div>
-{#                                            <div>#}
-{#                                                <button type="button" class="btn btn-sm btn-light" data-action="history" data-location="{{ location }}"#}
-{#                                                        data-bs-toggle="modal" data-bs-target="#locationTemperatureChartModal">#}
-{#                                                    &#128202;#}
-{#                                                </button>#}
-{#                                            </div>#}
+                                            <a href="#" class="btn btn-sm btn-light" data-action="history"
+                                               data-location="{{ location }}"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#locationTemperatureChartModal">
+                                                {{ location|trans }}
+                                            </a>
+                                            <span class="fw-bold fs-5">
+                                                {{ device.value|number_format(1) }} °C
+                                            </span>
                                         {% endfor %}
                                     </div>
                                 {% endfor %}

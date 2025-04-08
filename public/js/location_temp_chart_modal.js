@@ -4,7 +4,7 @@ myModalEl.addEventListener('hidden.bs.modal', event => {
     $('#location_temperature_chart_modal_content').html('<canvas id="locationTemperatureChart"></canvas>');
 });
 
-$(document).on('click', 'button[data-bs-toggle="modal"][data-action="history"]', function () {
+$(document).on('click', '[data-bs-toggle="modal"][data-action="history"]', function () {
     loadTemperatureData($(this).data('location'));
 });
 
