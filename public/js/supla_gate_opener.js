@@ -1,4 +1,9 @@
 $(document).ready(function () {
+    // scroll under gate opener range
+    document.querySelector('#temperatures_row').scrollIntoView({
+        behavior: 'smooth'
+    });
+
     $('#gate_opener_range_input').on('mouseup touchend', function () {
         var currentValue = parseInt($(this).val());
 
