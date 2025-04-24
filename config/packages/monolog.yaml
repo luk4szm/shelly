@@ -2,7 +2,7 @@ monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
         - gate_opener
-    monolog:
+    handlers:
         gate_opener:
             level: debug
             type: stream
