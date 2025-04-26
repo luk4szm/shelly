@@ -6,12 +6,13 @@ use Symfony\Component\HttpClient\CurlHttpClient;
 
 abstract class Curl
 {
-    protected function request(string $method, string $url, array $body = []): array
+    protected function request(string $method, string $url, array $headers = [], array $body = []): ?array
     {
         $client = new CurlHttpClient();
 
         $curlRequest = $client->request($method, $url, [
-            'body' => $body,
+            'headers' => $headers,
+            'body'    => $body,
         ]);
 
         return $curlRequest->toArray();
