@@ -20,9 +20,7 @@ readonly class WeatherForecastService
             $time = (new \DateTime($item['time']))->setTimezone(new \DateTimeZone('Europe/Warsaw'));
             $data = $item['data']['instant']['details'];
 
-            $timeseries[] = (new WeatherForecast())
-                ->setTime($time)
-                ->setData($data);
+            $timeseries[] = YrnoForecastFactory::create($data, $time);
         }
 
         $this->storeForecast($timeseries);
@@ -39,9 +37,7 @@ readonly class WeatherForecastService
             /** @var WeatherForecast $existingForecast */
             foreach ($oldData as $existingForecast) {
                 if ($existingForecast->getTime()->getTimestamp() === $time->getTimestamp()) {
-                    $existingForecast->setData($newForecast->getData());
-
-                    $timeseries[] = $existingForecast;
+                    $timeseries[] = YrnoForecastFactory::update($newForecast, $existingForecast);
 
                     continue 2;
                 }
