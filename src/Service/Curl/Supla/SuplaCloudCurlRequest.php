@@ -11,7 +11,7 @@ class SuplaCloudCurlRequest extends Curl
 
     public function read(): array
     {
-        return $this->request(self::METHOD, self::URL, body: [
+        return $this->request(self::METHOD, self::URL, [
             'code'   => $_ENV['GATE_DIRECT_LINK_CODE'],
             'action' => 'read',
         ]);
@@ -19,7 +19,7 @@ class SuplaCloudCurlRequest extends Curl
 
     public function openClose(): array
     {
-        return $this->request(self::METHOD, self::URL, body: [
+        return $this->request(self::METHOD, self::URL, [
             'code'   => $_ENV['GATE_DIRECT_LINK_CODE'],
             'action' => 'open-close',
         ]);
