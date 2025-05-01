@@ -23,6 +23,26 @@ class ShellyCloudCurlRequest extends Curl
                 "id"      => $deviceId,
                 "channel" => 0,
                 "on"      => $action === 'on',
+//                "toggle_after": 5; // After how many seconds, the state should be set to opposite the value of "on"
+            ]
+        );
+    }
+
+    /**
+     * @param string                        $deviceId
+     * @param string{"open"|"close"|"stop"} $position
+     * @return array
+     */
+    public function cover(string $deviceId, string $position): array
+    {
+        return $this->request(
+            self::METHOD,
+            sprintf("%s/set/cover?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
+            json: [
+                "id"       => $deviceId,
+                "channel"  => 0,
+                "position" => $position,
+//                "duration" => 5, // Number of seconds before stopping the position change
             ]
         );
     }
