@@ -32,8 +32,24 @@
             <div class="col-lg-4 d-none d-lg-block g-3">
                 <div class="card">
                     <div class="card-body">
-                        <iframe src="https://www.yr.no/en/content/2-3085949/card.html" width="100%" height="365"
-                                style="border: none; overflow: hidden;"></iframe>
+                        <div id="weather_forecast_carousel" class="carousel slide">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <iframe src="https://www.yr.no/en/content/2-3085949/card.html" width="100%" height="365" style="border: none; overflow: hidden;"></iframe>
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="https://www.yr.no/en/content/2-3085949/meteogram.svg" width="100%" height="365">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#weather_forecast_carousel" data-bs-slide="prev" style="margin: -35px">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#weather_forecast_carousel" data-bs-slide="next" style="margin: -35px">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
