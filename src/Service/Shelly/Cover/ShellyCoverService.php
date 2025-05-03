@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Service\Cover;
+namespace App\Service\Shelly\Cover;
 
 use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
 
-class ShellyCoverService
+readonly class ShellyCoverService
 {
     private const SHELLY_DEVICE_ID = '2CBCBB2DC408';
 
     public function __construct(
-        private readonly ShellyCloudCurlRequest $curlRequest,
+        private ShellyCloudCurlRequest $curlRequest,
     ) {
     }
 
