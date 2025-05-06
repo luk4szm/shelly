@@ -63,7 +63,7 @@
                         <div id="temperatures_card">
                             <div class="row">
                                 {% for location in locations %}
-                                    <div class="col-3 text-center">
+                                    <div class="col text-center">
                                         {% for device in temperatures|filter(v => v.device == location) %}
                                             <a href="#" class="btn btn-sm btn-light" data-action="history"
                                                data-location="{{ location }}"
