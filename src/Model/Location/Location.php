@@ -13,8 +13,9 @@ abstract class Location
     {
         return [
             Buffer::NAME,
-            FloorSupply::NAME,
-            FloorReturn::NAME,
+            BufferCoil::NAME,
+//            FloorSupply::NAME,
+//            FloorReturn::NAME,
         ];
     }
 }
