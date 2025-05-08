@@ -14,9 +14,10 @@ function loadTemperatureData(location) {
     let locationTemperatureChart;
 
     $.ajax({
-        url: '/data/temp/' + location,
+        url: '/data/temp',
         method: 'GET',
         dataType: 'json',
+        data: {'location': location},
         success: function (data) {
             if (data.length === 0) {
                 $('#location_temperature_chart_modal_content').html('<h5 class="text-center my-5">Brak danych dla zadanego okresu</h5>');

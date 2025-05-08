@@ -96,9 +96,9 @@ class HookRepository extends CrudRepository
     }
 
     public function findLocationTemperatures(
-        \DateTime    $from,
-        \DateTime    $to,
-        string|array $location = 'all',
+        \DateTime         $from,
+        \DateTime         $to,
+        string|array|null $location = null,
     ): array
     {
         $qb = $this->createQueryBuilder('hook')
@@ -110,7 +110,7 @@ class HookRepository extends CrudRepository
         if (is_array($location)) {
             $qb->andWhere('hook.device in (:location)')
                ->setParameter('location', $location);
-        } elseif ($location !== 'all') {
+        } elseif ($location !== null) {
             $qb->andWhere('hook.device = :location')
                ->setParameter('location', $location);
         }

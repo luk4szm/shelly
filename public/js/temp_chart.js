@@ -3,21 +3,18 @@ $(document).ready(function () {
     let temperatureChart;
     let intervalId;
     let prevTimeRange;
+    let location = null;
+    let group = null;
 
     let urlSegments = window.location.pathname.split('/');
-    let lastSegment = urlSegments[urlSegments.length - 1]; // Pobiera ostatni segment
-    let ajaxUrl;
-
-    if (lastSegment === 'heating') {
-        ajaxUrl = '/data/temp/heating';
-    } else {
-        ajaxUrl = '/data/temp';
+    if (urlSegments[urlSegments.length - 1] === 'heating') {
+        group = 'heating';
     }
 
     $('#input_date').change(function () {
         var date = $(this).val();
 
-        updateChart(date);
+        updateChart(date, location, group);
     });
 
     $('#prev_day').click(function () {
@@ -45,18 +42,18 @@ $(document).ready(function () {
 
             $('#input_date').val(formattedDate);
 
-            updateChart(formattedDate);
+            updateChart(formattedDate, location, group);
         }
     }
 
-    function updateChart(timeRange) {
+    function updateChart(timeRange, location = null, group = null) {
         prevTimeRange = timeRange;
 
         $.ajax({
-            url: ajaxUrl,
+            url: '/data/temp',
             method: 'GET',
             dataType: 'json',
-            data: {'timeRange': timeRange},
+            data: {'timeRange': timeRange, 'location': location, 'group': group},
             success: function (data) {
                 if (data.length === 0) {
                     $('#temperature_chart_modal_content').html('<h5 class="text-center my-5">Brak danych dla zadanego okresu</h5>');
@@ -146,17 +143,17 @@ $(document).ready(function () {
     }
 
     // Pierwsze załadowanie danych
-    updateChart(prevTimeRange);
+    updateChart(prevTimeRange, location, group);
 
     // Ustawienie interwału aktualizacji co 30 sekund
-    intervalId = setInterval(() => updateChart(prevTimeRange), 30000);
+    intervalId = setInterval(() => updateChart(prevTimeRange, location, group), 30000);
 
     $('.btn[data-time-range]').click(function() {
         let timeRange = $(this).data('time-range');
 
         clearInterval(intervalId);
-        updateChart(timeRange);
+        updateChart(timeRange, location, group);
 
-        intervalId = setInterval(() => updateChart(prevTimeRange), 30000);
+        intervalId = setInterval(() => updateChart(prevTimeRange, location, group), 30000);
     });
 });

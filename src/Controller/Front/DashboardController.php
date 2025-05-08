@@ -3,7 +3,6 @@
 namespace App\Controller\Front;
 
 use App\Form\GasMeterIndicationType;
-use App\Model\Location\Location;
 use App\Repository\GasMeterRepository;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
@@ -25,8 +24,7 @@ final class DashboardController extends AbstractController
     ): Response
     {
         $lastGasMeterIndication = $gasMeterRepository->findLast();
-//        $locations              = $locationFinder->getLocations();
-        $locations              = array_merge(Location::getHeatingLocations(), ['salon']);
+        $locations              = array_merge($locationFinder->getLocations('buffer'), $locationFinder->getLocations('rooms'));
 
         $gasMeterForm = $this->createForm(GasMeterIndicationType::class, options: [
             'lastIndication' => $lastGasMeterIndication->getIndication(),
