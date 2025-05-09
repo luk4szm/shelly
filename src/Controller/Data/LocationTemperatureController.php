@@ -6,6 +6,7 @@ namespace App\Controller\Data;
 
 use App\Entity\Hook;
 use App\Repository\HookRepository;
+use App\Service\Location\LocationFinder;
 use App\Utils\Hook\Temperature\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +19,7 @@ class LocationTemperatureController extends AbstractController
     public function index(
         Request                 $request,
         HookRepository          $hookRepository,
+        LocationFinder          $locationFinder,
         TemperatureGraphHandler $graphHandler,
     ): Response
     {
@@ -55,7 +57,7 @@ class LocationTemperatureController extends AbstractController
         if ($location) {
             $hooks = $hookRepository->findLocationTemperatures($from, $to, $location);
         } elseif($group) {
-            $hooks = $hookRepository->findLocationTemperatures($from, $to, $location);
+            $hooks = $hookRepository->findLocationTemperatures($from, $to, $locationFinder->getLocations($group));
         } else {
             $hooks = $hookRepository->findLocationTemperatures($from, $to);
         }
@@ -64,7 +66,7 @@ class LocationTemperatureController extends AbstractController
             return $this->json([]);
         }
 
-        if (empty($location) && empty($group)) {
+        if (empty($location)) {
             return $this->json($graphHandler->prepareGroupedHooks($hooks));
         }
 
