@@ -92,7 +92,9 @@ class HookRepository extends CrudRepository
                 ->getOneOrNullResult();
         }
 
-        return $temps;
+        return array_filter($temps ?? [], function (?Hook $hook) {
+            return $hook !== null;
+        });
     }
 
     public function findLocationTemperatures(
