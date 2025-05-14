@@ -123,6 +123,27 @@ class HookRepository extends CrudRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findGroupedHooks(string $device, string $property): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT DATE(created_at) AS date, ROUND(AVG(VALUE), 1) AS avg,  ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min
+            FROM hook
+            WHERE device = :device AND property = :property AND created_at >= :from
+            GROUP BY date
+        ';
+
+        $resultSet = $conn->executeQuery($sql, [
+            'device' => $device,
+            'property' => $property,
+            'from' => (new \DateTime("-1 month"))->format("Y-m-d"),
+        ]);
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $resultSet->fetchAllAssociative();
+    }
+
     private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('hook')
