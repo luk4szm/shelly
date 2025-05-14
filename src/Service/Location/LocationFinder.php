@@ -12,9 +12,16 @@ readonly class LocationFinder
     ) {
     }
 
-    public function getLocations(): array
+    public function getLocations(string $group = null): array
     {
         foreach ($this->locations as $location) {
+            if (
+                $group !== null
+                && !in_array($group, $location->getGroups(), true)
+            ) {
+                continue;
+            }
+
             $locations[] = $location->getName();
         }
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Data;
 
 use App\Entity\Hook;
-use App\Model\Location\Location;
 use App\Repository\HookRepository;
+use App\Service\Location\LocationFinder;
 use App\Utils\Hook\Temperature\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,16 +15,17 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class LocationTemperatureController extends AbstractController
 {
-    #[Route('/data/temp/{location}', name: 'app_data_location_temperature_index', methods: ['GET'])]
+    #[Route('/data/temp', name: 'app_data_location_temperature_index', methods: ['GET'])]
     public function index(
         Request                 $request,
         HookRepository          $hookRepository,
+        LocationFinder          $locationFinder,
         TemperatureGraphHandler $graphHandler,
-        ?string                 $location = null,
     ): Response
     {
         $timeRange = $request->get('timeRange');
-        $location  = $location === null ? 'all' : $location;
+        $location  = $request->get('location');
+        $group     = $request->get('group');
 
         if ($timeRange !== null) {
             switch ($timeRange) {
@@ -53,15 +54,19 @@ class LocationTemperatureController extends AbstractController
             $to   = new \DateTime();
         }
 
-        $hooks = $location === 'heating'
-            ? $hookRepository->findLocationTemperatures($from, $to, Location::getHeatingLocations())
-            : $hookRepository->findLocationTemperatures($from, $to, $location);
+        if ($location) {
+            $hooks = $hookRepository->findLocationTemperatures($from, $to, $location);
+        } elseif($group) {
+            $hooks = $hookRepository->findLocationTemperatures($from, $to, $locationFinder->getLocations($group));
+        } else {
+            $hooks = $hookRepository->findLocationTemperatures($from, $to);
+        }
 
         if (empty($hooks)) {
             return $this->json([]);
         }
 
-        if (in_array($location, ['all', 'heating'])) {
+        if (empty($location)) {
             return $this->json($graphHandler->prepareGroupedHooks($hooks));
         }
 

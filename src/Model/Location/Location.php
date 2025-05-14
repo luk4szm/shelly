@@ -9,12 +9,8 @@ abstract class Location
         return $this::NAME;
     }
 
-    public static function getHeatingLocations(): array
+    public function getGroups(): array
     {
-        return [
-            Buffer::NAME,
-            FloorSupply::NAME,
-            FloorReturn::NAME,
-        ];
+        return $this::GROUP;
     }
 }

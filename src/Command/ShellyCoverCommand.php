@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Service\Cover\ShellyCoverService;
+use App\Service\Shelly\Cover\ShellyCoverService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

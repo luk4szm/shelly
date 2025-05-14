@@ -14,14 +14,19 @@ function loadTemperatureData(location) {
     let locationTemperatureChart;
 
     $.ajax({
-        url: '/data/temp/' + location,
+        url: '/data/temp',
         method: 'GET',
         dataType: 'json',
+        data: {'location': location},
         success: function (data) {
             if (data.length === 0) {
-                $('#location_temperature_chart_modal_content').html('<h5 class="text-center my-5">Brak danych dla zadanego okresu</h5>');
+                $('#no_data_modal').show();
+                $('#temperature_chart_modal_content').hide();
 
                 return;
+            } else {
+                $('#no_data_modal').hide();
+                $('#temperature_chart_modal_content').show();
             }
 
             const chartData = data.map(item => ({

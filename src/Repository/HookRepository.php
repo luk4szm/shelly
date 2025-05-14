@@ -92,13 +92,15 @@ class HookRepository extends CrudRepository
                 ->getOneOrNullResult();
         }
 
-        return $temps;
+        return array_filter($temps ?? [], function (?Hook $hook) {
+            return $hook !== null;
+        });
     }
 
     public function findLocationTemperatures(
-        \DateTime    $from,
-        \DateTime    $to,
-        string|array $location = 'all',
+        \DateTime         $from,
+        \DateTime         $to,
+        string|array|null $location = null,
     ): array
     {
         $qb = $this->createQueryBuilder('hook')
@@ -110,7 +112,7 @@ class HookRepository extends CrudRepository
         if (is_array($location)) {
             $qb->andWhere('hook.device in (:location)')
                ->setParameter('location', $location);
-        } elseif ($location !== 'all') {
+        } elseif ($location !== null) {
             $qb->andWhere('hook.device = :location')
                ->setParameter('location', $location);
         }

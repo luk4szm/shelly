@@ -24,7 +24,7 @@ final class DashboardController extends AbstractController
     ): Response
     {
         $lastGasMeterIndication = $gasMeterRepository->findLast();
-        $locations              = $locationFinder->getLocations();
+        $locations              = array_merge($locationFinder->getLocations('buffer'), $locationFinder->getLocations('rooms'));
 
         $gasMeterForm = $this->createForm(GasMeterIndicationType::class, options: [
             'lastIndication' => $lastGasMeterIndication->getIndication(),
@@ -40,7 +40,7 @@ final class DashboardController extends AbstractController
             'locations'              => $locations,
             'gasMeterForm'           => $gasMeterForm->createView(),
             'lastGasMeterIndication' => $lastGasMeterIndication,
-            'temperatures'           => $hookRepository->findActualTemps($locations),
+            'temperatures'           => array_values($hookRepository->findActualTemps($locations)),
         ]);
     }
 
