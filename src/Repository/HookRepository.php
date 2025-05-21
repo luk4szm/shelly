@@ -36,6 +36,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.createdAt >= :date')
             ->setParameter('date', new \DateTime("-7 day"))
             ->orderBy('hook.id', 'DESC')
+            ->setMaxResults(250)
             ->getQuery()
             ->getResult();
 
