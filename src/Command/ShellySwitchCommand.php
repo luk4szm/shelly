@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Service\Shelly\Cover\ShellyCoverService;
 use App\Service\Shelly\Switch\ShellySwitchService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -39,7 +38,7 @@ class ShellySwitchCommand extends Command
 
         $status = $action === 'status'
             ? $this->switchService->getStatus($deviceId)
-            : $this->switchService->switch($deviceId, $action);
+            : $this->switchService->switch($deviceId, 0, $action);
 
         dump(json_encode($status) ?? null);
 

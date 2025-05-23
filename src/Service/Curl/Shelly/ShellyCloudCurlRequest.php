@@ -14,14 +14,14 @@ class ShellyCloudCurlRequest extends Curl
      * @param string{"on"|"off"} $action
      * @return array
      */
-    public function switch(string $deviceId, string $action): array
+    public function switch(string $deviceId, int $channel, string $action): array
     {
         return $this->request(
             self::METHOD,
             sprintf("%s/set/switch?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
             json: [
                 "id"      => $deviceId,
-                "channel" => 0,
+                "channel" => $channel,
                 "on"      => $action === 'on',
 //                "toggle_after": 5; // After how many seconds, the state should be set to opposite the value of "on"
             ]

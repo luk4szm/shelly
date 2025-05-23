@@ -11,9 +11,9 @@ readonly class ShellySwitchService
     ) {
     }
 
-    public function switch(string $deviceId, string $action): array
+    public function switch(string $deviceId, int $channel, string $action): array
     {
-        return $this->curlRequest->switch($deviceId, $action);
+        return $this->curlRequest->switch($deviceId, $channel, $action);
     }
 
     public function getStatus(string $deviceId): array
