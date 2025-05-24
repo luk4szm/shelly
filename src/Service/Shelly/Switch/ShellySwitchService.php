@@ -2,15 +2,10 @@
 
 namespace App\Service\Shelly\Switch;
 
-use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
+use App\Service\Shelly\ShellyDeviceService;
 
-readonly class ShellySwitchService
+readonly class ShellySwitchService extends ShellyDeviceService
 {
-    public function __construct(
-        private ShellyCloudCurlRequest $curlRequest,
-    ) {
-    }
-
     public function switch(string $deviceId, int $channel, string $action): array
     {
         return $this->curlRequest->switch($deviceId, $channel, $action);

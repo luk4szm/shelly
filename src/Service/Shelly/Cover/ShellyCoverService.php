@@ -2,16 +2,11 @@
 
 namespace App\Service\Shelly\Cover;
 
-use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
+use App\Service\Shelly\ShellyDeviceService;
 
-readonly class ShellyCoverService
+readonly class ShellyCoverService extends ShellyDeviceService
 {
     private const SHELLY_DEVICE_ID = '2CBCBB2DC408';
-
-    public function __construct(
-        private ShellyCloudCurlRequest $curlRequest,
-    ) {
-    }
 
     public function open(): array
     {

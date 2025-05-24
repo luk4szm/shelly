@@ -121,6 +121,16 @@
                                             {% endif %}
                                         </div>
                                         <div class="col-auto ps-1">
+                                            <button type="button" class="btn btn-light"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deviceStatusModal"
+                                                    data-action="status"
+                                                    data-device-name="{{ name }}"
+                                            >
+                                                @
+                                            </button>
+                                        </div>
+                                        <div class="col-auto ps-1">
                                             <button class="btn btn-light" data-action="history" data-device-name="{{ name }}"
                                                     data-bs-toggle="offcanvas" href="#offcanvasDeviceHistory">
                                                 &#128338;
@@ -174,6 +184,7 @@
 
 {% block modals %}
     {% include 'front/_modals/temperature_chart_modal.html.twig' %}
+    {% include 'front/_modals/device_status_modal.html.twig' %}
 {% endblock %}
 
 {% block body_javascripts %}
@@ -184,5 +195,6 @@
     <script type="text/javascript" src="{{ asset('js/refresh_temperatures_card.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/temp_chart.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/location_temp_chart_modal.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/device_status_modal.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/forecast_widget_reload.js') }}"></script>
 {% endblock %}
