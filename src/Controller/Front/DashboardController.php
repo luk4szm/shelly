@@ -32,7 +32,11 @@ final class DashboardController extends AbstractController
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
-            $devices[$helper->getDeviceName()] = $helper->getHistory(2);
+            $devices[] = [
+                'name'     => $helper->getDeviceName(),
+                'deviceId' => $helper->getDeviceId(),
+                'history'  => $helper->getHistory(2),
+            ];
         }
 
         return $this->render('front/dashboard/index.html.twig', [

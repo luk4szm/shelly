@@ -5,15 +5,15 @@ statusModalElement.addEventListener('hidden.bs.modal', event => {
 });
 
 $(document).on('click', 'button[data-bs-toggle="modal"][data-action="status"]', function () {
-    loadDeviceStatus($(this).data('device-name'));
+    loadDeviceStatus($(this).data('device-id'));
 });
 
-function loadDeviceStatus(device) {
+function loadDeviceStatus(deviceId) {
     $.ajax({
         url: '/data/status',
         method: 'GET',
         dataType: 'json',
-        data: {'device': device},
+        data: {'deviceId': deviceId},
         success: function (response) {
             $('#device_status_modal_content').html('<pre>' + JSON.stringify(response, undefined, 2) + '</pre>');
         },

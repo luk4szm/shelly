@@ -17,6 +17,11 @@ final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceSt
         return Fireplace::NAME;
     }
 
+    public function getDeviceId(): string
+    {
+        return Fireplace::DEVICE_ID;
+    }
+
     public function isActive(Hook $hook): bool
     {
         return (float)$hook->getValue() > Fireplace::BOUNDARY_POWER;

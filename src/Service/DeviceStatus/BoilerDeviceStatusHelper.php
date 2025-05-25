@@ -17,6 +17,11 @@ final class BoilerDeviceStatusHelper extends DeviceStatusHelper implements Devic
         return Boiler::NAME;
     }
 
+    public function getDeviceId(): string
+    {
+        return Boiler::DEVICE_ID;
+    }
+
     public function isActive(Hook $hook): bool
     {
         return (float)$hook->getValue() > Boiler::BOUNDARY_POWER;

@@ -88,50 +88,48 @@
             </div>
         </div>
         <div class="row">
-            <div data-device-names="{{ devices|map((deviceData, name) => name)|join('|') }}"></div>
-            {% for name, statuses in devices %}
+            <div data-device-names="{{ devices|map((device) => device.name)|join('|') }}"></div>
+            {% for device in devices %}
                 <div class="col-xl-4 col-md-6 col-12 g-3">
-                    <div id="{{ name }}_device_card">
+                    <div id="{{ device.name }}_device_card">
                         <div class="card">
                             <div class="card-header text-capitalize fw-bold">
-                                {{ name }}
+                                <button type="button" class="btn btn-sm btn-light float-end py-0"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deviceStatusModal"
+                                        data-action="status"
+                                        data-device-id="{{ device.deviceId }}"
+                                >
+                                    &#9432;
+                                </button>
+                                {{ device.name }}
                             </div>
                             <div class="card-body">
-                                {% if statuses is not empty %}
+                                {% if device.history is not empty %}
                                     <div class="row">
                                         <div class="col-auto pe-1">
-                                            <button class="btn btn-light" data-action="stats" data-device-name="{{ name }}"
+                                            <button class="btn btn-light" data-action="stats" data-device-name="{{ device.name }}"
                                                     data-bs-toggle="offcanvas" href="#offcanvasDeviceStats">
                                                 &#128202;
                                             </button>
                                         </div>
                                         <div class="col px-1">
-                                            {% if statuses[0].status == constant('App\\Model\\Status::ACTIVE') %}
+                                            {% if device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
                                                 <button type="button" class="btn btn-success w-100 fw-bold text-nowrap" style="cursor: default">
                                                     RUNNING
-                                                    [<span class="current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span>]
-                                                    {{ statuses[0].lastValue }} W
+                                                    [<span class="current_status_duration">{{ device.history[0].statusDuration|readableDurationTime }}</span>]
+                                                    {{ device.history[0].lastValue }} W
                                                 </button>
                                             {% else %}
                                                 <button type="button" class="btn btn-warning w-100 fw-bold text-nowrap" style="cursor: default">
                                                     STANDBY
-                                                    [<span class="current_status_duration">{{ statuses[0].statusDuration|readableDurationTime }}</span>]
-                                                    {{ statuses[0].lastValue }} W
+                                                    [<span class="current_status_duration">{{ device.history[0].statusDuration|readableDurationTime }}</span>]
+                                                    {{ device.history[0].lastValue }} W
                                                 </button>
                                             {% endif %}
                                         </div>
                                         <div class="col-auto ps-1">
-                                            <button type="button" class="btn btn-light"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#deviceStatusModal"
-                                                    data-action="status"
-                                                    data-device-name="{{ name }}"
-                                            >
-                                                @
-                                            </button>
-                                        </div>
-                                        <div class="col-auto ps-1">
-                                            <button class="btn btn-light" data-action="history" data-device-name="{{ name }}"
+                                            <button class="btn btn-light" data-action="history" data-device-name="{{ device.name }}"
                                                     data-bs-toggle="offcanvas" href="#offcanvasDeviceHistory">
                                                 &#128338;
                                             </button>

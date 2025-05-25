@@ -17,6 +17,11 @@ final class SolarsStatusHelper extends DeviceStatusHelper implements DeviceStatu
         return Solars::NAME;
     }
 
+    public function getDeviceId(): string
+    {
+        return Solars::DEVICE_ID;
+    }
+
     public function isActive(Hook $hook): bool
     {
         return (float)$hook->getValue() > Solars::BOUNDARY_POWER;
