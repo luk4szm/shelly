@@ -10,6 +10,10 @@ readonly class ShellyCoverService extends ShellyDeviceService
 
     public function open(): array
     {
+        $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'open');
+
+        sleep(25);
+
         return $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'open');
     }
 
