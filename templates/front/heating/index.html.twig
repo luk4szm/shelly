@@ -31,6 +31,14 @@
             <div class="col-md-6 col-12 g-3">
                 <div class="card">
                     <div class="card-header text-capitalize fw-bold">
+                        <button type="button" class="btn btn-sm btn-light float-end py-0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deviceStatusModal"
+                                data-action="status"
+                                data-device-id="{{ constant('App\\Model\\Location\\LivingRoom::DEVICE_ID') }}"
+                        >
+                            &#9432;
+                        </button>
                         Temperatura salon
                     </div>
                     <div class="card-body">
@@ -41,6 +49,14 @@
             <div class="col-md-6 col-12 g-3">
                 <div class="card">
                     <div class="card-header text-capitalize fw-bold">
+                        <button type="button" class="btn btn-sm btn-light float-end py-0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deviceStatusModal"
+                                data-action="status"
+                                data-device-id="{{ constant('App\\Model\\Location\\LivingRoom::DEVICE_ID') }}"
+                        >
+                            &#9432;
+                        </button>
                         Wilgotność salon
                     </div>
                     <div class="card-body">
@@ -54,10 +70,12 @@
 
 {% block modals %}
     {% include 'front/_modals/temperature_chart_modal.html.twig' %}
+    {% include 'front/_modals/device_status_modal.html.twig' %}
 {% endblock %}
 
 {% block body_javascripts %}
     <script type="text/javascript" src="{{ asset('js/temp_chart.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/salon_temp_chart.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/location_temp_chart_modal.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/device_status_modal.js') }}"></script>
 {% endblock %}
