@@ -58,6 +58,14 @@
                     <div class="card-header text-capitalize fw-bold">
                         Temperatury
                         <a class="float-end link-secondary" href="{{ path('app_front_heating') }}">Heating</a>
+                        <button type="button" class="btn btn-sm btn-light float-end py-0 me-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deviceStatusModal"
+                                data-action="status"
+                                data-device-id="{{ constant('App\\Model\\Location\\Buffer::DEVICE_ID') }}"
+                        >
+                            &#9432;
+                        </button>
                     </div>
                     <div class="card-body">
                         <div id="temperatures_card">
