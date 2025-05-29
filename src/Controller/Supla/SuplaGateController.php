@@ -13,8 +13,15 @@ use Symfony\Component\Routing\Attribute\Route;
 class SuplaGateController extends AbstractController
 {
     #[Route('/open', name: 'open', methods: ['PATCH'])]
-    public function index(SuplaGateOpener $gateOpener): Response
+    public function open(SuplaGateOpener $gateOpener): Response
     {
         return $this->json($gateOpener->open());
     }
+
+    #[Route('/open-close', name: 'open_close', methods: ['PATCH'])]
+    public function openClose(SuplaGateOpener $gateOpener): Response
+    {
+        return $this->json($gateOpener->sendOpenCloseSimpleRequest());
+    }
+
 }

@@ -69,6 +69,13 @@ readonly class SuplaGateOpener
         return false;
     }
 
+    public function sendOpenCloseSimpleRequest(): bool
+    {
+        $this->user = $this->security->getUser();
+
+        return $this->tryOpen();
+    }
+
     public function read(): array
     {
         return $this->suplaCurl->read();

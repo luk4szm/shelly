@@ -4,7 +4,7 @@ $(document).ready(function () {
         behavior: 'smooth'
     });
 
-    let infoButton = $("#gate_opener_info_button_div")
+    let infoButton = $("#gate_opener_info_button_div");
     let progressBar = $("#gate_opener_progress_bar");
     let rangeInput = $('#gate_opener_range_input');
 
@@ -27,6 +27,16 @@ $(document).ready(function () {
         } else {
             $(this).val(0);
         }
+    });
+
+    $('#gate_opener_button').click(function () {
+        $.ajax({
+            url: '/supla/gate/open-close',
+            method: 'PATCH',
+            success: function () {
+                hideDiv(progressBar);
+            },
+        });
     });
 });
 
@@ -60,8 +70,13 @@ function showGateOpeningProgress() {
             .addClass('btn-success')
             .html('Gate open!');
 
-        $("#gate_opener_info_button_div").removeClass('mb-2');
-
         hideDiv($("#gate_opener_progress_bar"));
+
+        setTimeout(function(){
+            $('#gate_opener_range_input').val(0);
+
+            showDiv($('#gate_opener_range_input'));
+            hideDiv($("#gate_opener_info_button_div"));
+        }, 2000);
     });
 }

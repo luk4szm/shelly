@@ -12,16 +12,21 @@
 {#                            <div class="col-12">#}
 {#                                <img src="https://svr133.supla.org/assets/img/functions/20-closed.svg" height="100px" width="100px" />#}
 {#                            </div>#}
-                            <div class="col-12">
-                                <input type="range" class="form-range" id="gate_opener_range_input" min="0" max="100" value="0">
+                            <div class="col-12 col-lg-8">
+                                <input type="range" class="form-range mt-lg-1" id="gate_opener_range_input" min="0" max="100" value="0">
                                 <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2">
-                                    <button id="gate_opener_info_button" class="btn btn-primary disabled" type="button">
+                                    <button id="gate_opener_info_button" class="btn btn-primary disabled w-100" type="button">
                                         Waiting for response...
                                     </button>
                                 </div>
                                 <div id="gate_opener_progress_bar" class="progress d-none">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
                                 </div>
+                            </div>
+                            <div class="col-12 col-lg-4 d-none d-lg-block">
+                                <button id="gate_opener_button" type="button" class="btn btn-warning w-100 mt-2 mt-md-0 fw-bold">
+                                    Open/close request
+                                </button>
                             </div>
                         </div>
                     </div>
