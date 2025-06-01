@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class GasMeterHistoryController extends AbstractController
+final class GasMeterHistoryController extends AbstractController
 {
     #[Route('/gas/meter/history', name: 'app_gas_meter_history_index', methods: ['GET'])]
     public function index(GasMeterRepository $repository): Response

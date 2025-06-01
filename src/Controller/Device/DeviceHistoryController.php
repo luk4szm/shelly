@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class DeviceHistoryController extends AbstractController
+final class DeviceHistoryController extends AbstractController
 {
     #[Route('/device/history', name: 'app_device_history_index', methods: ['GET'])]
     public function index(

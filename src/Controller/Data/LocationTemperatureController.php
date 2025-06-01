@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class LocationTemperatureController extends AbstractController
+final class LocationTemperatureController extends AbstractController
 {
     #[Route('/data/temp', name: 'app_data_location_temperature_index', methods: ['GET'])]
     public function index(

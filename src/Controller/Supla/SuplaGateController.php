@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/supla/gate', name: 'supla_gate')]
-class SuplaGateController extends AbstractController
+final class SuplaGateController extends AbstractController
 {
     #[Route('/open', name: 'open', methods: ['PATCH'])]
     public function open(SuplaGateOpener $gateOpener): Response

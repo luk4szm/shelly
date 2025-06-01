@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class CoverController extends AbstractController
+final class CoverController extends AbstractController
 {
     #[Route('/cover/open-close', name: 'app_cover_index', methods: ['PATCH'])]
     public function index(Request $request, ShellyCoverService $coverService): Response
