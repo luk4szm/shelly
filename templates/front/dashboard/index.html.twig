@@ -7,49 +7,57 @@
         <div class="row">
             <div class="col-12 g-3">
                 <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-{#                            <div class="col-12">#}
-{#                                <img src="https://svr133.supla.org/assets/img/functions/20-closed.svg" height="100px" width="100px" />#}
-{#                            </div>#}
-                            <div class="col-12 col-lg-8">
-                                <input type="range" class="form-range mt-lg-1" id="gate_opener_range_input" min="0" max="100" value="0">
-                                <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2">
-                                    <button id="gate_opener_info_button" class="btn btn-primary disabled w-100" type="button">
-                                        Waiting for response...
-                                    </button>
-                                </div>
-                                <div id="gate_opener_progress_bar" class="progress d-none">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-4 d-none d-lg-block">
-                                <button id="gate_opener_button" type="button" class="btn btn-warning w-100 mt-2 mt-md-0 fw-bold">
-                                    Open/close request
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 g-3">
-                <div class="card">
                     <div class="card-body p-0">
-                        <div class="accordion" id="coverButtons">
+                        <div class="accordion" id="devicesControl">
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#cover-buttons" aria-controls="#cover-buttons">
+                                            data-bs-target="#gate-control" aria-controls="#gate-control">
+                                        Brama
+                                    </button>
+                                </h2>
+                                <div id="gate-control" class="accordion-collapse collapse" data-bs-parent="#devicesControl">
+                                    <div class="accordion-body">
+                                        <div class="row">
+{#                                      <div class="col-12"> #}
+{#                                          <img src="https://svr133.supla.org/assets/img/functions/20-closed.svg" height="100px" width="100px" /> #}
+{#                                      </div> #}
+                                            <div class="col-12 col-lg-8">
+                                                <input type="range" class="form-range mt-lg-1" id="gate_opener_range_input" min="0"
+                                                       max="100" value="0">
+                                                <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2">
+                                                    <button id="gate_opener_info_button" class="btn btn-primary disabled w-100"
+                                                            type="button">
+                                                        Waiting for response...
+                                                    </button>
+                                                </div>
+                                                <div id="gate_opener_progress_bar" class="progress d-none">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                                         style="width: 0"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-lg-4 d-none d-lg-block">
+                                                <button id="gate_opener_button" type="button"
+                                                        class="btn btn-warning w-100 mt-2 mt-md-0 fw-bold">
+                                                    Open/close request
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#cover-control" aria-controls="#cover-control">
                                         Rolety
                                     </button>
                                 </h2>
-                                <div id="cover-buttons" class="accordion-collapse collapse" data-bs-parent="#coverButtons">
+                                <div id="cover-control" class="accordion-collapse collapse" data-bs-parent="#devicesControl">
                                     <div class="accordion-body">
                                         <div class="btn-group w-100" role="group">
-                                            <button type="button" data-role="close" class="btn btn-outline-secondary w-50 fw-bolder">Zamknij &#8615;</button>
-                                            <button type="button" data-role="open" class="btn btn-outline-secondary w-50 fw-bolder">Otwórz &#8613;</button>
+                                            <button type="button" data-role="close" class="btn btn-outline-secondary w-50 fw-bolder">&#8615; Zamknij &#8615;</button>
+                                            <button type="button" data-role="open" class="btn btn-outline-secondary w-50 fw-bolder">&#8613; Otwórz &#8613;</button>
                                         </div>
                                     </div>
                                 </div>
