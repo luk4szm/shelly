@@ -10,5 +10,10 @@ $(document).ready(function () {
                 console.log(result)
             }
         });
+
+        let accordionCollapseElement = $('#cover-buttons');
+        let bsCollapse = bootstrap.Collapse.getInstance(accordionCollapseElement[0]);
+
+        bsCollapse.hide(); // close accordion
     });
 });
