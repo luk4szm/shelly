@@ -33,6 +33,32 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12 g-3">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="accordion" id="coverButtons">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#cover-buttons" aria-controls="#cover-buttons">
+                                        Rolety
+                                    </button>
+                                </h2>
+                                <div id="cover-buttons" class="accordion-collapse collapse" data-bs-parent="#coverButtons">
+                                    <div class="accordion-body">
+                                        <div class="btn-group w-100" role="group">
+                                            <button type="button" data-role="close" class="btn btn-outline-secondary w-50 fw-bolder">Zamknij &#8615;</button>
+                                            <button type="button" data-role="open" class="btn btn-outline-secondary w-50 fw-bolder">Otwórz &#8613;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row" id="temperatures_row" style="height: 420px;">
             <div class="col-lg-4 d-none d-lg-block g-3">
                 <div class="card">
@@ -200,6 +226,7 @@
 
 {% block body_javascripts %}
     <script type="text/javascript" src="{{ asset('js/supla_gate_opener.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/cover_buttons.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>
