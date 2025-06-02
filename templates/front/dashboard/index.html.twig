@@ -65,9 +65,23 @@
                                 </h2>
                                 <div id="cover-control" class="accordion-collapse collapse" data-bs-parent="#devicesControl">
                                     <div class="accordion-body">
-                                        <div class="btn-group w-100" role="group">
-                                            <button type="button" data-role="close" class="btn btn-outline-secondary w-50 fw-bolder">&#8615; Zamknij &#8615;</button>
-                                            <button type="button" data-role="open" class="btn btn-outline-secondary w-50 fw-bolder">&#8613; Otwórz &#8613;</button>
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deviceStatusModal"
+                                                        data-action="status"
+                                                        data-device-id="{{ constant('App\\Model\\Controller\\Cover::DEVICE_ID') }}"
+                                                >
+                                                    &#9432;
+                                                </button>
+                                            </div>
+                                            <div class="col">
+                                                <div class="btn-group w-100" role="group">
+                                                    <button type="button" data-role="close" class="btn btn-outline-secondary w-50 fw-bolder">&#8615; Zamknij &#8615;</button>
+                                                    <button type="button" data-role="open" class="btn btn-outline-secondary w-50 fw-bolder">&#8613; Otwórz &#8613;</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
