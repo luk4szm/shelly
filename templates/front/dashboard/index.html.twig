@@ -23,10 +23,15 @@
                                 <div id="gate-control" class="accordion-collapse collapse" data-bs-parent="#devicesControl">
                                     <div class="accordion-body">
                                         <div class="row">
-{#                                      <div class="col-12"> #}
-{#                                          <img src="https://svr133.supla.org/assets/img/functions/20-closed.svg" height="100px" width="100px" /> #}
-{#                                      </div> #}
-                                            <div class="col d-flex align-middle">
+                                            <div class="col-auto">
+                                                <img id="gate-status"
+                                                     src="{{ asset('images/question_mark.svg') }}"
+                                                     data-open-svg="{{ asset('images/gate/gate_open.svg') }}"
+                                                     data-closed-svg="{{ asset('images/gate/gate_closed.svg') }}"
+                                                     height="80px" width="80px"
+                                                     alt="gate status">
+                                            </div>
+                                            <div class="col d-flex align-items-center">
                                                 <input id="gate_opener_range_input" type="range" class="pullee" value="0" />
                                                 <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2 w-100">
                                                     <button id="gate_opener_info_button" class="btn btn-primary disabled w-100" type="button">
@@ -34,8 +39,8 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div class="col-auto">
-                                                <button id="gate_opener_button" type="button" class="btn btn-outline-secondary w-100 mt-2 mt-md-0 fw-bold">
+                                            <div class="col-auto d-flex align-items-center">
+                                                <button id="gate_opener_button" type="button" class="btn btn-outline-secondary fw-bold" style="max-width: 50px; max-height: 50px">
                                                     &#8644;
                                                 </button>
                                             </div>
@@ -239,7 +244,7 @@
 
 {% block body_javascripts %}
     <script type="text/javascript" src="{{ asset('js/supla_gate_opener.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/cover_buttons.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/collape_controllers.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_stats_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/device_history_offcanvas.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/refresh_device_card.js') }}"></script>

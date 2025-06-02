@@ -24,4 +24,15 @@ final class SuplaGateController extends AbstractController
         return $this->json($gateOpener->sendOpenCloseSimpleRequest());
     }
 
+    #[Route('/read', name: 'read', methods: ['GET'])]
+    public function read(SuplaGateOpener $gateOpener): Response
+    {
+        $gateResponse = $gateOpener->read();
+
+        if (!isset($gateResponse['connected']) || $gateResponse['connected'] !== true) {
+            return $this->json(['status' => 'disconnected'], Response::HTTP_GATEWAY_TIMEOUT);
+        }
+
+        return $this->json(['isOpen' => !($gateResponse['hi'] === true)]);
+    }
 }
