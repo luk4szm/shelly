@@ -2,6 +2,10 @@
 
 {% block title %}{{ parent() }}{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/pullee_range_input.css') }}">
+{% endblock %}
+
 {% block body %}
     <div class="container-fluid">
         <div class="row">
@@ -22,9 +26,9 @@
 {#                                      <div class="col-12"> #}
 {#                                          <img src="https://svr133.supla.org/assets/img/functions/20-closed.svg" height="100px" width="100px" /> #}
 {#                                      </div> #}
-                                            <div class="col">
-                                                <input type="range" class="form-range mt-1" id="gate_opener_range_input" min="0" max="100" value="0">
-                                                <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2">
+                                            <div class="col d-flex align-middle">
+                                                <input id="gate_opener_range_input" type="range" class="pullee" value="0" />
+                                                <div id="gate_opener_info_button_div" class="d-none gap-2 mb-2 w-100">
                                                     <button id="gate_opener_info_button" class="btn btn-primary disabled w-100" type="button">
                                                         Waiting for response...
                                                     </button>
