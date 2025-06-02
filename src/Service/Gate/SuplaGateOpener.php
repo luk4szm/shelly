@@ -73,6 +73,14 @@ readonly class SuplaGateOpener
     {
         $this->user = $this->security->getUser();
 
+        $this->gateOpenerLogger->info(
+            'Open-Close button click',
+            [
+                'user' => $this->user?->getUserIdentifier(),
+                'open' => $this->isOpen(),
+            ],
+        );
+
         return $this->tryOpen();
     }
 
