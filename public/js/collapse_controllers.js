@@ -13,19 +13,27 @@ $(document).ready(function () {
     });
 
     $('#devicesControl button[data-role]').on('click', function () {
-        let direction = $(this).data('role');
+        let clickedButton = $(this);
+        let direction = clickedButton.data('role');
 
         $.ajax({
             type: "PATCH",
             url: "/cover/open-close",
             data: {"direction": direction},
-            success: function (result) {
-                console.log(result);
+            success: function () {
+                setTimeout(function () {
+                    let collapseElement = clickedButton.closest('.accordion-collapse')[0];
 
-                let collapseElement = $(this).closest('.accordion-collapse')[0];
-                let bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+                    if (collapseElement) {
+                        let bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
 
-                bsCollapse.hide();
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        } else {
+                            new bootstrap.Collapse(collapseElement).hide();
+                        }
+                    }
+                }, 1000);
             },
             error: function (response) {
                 const toastEl = document.getElementById('liveToast');
