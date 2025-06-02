@@ -2,12 +2,18 @@ monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
         - gate_opener
+        - cover_controller
     handlers:
         gate_opener:
             level: debug
             type: stream
             path: '%kernel.logs_dir%/gate_opener.log'
             channels: [ gate_opener ]
+        cover_controller:
+            level: debug
+            type: stream
+            path: '%kernel.logs_dir%/cover_controller.log'
+            channels: [ cover_controller ]
 
 when@dev:
     monolog:
