@@ -58,10 +58,16 @@ function onShowGateControllers()
         method: 'GET',
         success: function (response) {
             if (response.isOpen === true) {
-                gateStatusImg.attr("src",gateOpenImgSrc);
+                gateStatusImg.attr("src", gateOpenImgSrc);
             } else {
                 gateStatusImg.attr("src", gateClosedImgSrc);
             }
+
+            gateStatusImg.css({
+                "width": "80px",
+                "height": "80px",
+                "margin": "0"
+            });
         },
     });
 }
