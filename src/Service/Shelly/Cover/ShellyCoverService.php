@@ -54,4 +54,15 @@ readonly class ShellyCoverService extends ShellyDeviceService
     {
         return $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'stop');
     }
+
+    public function getLastDirection(): ?string
+    {
+        $status = $this->getStatus(self::SHELLY_DEVICE_ID);
+
+        try {
+            return $status[0]['status']['cover:0']['last_direction'];
+        } catch (\Exception) {
+            return null;
+        }
+    }
 }

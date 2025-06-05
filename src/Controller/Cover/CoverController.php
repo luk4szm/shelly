@@ -10,9 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/cover', name: 'app_cover_')]
 final class CoverController extends AbstractController
 {
-    #[Route('/cover/open-close', name: 'app_cover_index', methods: ['PATCH'])]
+    #[Route('/open-close', name: 'open_close', methods: ['PATCH'])]
     public function index(Request $request, ShellyCoverService $coverService): Response
     {
         match ($request->get('direction')) {
@@ -25,5 +26,11 @@ final class CoverController extends AbstractController
         };
 
         return $this->json([]);
+    }
+
+    #[Route('/read', name: 'read', methods: ['GET'])]
+    public function read(ShellyCoverService $coverService): Response
+    {
+        return $this->json(['last_direction' => $coverService->getLastDirection()]);
     }
 }

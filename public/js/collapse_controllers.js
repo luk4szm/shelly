@@ -74,5 +74,19 @@ function onShowGateControllers()
 
 function onShowCoverControllers()
 {
+    let coverStatusImg = $("img#cover-status");
+    let coverOpenImgSrc = coverStatusImg.data("open-svg");
+    let coverClosedImgSrc = coverStatusImg.data("closed-svg");
 
+    $.ajax({
+        url: '/cover/read',
+        method: 'GET',
+        success: function (response) {
+            if (response.last_direction === 'open') {
+                coverStatusImg.attr("src", coverOpenImgSrc);
+            } else {
+                coverStatusImg.attr("src", coverClosedImgSrc);
+            }
+        },
+    });
 }
