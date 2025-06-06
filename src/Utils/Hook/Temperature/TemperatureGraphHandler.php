@@ -23,8 +23,8 @@ class TemperatureGraphHandler
                 return TemperatureGraphHandler::serialize($hook);
             }, $data);
         }
-;
-        return $grouped;
+
+        return $grouped ?? [];
     }
 
     public static function serialize(Hook $hook): array
