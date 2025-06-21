@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Daily - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div id="date" data-date="{{ date }}"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 g-3">
+                <div class="card">
+                    <div class="card-header text-capitalize fw-bold">
+                        Historia temperatury
+                    </div>
+                    <div class="card-body">
+                        <div id="temperature_chart_modal_content">
+                            <canvas id="temperatureChart" style="width: 100%; max-height: 400px;"></canvas>
+                        </div>
+                        <h5 id="no_data_modal" class="text-center my-5">Brak danych dla zadanego okresu</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascripts %}
+    <script type="text/javascript" src="{{ asset('js/daily_temp_chart.js') }}"></script>
+{% endblock %}

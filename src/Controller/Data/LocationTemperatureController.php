@@ -24,6 +24,7 @@ final class LocationTemperatureController extends AbstractController
     ): Response
     {
         $timeRange = $request->get('timeRange');
+        $date      = $request->get('date');
         $location  = $request->get('location');
         $group     = $request->get('group');
 
@@ -49,13 +50,16 @@ final class LocationTemperatureController extends AbstractController
                     $from = (new \DateTime($timeRange))->setTime(0, 0);
                     $to   = (new \DateTime($timeRange))->setTime(23, 59, 59);
             }
+        } elseif ($date !== null) {
+            $from = (new \DateTime($date))->setTime(0, 0);
+            $to   = (new \DateTime($date))->setTime(23, 59, 59);
         } else {
             $from = new \DateTime("-8 hours");
             $to   = new \DateTime();
         }
 
         if ($location) {
-            $hooks = $hookRepository->findLocationTemperatures($from, $to, $location);
+            $hooks = $hookRepository->findLocationTemperatures($from, $to, $location === 'all' ? null : $location);
         } elseif($group) {
             $hooks = $hookRepository->findLocationTemperatures($from, $to, $locationFinder->getLocations($group));
         } else {
@@ -66,7 +70,7 @@ final class LocationTemperatureController extends AbstractController
             return $this->json([]);
         }
 
-        if (empty($location)) {
+        if (empty($location) || $location === 'all') {
             return $this->json($graphHandler->prepareGroupedHooks($hooks));
         }
 
