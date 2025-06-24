@@ -3,9 +3,11 @@
 namespace App\Controller\Hook;
 
 use App\Entity\Hook;
+use App\Event\Hook\TvHookEvent;
 use App\Repository\HookRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -25,11 +27,21 @@ final class HookController extends AbstractController
         return $this->json([]);
     }
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
-    public function hook(string $device, string $property, string $value, HookRepository $repository): Response
+    public function hook(
+        string                   $device,
+        string                   $property,
+        string                   $value,
+        HookRepository           $repository,
+        EventDispatcherInterface $dispatcher
+    ): Response
     {
         $hook = new Hook($device, $property, $value);
 
         $repository->save($hook);
+
+        match ($device) {
+            'tv' => $dispatcher->dispatch(new TvHookEvent($hook)),
+        };
 
         return $this->json($hook);
     }
