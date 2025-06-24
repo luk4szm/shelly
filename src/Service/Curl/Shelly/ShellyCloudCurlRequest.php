@@ -49,6 +49,28 @@ class ShellyCloudCurlRequest extends Curl
 
     /**
      * @param string $deviceId
+     * @param string $mode
+     * @param int    $channel
+     * @param int    $brightness
+     * @return array
+     */
+    public function light(string $deviceId, string $mode, int $channel, int $brightness = 0): array
+    {
+        return $this->request(
+            self::METHOD,
+            sprintf("%s/set/light?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
+            json: [
+                "id"         => $deviceId,
+                "channel"    => $channel,
+                "on"         => $mode === 'on',
+                "brightness" => $brightness,
+//                "toggle_after" => 5, // Number of seconds before stopping the position change
+            ]
+        );
+    }
+
+    /**
+     * @param string $deviceId
      * @return array
      */
     public function getStatus(string $deviceId): array
