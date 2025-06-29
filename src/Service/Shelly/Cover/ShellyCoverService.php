@@ -2,6 +2,7 @@
 
 namespace App\Service\Shelly\Cover;
 
+use App\Model\Controller\Cover;
 use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
 use App\Service\Shelly\ShellyDeviceService;
 use Psr\Log\LoggerInterface;
@@ -9,8 +10,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 readonly class ShellyCoverService extends ShellyDeviceService
 {
-    private const SHELLY_DEVICE_ID = '2CBCBB2DC408';
-
     public function __construct(
         ShellyCloudCurlRequest  $curlRequest,
         private LoggerInterface $coverControllerLogger,
@@ -30,11 +29,11 @@ readonly class ShellyCoverService extends ShellyDeviceService
             ],
         );
 
-        $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'open');
+        $this->curlRequest->cover(Cover::DEVICE_ID, 'open');
 
         sleep(25);
 
-        return $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'open');
+        return $this->curlRequest->cover(Cover::DEVICE_ID, 'open');
     }
 
     public function close(): array
@@ -47,17 +46,17 @@ readonly class ShellyCoverService extends ShellyDeviceService
             ],
         );
 
-        return $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'close');
+        return $this->curlRequest->cover(Cover::DEVICE_ID, 'close');
     }
 
     public function stop(): array
     {
-        return $this->curlRequest->cover(self::SHELLY_DEVICE_ID, 'stop');
+        return $this->curlRequest->cover(Cover::DEVICE_ID, 'stop');
     }
 
     public function getLastDirection(): ?string
     {
-        $status = $this->getStatus(self::SHELLY_DEVICE_ID);
+        $status = $this->getStatus(Cover::DEVICE_ID);
 
         try {
             return $status[0]['status']['cover:0']['last_direction'];
