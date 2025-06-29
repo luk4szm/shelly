@@ -59,6 +59,44 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#garage-control" aria-controls="#garage-control">
+                                        Garaż
+                                    </button>
+                                </h2>
+                                <div id="garage-control" class="accordion-collapse collapse" data-bs-parent="#devicesControl">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                             <div class="col-auto px-1">
+                                                <img id="garage-status"
+                                                     src="{{ asset('images/spinner.svg') }}"
+                                                     data-open-svg="{{ asset('images/cover/open.svg') }}"
+                                                     data-closed-svg="{{ asset('images/cover/close.svg') }}"
+                                                     style="width: 50px; height: 50px;"
+                                                     alt="garage status"
+                                                />
+                                            </div>
+                                            <div class="col-auto pe-0 d-flex align-items-center">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deviceStatusModal"
+                                                        data-action="status"
+                                                        data-device-id="{{ constant('App\\Model\\Controller\\Garage::DEVICE_ID') }}"
+                                                >
+                                                    &#9432;
+                                                </button>
+                                            </div>
+                                            <div class="col d-flex align-items-center">
+                                                <div class="btn-group w-100" role="group">
+                                                    <button type="button" data-role="move" class="btn btn-outline-secondary w-100 fw-bolder">&#8613; Otwórz/Zamknij &#8613;</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#cover-control" aria-controls="#cover-control">
                                         Rolety
                                     </button>

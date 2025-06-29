@@ -12,13 +12,47 @@ $(document).ready(function () {
         }
     });
 
-    $('#devicesControl button[data-role]').on('click', function () {
+    $('#cover-control button[data-role]').on('click', function () {
         let clickedButton = $(this);
         let direction = clickedButton.data('role');
 
         $.ajax({
             type: "PATCH",
             url: "/cover/open-close",
+            data: {"direction": direction},
+            success: function () {
+                setTimeout(function () {
+                    let collapseElement = clickedButton.closest('.accordion-collapse')[0];
+
+                    if (collapseElement) {
+                        let bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        } else {
+                            new bootstrap.Collapse(collapseElement).hide();
+                        }
+                    }
+                }, 1000);
+            },
+            error: function (response) {
+                const toastEl = document.getElementById('liveToast');
+                const liveToast = new bootstrap.Toast(toastEl, {});
+
+                $(".toast-body").html(response.responseJSON);
+
+                liveToast.show();
+            }
+        });
+    });
+
+    $('#garage-control button[data-role]').on('click', function () {
+        let clickedButton = $(this);
+        let direction = clickedButton.data('role');
+
+        $.ajax({
+            type: "PATCH",
+            url: "/garage/move",
             data: {"direction": direction},
             success: function () {
                 setTimeout(function () {
