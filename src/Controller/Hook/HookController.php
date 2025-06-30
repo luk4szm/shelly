@@ -26,6 +26,7 @@ final class HookController extends AbstractController
 
         return $this->json([]);
     }
+
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
     public function hook(
         string                   $device,
@@ -40,7 +41,8 @@ final class HookController extends AbstractController
         $repository->save($hook);
 
         match ($device) {
-            'tv' => $dispatcher->dispatch(new TvHookEvent($hook)),
+            'tv'    => $dispatcher->dispatch(new TvHookEvent($hook)),
+            default => null,
         };
 
         return $this->json($hook);
