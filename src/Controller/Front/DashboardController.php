@@ -47,10 +47,4 @@ final class DashboardController extends AbstractController
             'temperatures'           => array_values($hookRepository->findActualTemps($locations)),
         ]);
     }
-
-    #[Route('/error500', name: 'app_front_error_500')]
-    public function error(): Response
-    {
-        throw new \Exception('test error 500');
-    }
 }
