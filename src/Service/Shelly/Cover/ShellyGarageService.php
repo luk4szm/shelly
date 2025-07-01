@@ -30,4 +30,15 @@ readonly class ShellyGarageService extends ShellyDeviceService
 
         return $this->curlRequest->switch(Garage::DEVICE_ID, 0, 'on');
     }
+
+    public function isOpen(): ?bool
+    {
+        $status = $this->getStatus(Garage::DEVICE_ID);
+
+        try {
+            return $status[0]['status']['input:100']['state'];
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
 }

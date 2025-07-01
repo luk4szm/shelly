@@ -9,6 +9,9 @@ $(document).ready(function () {
             case 'cover-control':
                 onShowCoverControllers();
                 break;
+            case 'garage-control':
+                onShowGarageControllers();
+                break;
         }
     });
 
@@ -106,6 +109,25 @@ function onShowCoverControllers()
                 coverStatusImg.attr("src", coverOpenImgSrc);
             } else {
                 coverStatusImg.attr("src", coverClosedImgSrc);
+            }
+        },
+    });
+}
+
+function onShowGarageControllers()
+{
+    let garageStatusImg = $("img#garage-status");
+    let garageOpenImgSrc = garageStatusImg.data("open-svg");
+    let garageClosedImgSrc = garageStatusImg.data("closed-svg");
+
+    $.ajax({
+        url: '/garage/read',
+        method: 'GET',
+        success: function (response) {
+            if (response.is_open === true) {
+                garageStatusImg.attr("src", garageOpenImgSrc);
+            } else {
+                garageStatusImg.attr("src", garageClosedImgSrc);
             }
         },
     });

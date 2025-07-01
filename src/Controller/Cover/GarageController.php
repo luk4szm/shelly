@@ -26,4 +26,10 @@ final class GarageController extends AbstractController
 
         return $this->json([]);
     }
+
+    #[Route('/read', name: 'read', methods: ['GET'])]
+    public function read(ShellyGarageService $garageService): Response
+    {
+        return $this->json(['is_open' => $garageService->isOpen()]);
+    }
 }
