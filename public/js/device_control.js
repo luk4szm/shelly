@@ -97,7 +97,7 @@ $(document).ready(function () {
 
             }, holdDuration);
         })
-        .on('mouseup mouseleave touchend', '.long-press-btn', function () {
+        .on('mouseup mouseleave touchend touchmove', '.long-press-btn', function () {
             const button = $(this);
             clearTimeout(holdTimer);
 
