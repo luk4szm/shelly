@@ -16,8 +16,8 @@ $(document).ready(function () {
             textSpan.text(originalText);
         }
 
-        // Usuń klasy stanu i przywróć klasę 'btn-info'
-        button.removeClass('is-holding btn-success btn-danger').addClass('btn-info');
+        // Usuń klasy stanu i przywróć klasę 'btn-azure'
+        button.removeClass('is-holding btn-success btn-danger').addClass('btn-azure');
 
         // Zresetuj flagę i włącz przycisk
         button.data('action-triggered', false);
@@ -52,8 +52,8 @@ $(document).ready(function () {
                 // Wyłącz przycisk, aby zapobiec dalszym interakcjom
                 button.prop('disabled', true);
 
-                // Bezpośrednio zamień klasę 'btn-info' na 'btn-success'
-                button.removeClass('btn-info').addClass('btn-success');
+                // Bezpośrednio zamień klasę 'btn-azure' na 'btn-success'
+                button.removeClass('btn-azure').addClass('btn-success');
 
                 const controller = button.data('controller');
                 const action = button.data('action');
