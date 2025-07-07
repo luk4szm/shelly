@@ -9,6 +9,7 @@ use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -18,6 +19,7 @@ final class DashboardController extends AbstractController
     public function index(
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable           $statusHelpers,
+        Request            $request,
         LocationFinder     $locationFinder,
         GasMeterRepository $gasMeterRepository,
         HookRepository     $hookRepository,
@@ -39,7 +41,11 @@ final class DashboardController extends AbstractController
             ];
         }
 
-        return $this->render('front/dashboard/index.html.twig', [
+        $template = $request->get('template') === 'old'
+            ? 'front/dashboard/index_old.html.twig'
+            : 'front/dashboard/index.html.twig';
+
+        return $this->render($template, [
             'devices'                => $devices ?? [],
             'locations'              => $locations,
             'gasMeterForm'           => $gasMeterForm->createView(),

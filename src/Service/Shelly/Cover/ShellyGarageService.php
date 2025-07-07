@@ -2,7 +2,7 @@
 
 namespace App\Service\Shelly\Cover;
 
-use App\Model\Controller\Garage;
+use App\Model\Location\Garage;
 use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
 use App\Service\Shelly\ShellyDeviceService;
 use Psr\Log\LoggerInterface;

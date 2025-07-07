@@ -1,0 +1,46 @@
+<header class="navbar-expand-md">
+    <div class="collapse navbar-collapse" id="navbar-menu">
+        <div class="navbar">
+            <div class="container-xl">
+                <div class="row flex-column flex-md-row flex-fill align-items-center">
+                    <div class="col">
+                        <!-- BEGIN NAVBAR MENU -->
+                        <ul class="navbar-nav">
+                            <li class="nav-item {% if app.current_route == 'app_front_dashboard' %}active{% endif %}">
+                                <a class="nav-link" href="{{ path('app_front_dashboard') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        {{ include('_icons/home-icon.svg.twig') }}
+                                    </span>
+                                    <span class="nav-link-title"> Dashboard </span>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a
+                                    class="nav-link dropdown-toggle"
+                                    href="#navbar-addons"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    role="button"
+                                    aria-expanded="false"
+                                >
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        {{ include('_icons/devices-icon.svg.twig') }}
+                                    </span>
+                                    <span class="nav-link-title"> Devices </span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="./icons.html"> Icons </a>
+                                    <a class="dropdown-item" href="./emails.html"> Emails </a>
+                                    <a class="dropdown-item" href="./flags.html"> Flags </a>
+                                    <a class="dropdown-item" href="./illustrations.html"> Illustrations </a>
+                                    <a class="dropdown-item" href="./payment-providers.html"> Payment providers </a>
+                                </div>
+                            </li>
+                        </ul>
+                        <!-- END NAVBAR MENU -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,109 @@
+<style>
+   /* Ustawienia dla przycisku z funkcją przytrzymania */
+   .long-press-btn {
+      position: relative; /* Niezbędne do pozycjonowania pseudo-elementu ::before */
+      overflow: hidden; /* Ukrywa pasek postępu, gdy wychodzi poza przycisk */
+      -webkit-tap-highlight-color: transparent; /* Usuwa domyślne podświetlenie na urządzeniach mobilnych */
+   }
+
+   /* Pasek postępu (pseudo-element) */
+   .long-press-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0; /* Początkowa szerokość to 0 */
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.2); /* Półprzezroczysty, ciemniejszy kolor jako wskaźnik */
+      transition: width 1s linear; /* Płynna animacja szerokości przez 1 sekundę */
+   }
+
+   /* Stan, w którym przycisk jest przytrzymywany */
+   .long-press-btn.is-holding::before {
+      width: 100%; /* Wypełnij cały przycisk */
+   }
+
+   /* Upewniamy się, że tekst jest zawsze na wierzchu */
+   .long-press-btn span {
+      position: relative;
+      z-index: 1;
+   }
+</style>
+
+<div class="col-md-6 col-xl-4">
+    <div class="card card-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2>Brama wjazdowa</h2>
+                </div>
+                <div class="col text-end">
+                    <span class="bg-light-lt avatar"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center mt-3 mb-1">
+                    <small>Przytrzymaj, aby wykonać</small>
+                </div>
+                <div class="col-12">
+                    <button type="button" class="btn btn-6 btn-azure w-100 long-press-btn" data-controller="gate" data-action="open-close">
+                        <span>Otwórz</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-6 col-xl-4">
+    <div class="card card-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2>Garaż</h2>
+                </div>
+                <div class="col text-end">
+                    <span class="bg-light-lt avatar"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center mt-3 mb-1">
+                    <small>Przytrzymaj, aby wykonać</small>
+                </div>
+                <div class="col-12">
+                    <button type="button" class="btn btn-6 btn-azure w-100 long-press-btn" data-controller="garage" data-action="move">
+                        <span>Otwórz / Zamknij</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-6 col-xl-4">
+    <div class="card card-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2>Rolety</h2>
+                </div>
+                <div class="col text-end">
+                    <span class="bg-light-lt avatar"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center mt-3 mb-1">
+                    <small>Przytrzymaj, aby wykonać</small>
+                </div>
+                <div class="col-6">
+                    <button type="button" class="btn btn-6 btn-azure w-100 long-press-btn" data-controller="covers" data-action="open">
+                        <span>Otwórz</span>
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button type="button" class="btn btn-6 btn-azure w-100 long-press-btn" data-controller="covers" data-action="close">
+                        <span>Zamknij</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

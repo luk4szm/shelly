@@ -23,6 +23,7 @@
 
 ###> symfony/asset-mapper ###
 /public/assets/
+/public/libs/
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
