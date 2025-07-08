@@ -106,4 +106,59 @@ $(document).ready(function () {
                 resetButtonState(button);
             }
         });
+
+    $(document).on('click', 'span[data-role="check_status"]', function () {
+        const clickedSpan = $(this);
+        const controller = clickedSpan.data('controller');
+
+        if (!controller) {
+            console.error('Nie znaleziono atrybutu data-controller na klikniętym elemencie.');
+            return;
+        }
+
+        let apiUrl;
+        if (controller === 'gate') {
+            apiUrl = '/supla/gate/read';
+        } else if (controller === 'covers') {
+            apiUrl = '/cover/read';
+        } else if (controller === 'garage') {
+            apiUrl = '/garage/read';
+        }
+
+        clickedSpan.addClass('is-loading').removeClass('bg-light-lt bg-red bg-green');
+
+        $.ajax({
+            type: "GET",
+            url: apiUrl,
+            success: function (response) {
+                let status;
+
+                switch (controller) {
+                    case 'gate':
+                        status = response.isOpen === true;
+                        break;
+                    case 'garage':
+                        status = response.is_open === true;
+                        break;
+                    case 'covers':
+                        status = response.last_direction === 'open';
+                        break;
+                }
+
+                if (status === true) {
+                    clickedSpan.addClass('bg-green');
+                } else {
+                    clickedSpan.addClass('bg-red');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(`Błąd podczas sprawdzania statusu dla "${controller}":`, error);
+
+                clickedSpan.addClass('bg-warning');
+            },
+            complete: function () {
+                clickedSpan.removeClass('is-loading');
+            }
+        });
+    });
 });
