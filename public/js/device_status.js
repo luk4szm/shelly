@@ -18,6 +18,10 @@
                     updateElapsedTime(this);
                 });
 
+                if (typeof initializeTemperatureCharts === 'function') {
+                    initializeTemperatureCharts();
+                }
+
                 // KLUCZOWA ZMIANA: Ustawiamy timer na nowo, aby stworzyć pętlę
                 resetTimer();
             }
