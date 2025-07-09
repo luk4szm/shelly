@@ -58,10 +58,10 @@ readonly class ShellyCoverService extends ShellyDeviceService
     {
         $status = $this->getStatus(Cover::DEVICE_ID);
 
-        try {
-            return $status[0]['status']['cover:0']['last_direction'];
-        } catch (\Exception) {
-            return null;
+        if (isset($status['error'])) {
+            throw new \RuntimeException($status['error']);
         }
+
+        return $status[0]['status']['cover:0']['last_direction'];
     }
 }
