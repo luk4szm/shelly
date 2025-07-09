@@ -11,8 +11,6 @@ function generateRandomChartData(length, min, max) {
 function initializeTemperatureCharts() {
     // Znajdź wszystkie elementy z klasą .chart-temperature
     document.querySelectorAll('.chart-temperature').forEach(chartElement => {
-        console.log('asd')
-
         // Sprawdzamy, czy w kontenerze istnieje już element <svg>.
         // Jeśli tak, oznacza to, że wykres został już zainicjowany.
         if (chartElement.querySelector('svg')) {
