@@ -35,10 +35,10 @@ readonly class ShellyGarageService extends ShellyDeviceService
     {
         $status = $this->getStatus(Garage::DEVICE_ID);
 
-        try {
-            return $status[0]['status']['input:100']['state'];
-        } catch (\Exception $exception) {
-            return null;
+        if (isset($status['error'])) {
+            throw new \RuntimeException($status['error']);
         }
+
+        return $status[0]['status']['input:100']['state'];
     }
 }

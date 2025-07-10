@@ -33,6 +33,6 @@ final class SuplaGateController extends AbstractController
             return $this->json(['status' => 'disconnected'], Response::HTTP_GATEWAY_TIMEOUT);
         }
 
-        return $this->json(['isOpen' => !($gateResponse['hi'] === true)]);
+        return $this->json(['is_open' => !($gateResponse['hi'] === true)]);
     }
 }

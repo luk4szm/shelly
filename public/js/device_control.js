@@ -135,8 +135,6 @@ $(document).ready(function () {
 
                 switch (controller) {
                     case 'gate':
-                        status = response.isOpen === true;
-                        break;
                     case 'garage':
                         status = response.is_open === true;
                         break;
