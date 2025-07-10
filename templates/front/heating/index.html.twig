@@ -1,66 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ parent() }}{% endblock %}
+{% block pageTitle %}Heating{% endblock %}
 
-{% block body %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12 g-3">
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
                 <div class="card">
-                    <div class="card-header text-capitalize fw-bold">
-                        Temperatury
-                    </div>
                     <div class="card-body">
-                        <div id="temperatures_card">
-                            <div class="row">
-                                <div class="col d-flex justify-content-around">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-time-range="last_8h">Ostatnie 8h</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" id="prev_day"><</button>
-                                    <input id="input_date" class="form-control" type="date" min="2025-03-12" max="{{ "now"|date('Y-m-d') }}" value="{{ "now"|date('Y-m-d') }}" style="width: 200px">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" id="next_day">></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="temperature_chart_modal_content">
-                            <canvas id="temperatureChart" style="width: 100%; max-height: 400px;"></canvas>
-                        </div>
-                        <h5 id="no_data_modal" class="text-center my-5">Brak danych dla zadanego okresu</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-12 g-3">
-                <div class="card">
-                    <div class="card-header text-capitalize fw-bold">
-                        <button type="button" class="btn btn-sm btn-light float-end py-0"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deviceStatusModal"
-                                data-action="status"
-                                data-device-id="{{ constant('App\\Model\\Location\\LivingRoom::DEVICE_ID') }}"
-                        >
-                            &#9432;
-                        </button>
-                        Temperatura salon
-                    </div>
-                    <div class="card-body">
-                        <canvas id="salonTemperatureChart" style="width: 100%; max-height: 400px;"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-12 g-3">
-                <div class="card">
-                    <div class="card-header text-capitalize fw-bold">
-                        <button type="button" class="btn btn-sm btn-light float-end py-0"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deviceStatusModal"
-                                data-action="status"
-                                data-device-id="{{ constant('App\\Model\\Location\\LivingRoom::DEVICE_ID') }}"
-                        >
-                            &#9432;
-                        </button>
-                        Wilgotność salon
-                    </div>
-                    <div class="card-body">
-                        <canvas id="salonHumidityChart" style="width: 100%; max-height: 400px;"></canvas>
+                        <div id="chart-temperature" class="position-relative"></div>
                     </div>
                 </div>
             </div>
@@ -68,14 +16,6 @@
     </div>
 {% endblock %}
 
-{% block modals %}
-    {% include 'front/_modals/temperature_chart_modal.html.twig' %}
-    {% include 'front/_modals/device_status_modal.html.twig' %}
-{% endblock %}
-
-{% block body_javascripts %}
-    <script type="text/javascript" src="{{ asset('js/temp_chart.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/salon_temp_chart.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/location_temp_chart_modal.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/device_status_modal.js') }}"></script>
+{% block pagejs %}
+    <script src="{{ asset('js/heating_chart.js') }}"></script>
 {% endblock %}
