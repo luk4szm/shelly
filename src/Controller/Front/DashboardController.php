@@ -2,9 +2,11 @@
 
 namespace App\Controller\Front;
 
+use App\Entity\DeviceDailyStats;
 use App\Form\GasMeterIndicationType;
 use App\Repository\GasMeterRepository;
 use App\Repository\HookRepository;
+use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +21,8 @@ final class DashboardController extends AbstractController
     public function index(
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable           $statusHelpers,
+        #[AutowireIterator('app.shelly.daily_stats')]
+        iterable           $dailyStatsCalculators,
         Request            $request,
         LocationFinder     $locationFinder,
         GasMeterRepository $gasMeterRepository,
@@ -34,10 +38,24 @@ final class DashboardController extends AbstractController
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
+            /** @var DailyStatsCalculatorInterface $helper */
+            foreach ($dailyStatsCalculators as $statsCalculator) {
+                if ($statsCalculator->supports($helper->getDeviceName())) {
+                    try {
+                        $dailyStats = $statsCalculator->calculateDailyStats(new \DateTime());
+                        continue;
+                    } catch (\Exception) {
+                    }
+
+                    $dailyStats = new DeviceDailyStats($helper->getDeviceName(), new \DateTime());
+                }
+            }
+
             $devices[] = [
-                'name'     => $helper->getDeviceName(),
-                'deviceId' => $helper->getDeviceId(),
-                'history'  => $helper->getHistory(2),
+                'name'       => $helper->getDeviceName(),
+                'deviceId'   => $helper->getDeviceId(),
+                'history'    => $helper->getHistory(2),
+                'dailyStats' => $dailyStats ?? null,
             ];
         }
 

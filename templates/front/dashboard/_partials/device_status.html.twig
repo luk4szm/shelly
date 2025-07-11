@@ -1,23 +1,24 @@
 {% for device in devices %}
+    {% set isDeviceActive = device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
     <div class="col-md-6 col-xl-4">
         <div class="card card-sm">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        {% if device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
-                            <span class="bg-success avatar"></span>
-                        {% else %}
-                            <span class="bg-light-lt avatar"></span>
-                        {% endif %}
+                        <span class="{{ isDeviceActive ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
                     </div>
                     <div class="col">
                         <div class="fw-bolder fs-3">{{ device.history[0].lastValue }} W</div>
                         <div class="text-secondary text-capitalize fw-bold">{{ device.name }}</div>
                     </div>
                     <div class="col-auto text-end">
-                        <span class="ms-3 float-right font-weight-medium text-green current-status-duration">
+                        <div class="ms-3 float-right font-weight-medium {{ isDeviceActive ? 'text-green' : 'text-yellow' }} current-status-duration">
                             {{ device.history[0].statusDuration|readableDurationTime }}
-                        </span>
+                        </div>
+                        <div class="float-right text-muted fs-base">
+                            <span>&#8593; {{ device.dailyStats.inclusions|default(0) }}</span>
+                            <span class="ms-2">&#9202; {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : 0 }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
