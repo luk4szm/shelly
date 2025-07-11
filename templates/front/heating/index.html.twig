@@ -2,6 +2,15 @@
 
 {% block pageTitle %}Heating{% endblock %}
 
+{% block pageTitleActions %}
+    <div class="input-icon">
+        <span class="input-icon-addon">
+            {{ include('_icons/calendar-icon.svg.twig') }}
+        </span>
+        <input type="date" class="form-control" id="heating_date" value="{{ "now"|date("Y-m-d") }}" max="{{ "now"|date("Y-m-d") }}">
+    </div>
+{% endblock %}
+
 {% block pageBody %}
     <div class="container-xl">
         <div class="row row-deck row-cards">
