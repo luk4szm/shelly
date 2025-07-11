@@ -135,9 +135,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 horizontalAlign: 'center'
             },
             markers: {
-                size: 1, // ZMIANA: Zmniejszenie rozmiaru punktów pomiarowych
+                size: 0, // ZMIANA: Zmniejszenie rozmiaru punktów pomiarowych
                 hover: {
-                    sizeOffset: 3 // Opcjonalnie: Powiększ punkt przy najechaniu myszką
+                    sizeOffset: 1 // Opcjonalnie: Powiększ punkt przy najechaniu myszką
                 }
             },
         };
