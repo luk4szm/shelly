@@ -163,3 +163,47 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Nie można zainicjować wykresu. Brakuje biblioteki ApexCharts lub kluczowych elementów HTML.");
     }
 });
+document.addEventListener('DOMContentLoaded', function () {
+    const dateInput = document.getElementById('heating_date');
+    const prevDayBtn = document.getElementById('prev-day-btn');
+    const nextDayBtn = document.getElementById('next-day-btn');
+
+    // Funkcja do formatowania daty do stringa YYYY-MM-DD
+    const formatDate = (date) => {
+        return date.toISOString().split('T')[0];
+    };
+
+    // Funkcja do aktualizacji stanu przycisku "następny dzień"
+    const updateNextButtonState = () => {
+        const today = new Date();
+        const currentDate = new Date(dateInput.value);
+
+        // Ustawiamy godziny na 0, aby porównywać tylko daty
+        today.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Wyłącz przycisk "następny", jeśli wybrana data to dzisiaj lub data z przyszłości
+        nextDayBtn.disabled = currentDate >= today;
+    };
+
+    // Funkcja do zmiany daty o podaną liczbę dni
+    const changeDate = (days) => {
+        const currentDate = new Date(dateInput.value);
+        currentDate.setDate(currentDate.getDate() + days);
+        dateInput.value = formatDate(currentDate);
+
+        // Zaktualizuj stan przycisku po zmianie daty
+        updateNextButtonState();
+
+        // Wywołaj zdarzenie 'change', aby inne skrypty (np. odświeżanie wykresu) mogły zareagować
+        dateInput.dispatchEvent(new Event('change', {'bubbles': true}));
+    };
+
+    // Dodanie nasłuchiwania na zdarzenia
+    prevDayBtn.addEventListener('click', () => changeDate(-1));
+    nextDayBtn.addEventListener('click', () => changeDate(1));
+    dateInput.addEventListener('change', updateNextButtonState);
+
+    // Sprawdzenie stanu przycisku przy pierwszym załadowaniu strony
+    updateNextButtonState();
+});

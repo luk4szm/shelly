@@ -3,11 +3,16 @@
 {% block pageTitle %}Heating{% endblock %}
 
 {% block pageTitleActions %}
-    <div class="input-icon">
-        <span class="input-icon-addon">
-            {{ include('_icons/calendar-icon.svg.twig') }}
-        </span>
+    <div class="input-group">
+        <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
+            &#8592;
+        </button>
+
         <input type="date" class="form-control" id="heating_date" value="{{ "now"|date("Y-m-d") }}" max="{{ "now"|date("Y-m-d") }}">
+
+        <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
+            &#8594;
+        </button>
     </div>
 {% endblock %}
 
