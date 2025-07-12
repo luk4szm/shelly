@@ -30,6 +30,16 @@ final class GarageController extends AbstractController
     #[Route('/read', name: 'read', methods: ['GET'])]
     public function read(ShellyGarageService $garageService): Response
     {
-        return $this->json(['is_open' => $garageService->isOpen()]);
+        try {
+            $isOpen = $garageService->isOpen();
+        } catch (\Exception $e) {
+            if (str_starts_with($e->getMessage(), 'HTTP/1.1 429 Too Many Requests')) {
+                return $this->json(['error' => 'Too many requests. Wait 1 second and try again.'], Response::HTTP_TOO_MANY_REQUESTS);
+            }
+
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(['is_open' => $isOpen]);
     }
 }

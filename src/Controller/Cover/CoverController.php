@@ -31,6 +31,16 @@ final class CoverController extends AbstractController
     #[Route('/read', name: 'read', methods: ['GET'])]
     public function read(ShellyCoverService $coverService): Response
     {
-        return $this->json(['last_direction' => $coverService->getLastDirection()]);
+        try {
+            $lastDirection = $coverService->getLastDirection();
+        } catch (\Exception $e) {
+            if (str_starts_with($e->getMessage(), 'HTTP/1.1 429 Too Many Requests')) {
+                return $this->json(['error' => 'Too many requests. Wait 1 second and try again.'], Response::HTTP_TOO_MANY_REQUESTS);
+            }
+
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(['last_direction' => $lastDirection]);
     }
 }
