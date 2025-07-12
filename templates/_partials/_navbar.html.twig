@@ -37,11 +37,9 @@
                                     <span class="nav-link-title"> Devices </span>
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="./icons.html"> Icons </a>
-                                    <a class="dropdown-item" href="./emails.html"> Emails </a>
-                                    <a class="dropdown-item" href="./flags.html"> Flags </a>
-                                    <a class="dropdown-item" href="./illustrations.html"> Illustrations </a>
-                                    <a class="dropdown-item" href="./payment-providers.html"> Payment providers </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_device', {'device': 'piec'}) }}"> Piec </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_device', {'device': 'kominek'}) }}"> Kominek </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_device', {'device': 'solary'}) }}"> Solary </a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
@@ -54,13 +52,14 @@
                                     aria-expanded="false"
                                 >
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        {{ include('_icons/devices-icon.svg.twig') }}
+                                        {{ include('_icons/device-mobile-pin-icon.svg.twig') }}
                                     </span>
                                     <span class="nav-link-title"> Locations </span>
                                 </a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="{{ path('app_front_location', {'location': 'salon'}) }}"> Salon </a>
-                                    <a class="dropdown-item" href="./emails.html"> Garaż </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_location', {'location': 'garage'}) }}"> Garaż </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_location', {'location': 'bufor'}) }}"> Bufor </a>
                                 </div>
                             </li>
                         </ul>
