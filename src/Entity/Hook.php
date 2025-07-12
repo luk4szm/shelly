@@ -6,6 +6,7 @@ use App\Repository\HookRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HookRepository::class)]
+#[ORM\Index(name: 'device_property_idx', columns: ['device', 'property'])]
 #[ORM\HasLifecycleCallbacks]
 class Hook
 {
@@ -15,13 +16,13 @@ class Hook
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $device = null;
+    private ?string $device;
 
     #[ORM\Column(length: 255)]
-    private ?string $property = null;
+    private ?string $property;
 
     #[ORM\Column(length: 255)]
-    private ?string $value = null;
+    private ?string $value;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
