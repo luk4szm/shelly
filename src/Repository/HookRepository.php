@@ -98,6 +98,25 @@ class HookRepository extends CrudRepository
         });
     }
 
+    public function findActualHumidity(array $locations): array
+    {
+        foreach ($locations as $location) {
+            $temps[] = $this->createQueryBuilder('hook')
+                ->where('hook.device = :device')
+                ->andWhere('hook.property = :property')
+                ->setParameter('device', $location)
+                ->setParameter('property', 'humidity')
+                ->orderBy('hook.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        }
+
+        return array_filter($temps ?? [], function (?Hook $hook) {
+            return $hook !== null;
+        });
+    }
+
     public function findLocationTemperatures(
         \DateTime         $from,
         \DateTime         $to,

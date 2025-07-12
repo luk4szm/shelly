@@ -69,6 +69,7 @@ final class DashboardController extends AbstractController
             'gasMeterForm'           => $gasMeterForm->createView(),
             'lastGasMeterIndication' => $lastGasMeterIndication,
             'temperatures'           => array_values($hookRepository->findActualTemps($locations)),
+            'humidity'               => array_values($hookRepository->findActualHumidity($locations)),
         ]);
     }
 }

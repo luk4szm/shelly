@@ -10,16 +10,14 @@
                     <div class="d-flex align-items-baseline">
                         <div class="h1 mb-0 me-2">{{ device.value|number_format(1) }} °C</div>
                         <div class="me-auto">
-                            <span class="text-green d-inline-flex align-items-center lh-1">
-                                8%
-                                <!-- Download SVG icon from http://tabler.io/icons/icon/trending-up -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                     class="icon ms-1 icon-2">
-                                    <path d="M3 17l6 -6l4 4l8 -8"></path>
-                                    <path d="M14 7l7 0l0 7"></path>
-                                </svg>
-                            </span>
+                            {% for hum in humidity|filter(v => v.device == location) %}
+                                <span class="text-azure d-inline-flex align-items-center mb-0">
+                                    {{ include ('_icons/droplet-icon.svg.twig') }}
+                                </span>
+                                <span class="text-azure d-inline-flex align-items-center">
+                                    {{ hum.value }}%
+                                </span>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
