@@ -11,7 +11,8 @@
                         <div class="h1 mb-0 me-2">{{ device.value|number_format(1) }} °C</div>
                         <div class="me-auto">
                             {% for hum in humidity|filter(v => v.device == location) %}
-                                <span class="text-azure d-inline-flex align-items-center mb-0">
+                                <span class="text-azure d-inline-flex align-items-center mb-0"
+                                      style="height: 16px; width: 16px; position: relative; top: 4px">
                                     {{ include ('_icons/droplet-icon.svg.twig') }}
                                 </span>
                                 <span class="text-azure d-inline-flex align-items-center">
