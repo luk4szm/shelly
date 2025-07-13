@@ -15,18 +15,19 @@ class YrnoForecastFactory
     {
         return (new WeatherForecast())
             ->setTime($time)
-            ->setTemperature($data['air_temperature'])
-            ->setAirPressure($data['air_pressure_at_sea_level'])
-            ->setClouds($data['cloud_area_fraction'])
-            ->setCloudsLow($data['cloud_area_fraction_low'])
-            ->setCloudsMedium($data['cloud_area_fraction_medium'])
-            ->setCloudsHigh($data['cloud_area_fraction_high'])
-            ->setHumidity($data['relative_humidity'])
-            ->setWindSpeed($data['wind_speed'])
-            ->setWindDirection($data['wind_from_direction'])
-            ->setFog($data['fog_area_fraction'])
-            ->setUvIndex($data['ultraviolet_index_clear_sky'])
-            ->setDewPointTemperature($data['dew_point_temperature']);
+            ->setTemperature($data['instant']['details']['air_temperature'])
+            ->setPrecipitation($data['next_1_hours']['details']['precipitation_amount'])
+            ->setAirPressure($data['instant']['details']['air_pressure_at_sea_level'])
+            ->setClouds($data['instant']['details']['cloud_area_fraction'])
+            ->setCloudsLow($data['instant']['details']['cloud_area_fraction_low'])
+            ->setCloudsMedium($data['instant']['details']['cloud_area_fraction_medium'])
+            ->setCloudsHigh($data['instant']['details']['cloud_area_fraction_high'])
+            ->setHumidity($data['instant']['details']['relative_humidity'])
+            ->setWindSpeed($data['instant']['details']['wind_speed'])
+            ->setWindDirection($data['instant']['details']['wind_from_direction'])
+            ->setFog($data['instant']['details']['fog_area_fraction'])
+            ->setUvIndex($data['instant']['details']['ultraviolet_index_clear_sky'])
+            ->setDewPointTemperature($data['instant']['details']['dew_point_temperature']);
     }
 
     /**
@@ -38,6 +39,7 @@ class YrnoForecastFactory
     {
         return $existingForecast
             ->setTemperature($newData->getTemperature())
+            ->setPrecipitation($newData->getPrecipitation())
             ->setAirPressure($newData->getAirPressure())
             ->setClouds($newData->getClouds())
             ->setCloudsLow($newData->getCloudsLow())

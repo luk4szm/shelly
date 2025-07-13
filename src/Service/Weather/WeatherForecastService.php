@@ -18,7 +18,7 @@ readonly class WeatherForecastService
     {
         foreach ($this->fetchForecast() as $item) {
             $time = (new \DateTime($item['time']))->setTimezone(new \DateTimeZone('Europe/Warsaw'));
-            $data = $item['data']['instant']['details'];
+            $data = $item['data'];
 
             $timeseries[] = YrnoForecastFactory::create($data, $time);
         }

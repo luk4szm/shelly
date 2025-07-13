@@ -21,6 +21,9 @@ class WeatherForecast
     #[ORM\Column]
     private ?float $temperature = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?float $precipitation = null;
+
     #[ORM\Column]
     private ?float $airPressure = null;
 
@@ -89,6 +92,18 @@ class WeatherForecast
     public function setTemperature(float $temperature): static
     {
         $this->temperature = $temperature;
+
+        return $this;
+    }
+
+    public function getPrecipitation(): ?float
+    {
+        return $this->precipitation;
+    }
+
+    public function setPrecipitation(?float $precipitation): static
+    {
+        $this->precipitation = $precipitation;
 
         return $this;
     }
