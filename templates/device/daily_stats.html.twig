@@ -15,7 +15,9 @@
         {% if device == 'piec' %}
             <div class="row">
                 <div class="col">Est. fuel consume:</div>
-                <div class="col fw-bold text-end">{{ (todayStats.energy * 0.024)|number_format(1) ~ ' m³' }}</div>
+                <div class="col fw-bold text-end">
+                    {{ (todayStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|number_format(1) ~ ' m³' }}
+                </div>
             </div>
         {% endif %}
         <div class="row">
@@ -52,7 +54,9 @@
                 <td class="text-end text-nowrap">{{ stats.energy|format_energy }}</td>
                 <td class="text-center">{{ stats.totalActiveTimeReadable }}</td>
                 {% if device == 'piec' %}
-                    <td class="text-center">{{ (stats.energy * 0.024)|number_format(1) ~ ' m³' }}</td>
+                    <td class="text-center">
+                        {{ (stats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|number_format(1) ~ ' m³' }}
+                    </td>
                 {% endif %}
             </tr>
         {% endfor %}
