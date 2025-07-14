@@ -41,7 +41,7 @@
                                 <div class="col-auto text-end">
                                     <div class="float-right fs-3">
                                         {% if device.name == 'piec' %}
-                                            <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|number_format(1) ~ ' m³' }}</span>
+                                            <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</span>
                                         {% endif %}
                                     </div>
                                 </div>
