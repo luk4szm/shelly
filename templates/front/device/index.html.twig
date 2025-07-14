@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}{{ device.name|capitalize }}{% endblock %}
+{% block pagePreTitle %}Devices{% endblock %}
+
+{% block pageTitleActions %}
+    <div class="input-group">
+        <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
+            &#8592;
+        </button>
+
+        <input type="date" class="form-control" id="heating_date" value="{{ "now"|date("Y-m-d") }}" min="2025-03-12"
+               max="{{ "now"|date("Y-m-d") }}">
+
+        <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
+            &#8594;
+        </button>
+    </div>
+{% endblock %}
+
+{% block pageBody %}
+    {% set isActive = device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card card-sm">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="{{ isActive ? 'bg-success text-black' : 'bg-light-lt' }} avatar">
+                                        {{ device.dailyStats.inclusions|default(0) }}
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="fw-bolder fs-2">{{ device.dailyStats.energy|default(0) }} W</div>
+                                    <div class="text-secondary text-capitalize fw-bold">
+                                        {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : "" }}
+                                    </div>
+                                </div>
+                                <div class="col-auto text-end">
+                                    <div class="float-right fs-3">
+                                        {% if device.name == 'piec' %}
+                                            <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|number_format(1) ~ ' m³' }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9 col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        <div id="chart-power" class="position-relative" data-device-name="{{ device.name }}">
+                            <div class="chart-loader position-absolute top-50 start-50 translate-middle" style="display: none; z-index: 10;">
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/device/power_chart.js') }}"></script>
+{% endblock %}

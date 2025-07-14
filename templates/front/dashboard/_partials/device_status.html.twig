@@ -9,7 +9,11 @@
                     </div>
                     <div class="col">
                         <div class="fw-bolder fs-3">{{ device.history[0].lastValue }} W</div>
-                        <div class="text-secondary text-capitalize fw-bold">{{ device.name }}</div>
+                        <div class="text-secondary text-capitalize fw-bold">
+                            <a href="{{ path('app_front_device', {'device': device.name}) }}" class="text-secondary">
+                                {{ device.name }}
+                            </a>
+                        </div>
                     </div>
                     <div class="col-auto text-end">
                         <div class="ms-3 float-right font-weight-medium {{ isDeviceActive ? 'text-green' : 'text-yellow' }} current-status-duration">
