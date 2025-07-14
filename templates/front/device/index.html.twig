@@ -33,7 +33,7 @@
                                     </span>
                                 </div>
                                 <div class="col">
-                                    <div class="fw-bolder fs-2">{{ device.dailyStats.energy|default(0) }} W</div>
+                                    <div class="fw-bolder fs-2">{{ device.dailyStats.energy|default(0)|format_energy }}</div>
                                     <div class="text-secondary text-capitalize fw-bold">
                                         {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : "" }}
                                     </div>

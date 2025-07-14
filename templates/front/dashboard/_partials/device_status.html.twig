@@ -23,7 +23,7 @@
                             <span>&#8593; {{ device.dailyStats.inclusions|default(0) }}</span>
                             <span class="ms-1">&#9202; {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : 0 }}</span>
                             <br>
-                            <span class="ms-1">&#128498; {{ device.dailyStats.energy|default(0) }} W</span>
+                            <span class="ms-1">&#128498; {{ device.dailyStats.energy|default(0)|format_energy }}</span>
                             {% if device.name == 'piec' %}
                                 <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|number_format(1) ~ ' m³' }}</span>
                             {% endif %}
