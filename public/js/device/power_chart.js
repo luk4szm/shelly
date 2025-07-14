@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const prevDayBtn = document.getElementById('prev-day-btn');
     const nextDayBtn = document.getElementById('next-day-btn');
     const loaderElement = chartElement.querySelector('.chart-loader');
+    const deviceStatsElement = document.getElementById('device_stats');
 
     const chartOptions = {
         series: [{
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             type: 'area',
             height: 400,
             zoom: { enabled: true },
-            // toolbar: { show: true },
+            toolbar: { show: false },
             animations: { enabled: true, speed: 400 }
         },
         dataLabels: {
@@ -68,10 +69,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     await chart.render();
 
     /**
-     * Asynchronicznie pobiera dane i aktualizuje wykres dla podanej daty.
+     * Asynchronicznie pobiera dane i aktualizuje wykres oraz statystyki dla podanej daty.
      * @param {string} date - Data w formacie YYYY-MM-DD
      */
-    async function fetchAndRenderChart(date) {
+    async function fetchAndRenderData(date) {
         if (loaderElement) loaderElement.style.display = 'block';
 
         const startOfDay = new Date(`${date}T00:00:00`);
@@ -79,28 +80,42 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         chart.updateOptions({
             xaxis: {
-                min: startOfDay.getTime(), // Timestamp w milisekundach
-                max: endOfDay.getTime()    // Timestamp w milisekundach
+                min: startOfDay.getTime(),
+                max: endOfDay.getTime()
             }
         });
 
+        // Definicja zapytań, które będą wykonane równolegle
+        const fetchChartData = fetch(`/device/${deviceName}/power-data?date=${date}`).then(res => {
+            if (!res.ok) throw new Error(`Błąd HTTP (wykres): ${res.status}`);
+            return res.json();
+        });
+
+        const fetchStatsHtml = fetch(`${window.location.pathname}?date=${date}`).then(res => {
+            if (!res.ok) throw new Error(`Błąd HTTP (statystyki): ${res.status}`);
+            return res.text();
+        });
+
         try {
-            const url = `/device/${deviceName}/power-data?date=${date}`;
-            const response = await fetch(url);
+            // Równoległe wykonanie zapytań
+            const [chartData, statsHtml] = await Promise.all([fetchChartData, fetchStatsHtml]);
 
-            if (!response.ok) {
-                throw new Error(`Błąd HTTP: ${response.status}`);
+            // Aktualizacja wykresu
+            chart.updateSeries([{ data: chartData }]);
+
+            // Aktualizacja statystyk
+            if (deviceStatsElement && statsHtml) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(statsHtml, 'text/html');
+                const newStatsElement = doc.getElementById('device_stats');
+                if (newStatsElement) {
+                    deviceStatsElement.innerHTML = newStatsElement.innerHTML;
+                } else {
+                    console.error('Nie znaleziono elementu #device_stats w odpowiedzi serwera.');
+                }
             }
-
-            const data = await response.json();
-
-            // Aktualizujemy serię danych na wykresie
-            chart.updateSeries([{
-                data: data
-            }]);
-
         } catch (error) {
-            console.error('Nie udało się pobrać danych do wykresu:', error);
+            console.error('Nie udało się zaktualizować danych:', error);
             chart.updateSeries([{ data: [] }]); // Wyczyść wykres w razie błędu
         } finally {
             if (loaderElement) loaderElement.style.display = 'none';
@@ -108,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     /**
-     * Aktualizuje wartość w polu daty i wywołuje odświeżenie wykresu.
+     * Aktualizuje wartość w polu daty i wywołuje odświeżenie danych.
      * @param {number} days - Liczba dni do dodania/odjęcia
      */
     function updateDate(days) {
@@ -125,14 +140,36 @@ document.addEventListener('DOMContentLoaded', async function () {
         dateInput.dispatchEvent(new Event('change'));
     }
 
+    // --- NOWA LOGIKA: Ustalanie daty początkowej ---
+    /**
+     * Pobiera datę z parametru URL lub zwraca aktualną wartość pola input.
+     * @returns {string} Data w formacie YYYY-MM-DD
+     */
+    function getInitialDate() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dateFromUrl = urlParams.get('date');
+
+        // Prosta walidacja formatu YYYY-MM-DD
+        if (dateFromUrl && /^\d{4}-\d{2}-\d{2}$/.test(dateFromUrl)) {
+            dateInput.value = dateFromUrl; // Zaktualizuj pole input, aby pasowało do URL
+            return dateFromUrl;
+        }
+
+        return dateInput.value; // Zwróć domyślną wartość, jeśli brak parametru
+    }
+
+    const initialDate = getInitialDate();
+    // --- KONIEC NOWEJ LOGIKI ---
+
+
     // Nasłuchiwanie na zdarzenia
     dateInput.addEventListener('change', () => {
-        fetchAndRenderChart(dateInput.value);
+        fetchAndRenderData(dateInput.value);
     });
 
     prevDayBtn.addEventListener('click', () => updateDate(-1));
     nextDayBtn.addEventListener('click', () => updateDate(1));
 
-    // Pobierz dane dla domyślnie ustawionej daty przy pierwszym załadowaniu strony
-    await fetchAndRenderChart(dateInput.value);
+    // Pobierz dane dla ustalonej daty (z URL lub domyślnej) przy pierwszym załadowaniu strony
+    await fetchAndRenderData(initialDate);
 });

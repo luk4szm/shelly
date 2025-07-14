@@ -16,7 +16,7 @@
             <div class="row">
                 <div class="col">Est. fuel consume:</div>
                 <div class="col fw-bold text-end">
-                    {{ (todayStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))format_gas_consume }}
+                    {{ (todayStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
                 </div>
             </div>
         {% endif %}

@@ -6,6 +6,7 @@ namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
+use App\Model\DateRange;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
@@ -24,9 +25,12 @@ class DeviceController extends AbstractController
         iterable $statusHelpers,
         #[AutowireIterator('app.shelly.daily_stats')]
         iterable $dailyStatsCalculators,
+        Request  $request,
         string   $device,
     ): Response
     {
+        $date = new \DateTime($request->get('date', ''));
+
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
             if (!$helper->supports($device)) {
@@ -37,12 +41,12 @@ class DeviceController extends AbstractController
             foreach ($dailyStatsCalculators as $statsCalculator) {
                 if ($statsCalculator->supports($helper->getDeviceName())) {
                     try {
-                        $dailyStats = $statsCalculator->calculateDailyStats(new \DateTime());
+                        $dailyStats = $statsCalculator->calculateDailyStats($date);
                         break;
                     } catch (\Exception) {
                     }
 
-                    $dailyStats = new DeviceDailyStats($helper->getDeviceName(), new \DateTime());
+                    $dailyStats = new DeviceDailyStats($helper->getDeviceName(), $date);
                 }
             }
 

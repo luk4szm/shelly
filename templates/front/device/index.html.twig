@@ -19,11 +19,11 @@
 {% endblock %}
 
 {% block pageBody %}
-    {% set isActive = device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
+    {% set isActive = device.history is not empty and device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
-                <div class="card">
+                <div class="card" id="device_stats">
                     <div class="card card-sm">
                         <div class="card-body py-2">
                             <div class="row align-items-center">
@@ -33,15 +33,20 @@
                                     </span>
                                 </div>
                                 <div class="col">
-                                    <div class="fw-bolder fs-2">{{ device.dailyStats.energy|default(0)|format_energy }}</div>
-                                    <div class="text-secondary text-capitalize fw-bold">
-                                        {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : "" }}
+                                    <div class="fw-bolder fs-2 text-nowrap">
+                                        {{ device.dailyStats.energy|default(0)|format_energy }}
                                     </div>
                                 </div>
                                 <div class="col-auto text-end">
                                     <div class="float-right fs-3">
+                                        <div class="text-secondary text-capitalize fw-bold">
+                                            {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : "" }}
+                                        </div>
                                         {% if device.name == 'piec' %}
-                                            <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</span>
+                                            <div class="ms-1">
+                                                &#9832;
+                                                {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
+                                            </div>
                                         {% endif %}
                                     </div>
                                 </div>
