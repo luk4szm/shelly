@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Utils\Hook\Temperature;
+declare(strict_types=1);
+
+namespace App\Utils\Hook\GraphHandler;
 
 use App\Entity\Hook;
 use App\Utils\Hook\HookGrouper;
 
-class TemperatureGraphHandler
+abstract class GraphHandler
 {
     /**
      * @param array{Hook} $hooks

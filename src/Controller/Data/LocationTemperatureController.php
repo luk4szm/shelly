@@ -7,7 +7,7 @@ namespace App\Controller\Data;
 use App\Entity\Hook;
 use App\Repository\HookRepository;
 use App\Service\Location\LocationFinder;
-use App\Utils\Hook\Temperature\TemperatureGraphHandler;
+use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

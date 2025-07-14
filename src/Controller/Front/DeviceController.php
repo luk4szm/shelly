@@ -9,7 +9,7 @@ use App\Entity\Hook;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
-use App\Utils\Hook\Power\PowerGraphHandler;
+use App\Utils\Hook\GraphHandler\PowerGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\Request;
