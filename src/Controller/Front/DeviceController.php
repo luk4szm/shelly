@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DeviceController extends AbstractController
 {
-    #[Route('/device/{device}', name:'app_front_device')]
+    #[Route('/device/{device}', name: 'app_front_device')]
     public function index(
         #[AutowireIterator('app.shelly.device_status_helper')]
         iterable $statusHelpers,
@@ -27,8 +27,7 @@ class DeviceController extends AbstractController
         iterable $dailyStatsCalculators,
         Request  $request,
         string   $device,
-    ): Response
-    {
+    ): Response {
         $date = new \DateTime($request->get('date', ''));
 
         /** @var DeviceStatusHelperInterface $helper */
@@ -50,10 +49,15 @@ class DeviceController extends AbstractController
                 }
             }
 
+            $dateRange = new DateRange(
+                (clone $date)->setTime(0, 0),
+                (clone $date)->setTime(23, 59, 59),
+            );
+
             $device = [
                 'name'       => $helper->getDeviceName(),
                 'deviceId'   => $helper->getDeviceId(),
-                'history'    => $helper->getHistory(2),
+                'history'    => $helper->getHistory(dateRange: $dateRange, grouped: true),
                 'dailyStats' => $dailyStats ?? null,
             ];
 
@@ -65,13 +69,12 @@ class DeviceController extends AbstractController
         ]);
     }
 
-    #[Route('/device/{device}/power-data', name:'app_front_device_power_data')]
+    #[Route('/device/{device}/power-data', name: 'app_front_device_power_data')]
     public function getPowerData(
-        string            $device,
-        Request           $request,
-        HookRepository    $hookRepository,
-    ): Response
-    {
+        string         $device,
+        Request        $request,
+        HookRepository $hookRepository,
+    ): Response {
         $date  = new \DateTime($request->get('date'));
         $hooks = $hookRepository->findHooksByDeviceAndDate($device, $date);
 

@@ -19,7 +19,6 @@
 {% endblock %}
 
 {% block pageBody %}
-    {% set isActive = device.history is not empty and device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
@@ -71,6 +70,48 @@
                                 <div class="spinner-border" role="status"></div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="card mt-3" id="device_history">
+                    <div class="card-header">
+                        <h3 class="card-title">Historia załączeń</h3>
+                    </div>
+                    <div class="card-body">
+                        {% dump(device.history) %}
+                        {% if device.history is not null %}
+                            <table class="table table-sm table-striped lh-1">
+                                <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col"></th>
+                                    <th scope="col" class="text-end">Energia</th>
+                                    {% if device.name == 'piec' %}
+                                        <th scope="col" class="text-end">Użycie gazu</th>
+                                    {% endif %}
+                                    <th scope="col" class="text-end">Czas pracy</th>
+                                    <th scope="col" class="text-end">Czas przerwy</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in device.history %}
+                                    <tr>
+                                        <td class="text-muted">{{ loop.index }}</td>
+                                        <td>{{ row.running is defined ? row.running.startTime|date('H:i:s') : '' }}</td>
+                                        <td class="text-end text-nowrap">{{ row.running is defined ? row.running.usedEnergy|format_energy : '' }}</td>
+                                        {% if device.name == 'piec' %}
+                                            <td class="text-end text-nowrap">
+                                                {{ row.running is defined ? (row.running.usedEnergy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume : '' }}
+                                            </td>
+                                        {% endif %}
+                                        <td class="text-end">{{ row.running is defined ? row.running.statusDurationReadable : '' }}</td>
+                                        <td class="text-end">{{ row.standby is defined ? row.standby.statusDurationReadable : '' }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <span class="text-muted">Brak danych</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>

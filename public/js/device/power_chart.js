@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const nextDayBtn = document.getElementById('next-day-btn');
     const loaderElement = chartElement.querySelector('.chart-loader');
     const deviceStatsElement = document.getElementById('device_stats');
+    const deviceStatsHistory = document.getElementById('device_history');
 
     const chartOptions = {
         series: [{
@@ -112,6 +113,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                     deviceStatsElement.innerHTML = newStatsElement.innerHTML;
                 } else {
                     console.error('Nie znaleziono elementu #device_stats w odpowiedzi serwera.');
+                }
+
+                const newHistoryElement = doc.getElementById('device_history');
+                if (newHistoryElement) {
+                    deviceStatsHistory.innerHTML = newHistoryElement.innerHTML;
+                } else {
+                    console.error('Nie znaleziono elementu #device_history w odpowiedzi serwera.');
                 }
             }
         } catch (error) {
