@@ -24,34 +24,42 @@
         <div class="row row-cards">
             <div class="col-12 col-md-3">
                 <div class="card" id="device_stats">
-                    <div class="card card-sm">
-                        <div class="card-body py-2">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="{{ isActive ? 'bg-success text-black' : 'bg-light-lt' }} avatar">
-                                        {{ device.dailyStats.inclusions|default(0) }}
-                                    </span>
-                                </div>
-                                <div class="col">
-                                    <div class="fw-bolder fs-2 text-nowrap">
-                                        {{ device.dailyStats.energy|default(0)|format_energy }}
-                                    </div>
-                                </div>
-                                <div class="col-auto text-end">
-                                    <div class="float-right fs-3">
-                                        <div class="text-secondary text-capitalize fw-bold">
-                                            {{ device.dailyStats.totalActiveTime ? device.dailyStats.totalActiveTime|readableDurationTime : "" }}
-                                        </div>
-                                        {% if device.name == 'piec' %}
-                                            <div class="ms-1">
-                                                &#9832;
-                                                {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+                    {% if device.dailyStats.date|date('Y-m-d') == "now"|date('Y-m-d') %}
+                        {% set secondsPassed = "now"|date('U') - "today"|date('U') %}
+                        {% set progressWidth = (secondsPassed / 86400) * 100 %}
+                        {% set progressColor = 'bg-azure' %}
+                    {% else %}
+                        {% set progressWidth = 100 %}
+                        {% set progressColor = 'bg-green' %}
+                    {% endif %}
+                    <div class="progress progress-3 card-progress">
+                        <div class="progress-bar {{ progressColor }}" style="width: {{ progressWidth|round(2) }}%"
+                             role="progressbar" aria-valuenow="{{ progressWidth|round }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="visually-hidden">{{ progressWidth|round }}% Complete</span>
                         </div>
+                    </div>
+                    <div class="card-header">
+                        <h3 class="card-title">Statystyki dzienne</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-7">Data:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.date|date('d.m.Y') }}</dd>
+                            <dt class="col-7">Uruchomień:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.inclusions|default(0) }}</dd>
+                            <dt class="col-7">Energia:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.energy|default(0)|format_energy }}</dd>
+                            {% if device.name == 'piec' %}
+                                <dt class="col-7">Użycie gazu:</dt>
+                                <dd class="col-5 fw-bold">{{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                            {% endif %}
+                            <dt class="col-7">Czas pracy:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.totalActiveTime|default(0)|readableDurationTime }}</dd>
+                            <dt class="col-7">Najdłuższa praca:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.longestRunTime|default(0)|readableDurationTime }}</dd>
+                            <dt class="col-7">Najdłuższa pauza:</dt>
+                            <dd class="col-5 fw-bold">{{ device.dailyStats.longestPauseTime|default(0)|readableDurationTime }}</dd>
+                        </dl>
                     </div>
                 </div>
             </div>
