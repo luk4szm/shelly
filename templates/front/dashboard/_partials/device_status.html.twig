@@ -10,7 +10,7 @@
                     <div class="col">
                         <div class="fw-bolder fs-3">{{ device.history[0].lastValue }} W</div>
                         <div class="text-secondary text-capitalize fw-bold">
-                            <a href="{{ path('app_front_device', {'device': device.name}) }}" class="text-secondary">
+                            <a href="{{ path('app_front_device_daily', {'device': device.name}) }}" class="text-secondary">
                                 {{ device.name }}
                             </a>
                         </div>

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}{{ device.name|capitalize }}{% endblock %}
+{% block pagePreTitle %}Devices{% endblock %}
+
+{% block pageTitleActions %}
+    <div class="d-inline-flex">
+        <div class="btn-group me-3" role="group">
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off">
+            <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_front_device_daily', {'device': device.name}) }}'">dzień</label>
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off" checked="checked">
+            <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_front_device_monthly', {'device': device.name}) }}'">miesiąc</label>
+        </div>
+        <div class="input-group">
+            <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
+            <input type="month" class="form-control" id="heating_date" value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}" min="2025-02" max="{{ "now"|date("Y-m") }}">
+            <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-12 col-md-3">
+                <div class="card" id="device_stats">
+                    <div class="card-header">
+                        <h3 class="card-title">Statystyki miesięczne</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            {% if device.monthlyStats is not null %}
+                                <dt class="col-7 fw-light">Okres:</dt>
+                                <dd class="col-5 fw-bold">{{ app.request.query.get('date') ? (app.request.query.get('date')|date('m.Y')) : ("now"|date('m.Y')) }}</dd>
+                                <dt class="col-7 fw-light">Uruchomień:</dt>
+                                <dd class="col-5 fw-bold">{{ device.monthlyStats.inclusions|default(0) }}</dd>
+                                <dt class="col-7 fw-light">Energia:</dt>
+                                <dd class="col-5 fw-bold">{{ device.monthlyStats.energy|default(0)|format_energy }}</dd>
+                                {% if device.name == 'piec' %}
+                                    <dt class="col-7 fw-light">Użycie gazu:</dt>
+                                    <dd class="col-5 fw-bold">{{ (device.monthlyStats.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                                {% endif %}
+                                <dt class="col-7 fw-light">Czas pracy:</dt>
+                                <dd class="col-5 fw-bold">{{ device.monthlyStats.time|default(0)|readableDurationTime }}</dd>
+                            {% else %}
+                                <div class="text-muted">Brak danych miesięcznych.</div>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9 col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        {% set monthly_chart_data = [] %}
+                        {% if device.monthlyData %}
+                            {% for stat in device.monthlyData %}
+                                {% set monthly_chart_data = monthly_chart_data|merge([{
+                                    'date': stat.date|date('Y-m-d'),
+                                    'energy': stat.energy|default(0),
+                                    'time': stat.totalActiveTime|default(0),
+                                    'inclusions': stat.inclusions|default(0)
+                                }]) %}
+                            {% endfor %}
+                        {% endif %}
+                        <div id="chart-power" class="position-relative" data-monthly-data="{{ monthly_chart_data is not empty ? monthly_chart_data|json_encode|e('html_attr') : '' }}">
+                            <div class="chart-loader position-absolute top-50 start-50 translate-middle" style="display: none; z-index: 10;">
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/device/monthly_power_chart.js') }}"></script>
+{% endblock %}
