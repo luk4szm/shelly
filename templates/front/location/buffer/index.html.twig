@@ -2,7 +2,7 @@
 
 {% block pageTitle %}Location{% endblock %}
 
-{% block pageTitleActions %}{% endblock %}
+{% block pageTitleActions %}Bufor{% endblock %}
 
 {% block pageBody %}
     <div class="container-xl">
@@ -10,8 +10,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        {{ dump(salonTemp) }}
-                        {{ dump(salonHum) }}
+                        {{ dump(temperature_15m) }}
+                        {{ dump(temperature_05m) }}
                     </div>
                 </div>
             </div>

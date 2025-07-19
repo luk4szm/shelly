@@ -145,6 +145,26 @@ class HookRepository extends CrudRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findLocationHumidity(
+        \DateTime $from,
+        \DateTime $to,
+        string    $location = null,
+    ): array
+    {
+        return $this->createQueryBuilder('hook')
+            ->where('hook.property = :property')
+            ->setParameter('property', 'humidity')
+            ->andWhere('hook.device = :location')
+            ->setParameter('location', $location)
+            ->orderBy('hook.id', 'ASC')
+            ->andWhere('hook.createdAt >= :from')
+            ->andWhere('hook.createdAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findGroupedHooks(string $device, string $property): array
     {
         $conn = $this->getEntityManager()->getConnection();

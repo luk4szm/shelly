@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}Location{% endblock %}
+{% block pagePreTitle %}Garaż{% endblock %}
+
+{% block pageTitleActions %}
+<div class="d-inline-flex">
+{#        <div class="btn-group me-3" role="group">#}
+{#            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off" checked="checked">#}
+{#            <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_front_location_living_room') }}'">dzień</label>#}
+{#            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off">#}
+{#            <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_front_location_living_room') }}'">miesiąc</label>#}
+{#        </div>#}
+        <div class="input-group">
+            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
+            <input type="date" class="form-control" id="location_date" value="{{ "now"|date("Y-m-d") }}" min="2025-06-29" max="{{ "now"|date("Y-m-d") }}" />
+            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        <div id="location-chart" class="position-relative" data-location-slug="garage"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/location_chart.js') }}"></script>
+{% endblock %}
