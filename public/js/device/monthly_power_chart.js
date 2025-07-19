@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
             type: 'line',
             stacked: false,
             zoom: { enabled: false },
-            toolbar: { show: true },
+            toolbar: { show: false },
         },
         stroke: {
             width: [0, 0, 3], // Szerokość obrysu: 0 dla słupków, 3 dla linii

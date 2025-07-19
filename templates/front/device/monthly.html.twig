@@ -30,7 +30,7 @@
                     <div class="card-body">
                         <dl class="row">
                             {% if device.monthlyStats is not null %}
-                                <dt class="col-7 fw-light">Okres:</dt>
+                                <dt class="col-7 fw-light">Miesiąc:</dt>
                                 <dd class="col-5 fw-bold">{{ app.request.query.get('date') ? (app.request.query.get('date')|date('m.Y')) : ("now"|date('m.Y')) }}</dd>
                                 <dt class="col-7 fw-light">Uruchomień:</dt>
                                 <dd class="col-5 fw-bold">{{ device.monthlyStats.inclusions|default(0) }}</dd>
