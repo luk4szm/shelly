@@ -24,6 +24,22 @@
         <div class="row row-cards">
             <div class="col-12 col-md-3">
                 <div class="card" id="device_stats">
+                    {% set selected_date = app.request.query.get('date') ? app.request.query.get('date') : 'now' %}
+                    {% if selected_date|date('Y-m') == 'now'|date('Y-m') %}
+                        {% set daysInMonth = 'now'|date('t') %}
+                        {% set dayOfMonth = 'now'|date('j') %}
+                        {% set progressWidth = (dayOfMonth / daysInMonth) * 100 %}
+                        {% set progressColor = 'bg-azure' %}
+                    {% else %}
+                        {% set progressWidth = 100 %}
+                        {% set progressColor = 'bg-green' %}
+                    {% endif %}
+                    <div class="progress progress-3 card-progress">
+                        <div class="progress-bar {{ progressColor }}" style="width: {{ progressWidth|round(2) }}%"
+                             role="progressbar" aria-valuenow="{{ progressWidth|round }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="visually-hidden">{{ progressWidth|round }}% Complete</span>
+                        </div>
+                    </div>
                     <div class="card-header">
                         <h3 class="card-title">Statystyki miesięczne</h3>
                     </div>
