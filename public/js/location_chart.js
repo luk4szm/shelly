@@ -136,8 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     seriesName: 'Wilgotność',
                     opposite: true, // Oś po prawej stronie
-                    min: 0,
-                    max: 100,
                     title: { text: "Wilgotność" },
                     labels: {
                         formatter: (value) => value ? value.toFixed(0) + "%" : '',
