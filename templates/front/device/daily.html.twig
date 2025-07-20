@@ -93,7 +93,7 @@
                                         <th scope="col" class="text-end">Użycie gazu</th>
                                     {% endif %}
                                     <th scope="col" class="text-end">Czas pracy</th>
-                                    <th scope="col" class="text-end">Czas przerwy</th>
+                                    <th scope="col" class="text-end d-none d-md-block">Czas przerwy</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -108,7 +108,7 @@
                                             </td>
                                         {% endif %}
                                         <td class="text-end">{{ row.running is defined ? row.running.statusDurationReadable : '' }}</td>
-                                        <td class="text-end">{{ row.standby is defined ? row.standby.statusDurationReadable : '' }}</td>
+                                        <td class="text-end d-none d-md-block">{{ row.standby is defined ? row.standby.statusDurationReadable : '' }}</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
