@@ -101,10 +101,10 @@
                                     <tr>
                                         <td class="text-muted">{{ loop.index }}</td>
                                         <td>{{ row.running is defined ? row.running.startTime|date('H:i:s') : '' }}</td>
-                                        <td class="text-end text-nowrap">{{ row.running is defined ? row.running.usedEnergy|format_energy : '' }}</td>
+                                        <td class="text-end text-nowrap">{{ row.running is defined ? row.running.usedEnergy|format_energy : 0 Wh }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
-                                                {{ row.running is defined ? (row.running.usedEnergy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume : '' }}
+                                                {{ row.running is defined ? (row.running.usedEnergy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume : '0 m³' }}
                                             </td>
                                         {% endif %}
                                         <td class="text-end">{{ row.running is defined ? row.running.statusDurationReadable : '' }}</td>

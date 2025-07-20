@@ -118,7 +118,7 @@
                                         <td class="text-muted">{{ loop.index }}</td>
                                         <td class="text-center">{{ row.date|date('d.m.Y') }}</td>
                                         <td class="text-center d-none d-md-block">{{ row.inclusions }}</td>
-                                        <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : 0 }}</td>
+                                        <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
                                                 {{ (row.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
