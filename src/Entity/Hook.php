@@ -6,7 +6,7 @@ use App\Repository\HookRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HookRepository::class)]
-#[ORM\Index(name: 'device_property_idx', columns: ['device', 'property'])]
+#[ORM\Index(name: 'device_property_idx', columns: ['device', 'property', 'created_at'])]
 #[ORM\HasLifecycleCallbacks]
 class Hook
 {
