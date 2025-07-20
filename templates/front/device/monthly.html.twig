@@ -92,6 +92,12 @@
                     </div>
                     <div class="card-body">
                         {% if device.monthlyData is not empty %}
+                            {% set maxDuration = 0 %}
+                            {% for row in device.monthlyData %}
+                                {% if row.totalActiveTime > maxDuration %}
+                                    {% set maxDuration = row.totalActiveTime %}
+                                {% endif %}
+                            {% endfor %}
                             <table class="table table-sm table-striped lh-1">
                                 <thead>
                                 <tr>
@@ -103,6 +109,7 @@
                                         <th scope="col" class="text-end">Użycie gazu</th>
                                     {% endif %}
                                     <th scope="col" class="text-end">Czas pracy</th>
+                                    <th scope="col" class="d-none d-mb-block">Czas pracy</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -118,6 +125,16 @@
                                             </td>
                                         {% endif %}
                                         <td class="text-end">{{ row.totalActiveTime ? row.totalActiveTime|readableDurationTime : '' }}</td>
+                                        <td class="ps-3 w-25">
+                                            {% if maxDuration > 0 %}
+                                                {% set widthPercentage = (row.totalActiveTime / maxDuration) * 100 %}
+                                            {% else %}
+                                                {% set widthPercentage = 0 %}
+                                            {% endif %}
+                                            <div class="progress progress-xs">
+                                                <div class="progress-bar bg-primary" style="width: {{ widthPercentage|round(1) }}%"></div>
+                                            </div>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
