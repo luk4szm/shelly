@@ -128,16 +128,36 @@ document.addEventListener("DOMContentLoaded", function () {
             yaxis: [
                 {
                     seriesName: 'Temperatura',
-                    title: { text: "Temperatura" },
+                    title: {text: "Temperatura"},
                     labels: {
                         formatter: (value) => value ? value.toFixed(1) + "°C" : '',
                     },
+                    // Można tu dodać podobną logikę dla min/max temperatury, jeśli zajdzie potrzeba
                 },
                 {
                     seriesName: 'Wilgotność',
                     opposite: true, // Oś po prawej stronie
-                    title: { text: "Wilgotność" },
-                    max: 100,
+                    title: {text: "Wilgotność"},
+
+                    // Dynamiczne maksimum, które nie przekroczy 100%
+                    max: function (maxDataValue) {
+                        // Jeśli nie ma danych, maxDataValue może być niezdefiniowane
+                        if (typeof maxDataValue === 'undefined' || maxDataValue === null) {
+                            return 100; // Wartość domyślna
+                        }
+                        // Dodaj bufor, ale nie przekraczaj 100
+                        return Math.min(maxDataValue + 10, 100);
+                    },
+
+                    // NOWOŚĆ: Dynamiczne minimum, które nie będzie niższe niż 0%
+                    min: function (minDataValue) {
+                        if (typeof minDataValue === 'undefined' || minDataValue === null) {
+                            return 0; // Wartość domyślna
+                        }
+                        // Odejmij bufor, ale nie schodź poniżej 0
+                        return Math.max(minDataValue - 10, 0);
+                    },
+
                     labels: {
                         formatter: (value) => value ? value.toFixed(0) + "%" : '',
                     },
