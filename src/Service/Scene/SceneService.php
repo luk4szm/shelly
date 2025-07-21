@@ -17,22 +17,30 @@ readonly class SceneService
 
     public function leavingHouse(): void
     {
-        $this->coverService->close();
+        $this->gateOpener->open();
+
+        sleep(3);
 
         if ($this->garageService->isOpen()) {
             $this->garageService->move();
         }
 
-        $this->gateOpener->open();
+        sleep(3);
+
+        $this->coverService->close();
     }
 
     public function comingHouse(): void
     {
         $this->gateOpener->open();
 
+        sleep(3);
+
         if (!$this->garageService->isOpen()) {
             $this->garageService->move();
         }
+
+        sleep(3);
 
         $this->coverService->open();
     }
