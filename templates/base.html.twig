@@ -54,19 +54,15 @@
                     <div class="col-auto ms-auto d-print-none">
                         <div class="btn-list">
                             {% block pageTitleActions %}
-                            <a href="#" class="btn btn-azure btn-5 d-none d-sm-inline-block" data-bs-toggle="modal"
-                               data-bs-target="#modal-report">
-                                {{ include('_icons/scan-icon.svg.twig') }}
-                                Sceny
-                            </a>
-                            <a href="#" class="btn btn-azure btn-6 d-sm-none btn-icon" data-bs-toggle="modal"
-                               data-bs-target="#modal-report">
-                                {{ include('_icons/scan-icon.svg.twig') }}
-                            </a>
+                                <a href="#" class="btn btn-azure btn-5 d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#scene_modal">
+                                    {{ include('_icons/scan-icon.svg.twig') }}
+                                    Sceny
+                                </a>
+                                <a href="#" class="btn btn-azure btn-6 d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#scene_modal">
+                                    {{ include('_icons/scan-icon.svg.twig') }}
+                                </a>
                             {% endblock %}
                         </div>
-                        <!-- BEGIN MODAL -->
-                        <!-- END MODAL -->
                     </div>
                 </div>
             </div>
@@ -89,6 +85,33 @@
 <!-- BEGIN PAGE SCRIPTS -->
 <script src="{{ asset('assets/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ asset('libs/apexcharts/dist/apexcharts.js') }}?1751266219" defer></script>
+{% block modals %}{% endblock %}
+<!-- BEGIN MODAL -->
+<div class="modal modal-blur fade" id="scene_modal" tabindex="-1" aria-labelledby="sceneModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-3 modal-dialog-centered" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sceneModalLabel">Sceny</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="row g-5">
+                    <div class="col-md-6 col-12">
+                        <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="leaving">
+                            Wracam do domu
+                        </button>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="coming">
+                            Wychodzę z domu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END MODAL -->
 {% block pagejs %}{% endblock %}
 <!-- END PAGE SCRIPTS -->
 </body>

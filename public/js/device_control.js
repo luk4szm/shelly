@@ -65,6 +65,8 @@ $(document).ready(function () {
                     apiUrl = '/cover/open-close';
                 } else if (controller === 'garage') {
                     apiUrl = '/garage/move';
+                } else if (controller === 'scene') {
+                    apiUrl = '/scene';
                 }
 
                 if (apiUrl) {
