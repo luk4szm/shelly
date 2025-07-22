@@ -19,9 +19,11 @@ readonly class SceneService
     {
         $this->gateOpener->open();
 
-        sleep(3);
+        sleep(2);
 
         if ($this->garageService->isOpen()) {
+            sleep(2);
+
             $this->garageService->move();
         }
 
@@ -34,13 +36,15 @@ readonly class SceneService
     {
         $this->gateOpener->open();
 
-        sleep(3);
+        sleep(2);
 
         if (!$this->garageService->isOpen()) {
+            sleep(2);
+
             $this->garageService->move();
         }
 
-        sleep(3);
+        sleep(2);
 
         $this->coverService->open();
     }
