@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    let holdTimer;
     const holdDuration = 1000;
     const feedbackDisplayDuration = 2500;
 
@@ -45,7 +44,7 @@ $(document).ready(function () {
             textSpan.text('Odliczam...');
             button.addClass('is-holding');
 
-            holdTimer = setTimeout(function () {
+            const holdTimer = setTimeout(function () {
                 button.data('action-triggered', true);
                 textSpan.text('Działam!');
 
@@ -57,17 +56,14 @@ $(document).ready(function () {
 
                 const controller = button.data('controller');
                 const action = button.data('action');
-                let apiUrl;
 
-                if (controller === 'gate') {
-                    apiUrl = '/supla/gate/open-close';
-                } else if (controller === 'covers') {
-                    apiUrl = '/cover/open-close';
-                } else if (controller === 'garage') {
-                    apiUrl = '/garage/move';
-                } else if (controller === 'scene') {
-                    apiUrl = '/scene';
-                }
+                const apiUrls = {
+                    'gate': '/supla/gate/open-close',
+                    'covers': '/cover/open-close',
+                    'garage': '/garage/move',
+                    'scene': '/scene'
+                };
+                const apiUrl = apiUrls[controller];
 
                 if (apiUrl) {
                     $.ajax({
@@ -76,18 +72,14 @@ $(document).ready(function () {
                         data: { "direction": action },
                         success: function () {
                             console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
-                            // Po 5 sekundach zresetuj przycisk
-                            setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
                         },
                         error: function (response) {
                             console.error("Błąd podczas wykonywania akcji AJAX:", response);
-
-                            // Logika obsługi błędu
                             textSpan.text('Wystąpił błąd');
-                            // Zamień klasę 'btn-success' na 'btn-danger'
                             button.removeClass('btn-success').addClass('btn-danger');
-
-                            // Po 5 sekundach zresetuj przycisk
+                        },
+                        complete: function() {
+                            // Po określonym czasie zresetuj przycisk, niezależnie od wyniku
                             setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
                         }
                     });
@@ -98,10 +90,13 @@ $(document).ready(function () {
                 }
 
             }, holdDuration);
+
+            // Zapisz ID timera w danych przycisku, aby uniknąć konfliktu
+            button.data('holdTimer', holdTimer);
         })
         .on('mouseup mouseleave touchend touchmove', '.long-press-btn', function () {
             const button = $(this);
-            clearTimeout(holdTimer);
+            clearTimeout(button.data('holdTimer'));
 
             // Resetuj przycisk tylko wtedy, gdy akcja NIE została uruchomiona
             if (button.hasClass('is-holding') && !button.data('action-triggered')) {
@@ -118,14 +113,12 @@ $(document).ready(function () {
             return;
         }
 
-        let apiUrl;
-        if (controller === 'gate') {
-            apiUrl = '/supla/gate/read';
-        } else if (controller === 'covers') {
-            apiUrl = '/cover/read';
-        } else if (controller === 'garage') {
-            apiUrl = '/garage/read';
-        }
+        const readApiUrls = {
+            'gate': '/supla/gate/read',
+            'covers': '/cover/read',
+            'garage': '/garage/read'
+        };
+        const apiUrl = readApiUrls[controller];
 
         clickedSpan.addClass('is-loading').removeClass('bg-light-lt bg-red bg-green');
 
