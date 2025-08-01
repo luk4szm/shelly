@@ -1,6 +1,6 @@
 $(document).ready(function () {
-    const holdDuration = 1000;
-    const feedbackDisplayDuration = 2500;
+    const holdDuration = 500;
+    const feedbackDisplayDuration = 2000;
 
     /**
      * Funkcja pomocnicza do resetowania przycisku do jego pierwotnego stanu.
@@ -41,12 +41,12 @@ $(document).ready(function () {
                 button.data('original-text', textSpan.text());
             }
 
-            textSpan.text('Odliczam...');
+            textSpan.text('Przytrzymaj...');
             button.addClass('is-holding');
 
             const holdTimer = setTimeout(function () {
                 button.data('action-triggered', true);
-                textSpan.text('Działam!');
+                textSpan.text('Gotowe!');
 
                 // Wyłącz przycisk, aby zapobiec dalszym interakcjom
                 button.prop('disabled', true);
