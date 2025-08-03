@@ -1,5 +1,6 @@
 $(document).ready(function () {
-    const holdDuration = 500;
+    // time must be the same as in css for .long-press-btn
+    const holdDuration = 350;
     const feedbackDisplayDuration = 2000;
 
     /**
