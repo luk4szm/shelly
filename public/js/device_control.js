@@ -2,6 +2,9 @@ $(document).ready(function () {
     // time must be the same as in css for .long-press-btn
     const holdDuration = 350;
     const feedbackDisplayDuration = 2000;
+    const sceneStepDelay = 2000; // 2 seconds delay between scene steps
+    const statusClearDelay = 10000; // 10 seconds to clear the status display
+    const statusDisplay = $('#scene-controller-status'); // Get the status display element
 
     /**
      * Funkcja pomocnicza do resetowania przycisku do jego pierwotnego stanu.
@@ -23,6 +26,78 @@ $(document).ready(function () {
         button.data('action-triggered', false);
         button.prop('disabled', false); // Włącz przycisk
     }
+
+    const apiUrls = {
+        'gate': '/supla/gate/open-close',
+        'covers': '/cover/open-close',
+        'garage': '/garage/move'
+    };
+
+    const scenes = {
+        'leaving': [ // Wracam do domu
+            { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'garage', action: 'open', text: 'Otwieranie garażu...' },
+            { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' }
+        ],
+        'coming': [ // Wychodzę z domu
+            { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
+            { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
+            { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' }
+        ]
+    };
+
+    function executeScene(button, sceneActions) {
+        let currentActionIndex = 0;
+
+        function finalizeScene(message, isSuccess) {
+            statusDisplay.append(`<div>${message}</div>`);
+            button.removeClass('btn-azure').addClass(isSuccess ? 'btn-success' : 'btn-danger');
+
+            setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
+
+            setTimeout(() => {
+                statusDisplay.html('');
+            }, statusClearDelay);
+        }
+
+        function executeNextAction() {
+            if (currentActionIndex >= sceneActions.length) {
+                finalizeScene('Zakończono!', true);
+                return;
+            }
+
+            const step = sceneActions[currentActionIndex];
+            statusDisplay.append(`<div>${step.text}</div>`);
+
+            const apiUrl = apiUrls[step.controller];
+
+            if (!apiUrl) {
+                const errorMsg = `Błąd konfiguracji dla ${step.controller}`;
+                console.error(errorMsg);
+                finalizeScene(errorMsg, false);
+                return;
+            }
+
+            $.ajax({
+                type: "PATCH",
+                url: apiUrl,
+                data: { "direction": step.action },
+                success: function () {
+                    console.log(`Akcja '${step.action}' dla '${step.controller}' wykonana pomyślnie.`);
+                    currentActionIndex++;
+                    setTimeout(executeNextAction, sceneStepDelay);
+                },
+                error: function (response) {
+                    const errorMsg = `Błąd przy: ${step.text}`;
+                    console.error("Błąd podczas wykonywania akcji AJAX:", response);
+                    finalizeScene(errorMsg, false);
+                }
+            });
+        }
+
+        executeNextAction();
+    }
+
 
     $(document)
         .on('mousedown touchstart', '.long-press-btn', function (e) {
@@ -47,47 +122,60 @@ $(document).ready(function () {
 
             const holdTimer = setTimeout(function () {
                 button.data('action-triggered', true);
-                textSpan.text('Gotowe!');
 
                 // Wyłącz przycisk, aby zapobiec dalszym interakcjom
                 button.prop('disabled', true);
 
-                // Bezpośrednio zamień klasę 'btn-azure' na 'btn-success'
-                button.removeClass('btn-azure').addClass('btn-success');
-
                 const controller = button.data('controller');
                 const action = button.data('action');
 
-                const apiUrls = {
-                    'gate': '/supla/gate/open-close',
-                    'covers': '/cover/open-close',
-                    'garage': '/garage/move',
-                    'scene': '/scene'
-                };
-                const apiUrl = apiUrls[controller];
-
-                if (apiUrl) {
-                    $.ajax({
-                        type: "PATCH",
-                        url: apiUrl,
-                        data: { "direction": action },
-                        success: function () {
-                            console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
-                        },
-                        error: function (response) {
-                            console.error("Błąd podczas wykonywania akcji AJAX:", response);
-                            textSpan.text('Wystąpił błąd');
-                            button.removeClass('btn-success').addClass('btn-danger');
-                        },
-                        complete: function() {
-                            // Po określonym czasie zresetuj przycisk, niezależnie od wyniku
-                            setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
-                        }
-                    });
+                if (controller === 'scene') {
+                    const sceneActions = scenes[action];
+                    if (sceneActions) {
+                        statusDisplay.html('<div>Rozpoczynanie sceny...</div>');
+                        button.removeClass('btn-azure').addClass('btn-success');
+                        executeScene(button, sceneActions);
+                    } else {
+                        const errorMsg = `Błąd: Nie zdefiniowano sceny dla akcji: ${action}`;
+                        console.error(errorMsg);
+                        statusDisplay.html(`<div>${errorMsg}</div>`);
+                        button.removeClass('btn-azure').addClass('btn-danger');
+                        setTimeout(() => {
+                            resetButtonState(button);
+                        }, feedbackDisplayDuration);
+                        setTimeout(() => {
+                            statusDisplay.html('');
+                        }, statusClearDelay);
+                    }
                 } else {
-                    console.error('Nie można było ustalić adresu API dla urządzenia o nazwie: ', controller);
-                    // Jeśli nie ma API, natychmiast zresetuj
-                    resetButtonState(button);
+                    // Original non-scene logic
+                    textSpan.text('Gotowe!');
+                    button.removeClass('btn-azure').addClass('btn-success');
+                    const apiUrl = apiUrls[controller];
+
+                    if (apiUrl) {
+                        $.ajax({
+                            type: "PATCH",
+                            url: apiUrl,
+                            data: { "direction": action },
+                            success: function () {
+                                console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
+                            },
+                            error: function (response) {
+                                console.error("Błąd podczas wykonywania akcji AJAX:", response);
+                                textSpan.text('Wystąpił błąd');
+                                button.removeClass('btn-success').addClass('btn-danger');
+                            },
+                            complete: function() {
+                                // Po określonym czasie zresetuj przycisk, niezależnie od wyniku
+                                setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
+                            }
+                        });
+                    } else {
+                        console.error('Nie można było ustalić adresu API dla urządzenia o nazwie: ', controller);
+                        // Jeśli nie ma API, natychmiast zresetuj
+                        resetButtonState(button);
+                    }
                 }
 
             }, holdDuration);
@@ -146,7 +234,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                console.error(`Błąd podczas sprawdzania statusu dla "${controller}":`, error);
+                console.error(`Błąd podczas sprawdzania statusu dla \"${controller}\":`, error);
 
                 clickedSpan.addClass('bg-warning');
             },
