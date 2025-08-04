@@ -40,7 +40,7 @@
                                 <dd class="col-5 fw-bold">{{ device.yearlyStats.energy|default(0)|format_energy }}</dd>
                                 {% if device.name == 'piec' %}
                                     <dt class="col-7 fw-light">Użycie gazu:</dt>
-                                    <dd class="col-5 fw-bold">{{ (device.yearlyStats.energy|default(0) * constant('App\\\\Model\\\\Device\\\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                                    <dd class="col-5 fw-bold">{{ (device.yearlyStats.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
                                 {% endif %}
                                 <dt class="col-7 fw-light">Czas pracy:</dt>
                                 <dd class="col-5 fw-bold">{{ device.yearlyStats.time|default(0)|readableDurationTime }}</dd>
@@ -57,12 +57,7 @@
                         {% set yearly_chart_data = [] %}
                         {% if device.monthlyStats %}
                             {% for stat in device.monthlyStats %}
-                                {% set yearly_chart_data = yearly_chart_data|merge([{
-                                    'month': stat.month,
-                                    'energy': stat.energy|default(0),
-                                    'time': stat.time|default(0),
-                                    'inclusions': stat.inclusions|default(0)
-                                }]) %}
+                                {% set yearly_chart_data = yearly_chart_data|merge([{'month': stat.month, 'energy': stat.energy|default(0), 'time': stat.time|default(0), 'inclusions': stat.inclusions|default(0)}]) %}
                             {% endfor %}
                         {% endif %}
                         <div id="chart-power" class="position-relative" data-yearly-data="{{ yearly_chart_data is not empty ? yearly_chart_data|json_encode|e('html_attr') : '' }}">
@@ -107,7 +102,7 @@
                                         <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
-                                                {{ (row.energy * constant('App\\\\Model\\\\Device\\\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
+                                                {{ (row.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
                                             </td>
                                         {% endif %}
                                         <td class="text-end">{{ row.time ? row.time|readableDurationTime : '' }}</td>
