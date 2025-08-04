@@ -53,8 +53,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Create a complete list of months for the year
     const year = parseInt(dateInput.value, 10);
     const monthNames = Array.from({length: 12}, (_, i) => {
-        // i is 0-11, which is the month index for JS Date object.
-        // Use a day in the middle of the month to avoid any timezone-related day shifts.
         const date = new Date(year, i, 15);
         return date.toLocaleString('pl-PL', { month: 'long' });
     });
@@ -70,7 +68,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const inclusionsData = Array.from({length: 12}, (_, i) => {
         return yearlyData[i] ? yearlyData[i].inclusions : 0;
     });
+    const gasData = Array.from({length: 12}, (_, i) => {
+        return yearlyData[i] && yearlyData[i].gas ? parseFloat(yearlyData[i].gas.toFixed(2)) : 0;
+    });
 
+    const hasGasData = gasData.some(d => d > 0);
 
     const chartOptions = {
         series: [
@@ -86,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
             toolbar: { show: false },
         },
         stroke: {
-            width: [0, 0, 3], // Stroke width: 0 for columns, 3 for line
+            width: [0, 0, 3],
             curve: 'smooth'
         },
         dataLabels: {
@@ -114,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             {
                 seriesName: 'Czas pracy',
-                opposite: true, // Y-axis on the right
+                opposite: true,
                 axisTicks: { show: true },
                 axisBorder: { show: true, color: '#00E396' },
                 labels: {
@@ -128,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             {
                 seriesName: 'Liczba włączeń',
-                opposite: true, // Y-axis on the right
+                opposite: true,
                 axisTicks: { show: true },
                 axisBorder: { show: true, color: '#FEB019' },
                 labels: {
@@ -158,6 +160,31 @@ document.addEventListener('DOMContentLoaded', function () {
             text: 'Brak danych do wyświetlenia...',
         }
     };
+
+    if (hasGasData) {
+        chartOptions.series.push({
+            name: 'Zużycie gazu',
+            type: 'line',
+            data: gasData
+        });
+
+        chartOptions.yaxis.push({
+            seriesName: 'Zużycie gazu',
+            opposite: true,
+            axisTicks: { show: true },
+            axisBorder: { show: true, color: '#FF4560' },
+            labels: {
+                formatter: (val) => val.toFixed(2) + ' m³',
+                style: { colors: '#FF4560' }
+            },
+            title: {
+                text: "Zużycie gazu (m³)",
+                style: { color: '#FF4560' }
+            },
+        });
+
+        chartOptions.stroke.width.push(3);
+    }
 
     const chart = new ApexCharts(chartElement, chartOptions);
     chart.render();

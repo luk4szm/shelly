@@ -7,6 +7,7 @@ namespace App\Controller\Front;
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
 use App\Model\DateRange;
+use App\Model\Device\Boiler;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
@@ -56,11 +57,16 @@ class DeviceController extends AbstractController
                 (clone $date)->setTime(23, 59, 59),
             );
 
+            if ($device === 'piec' && isset($dailyStats)) {
+                $gas = $dailyStats->getEnergy() * Boiler::EST_FUEL_CONSUME;
+            }
+
             $device = [
                 'name'       => $helper->getDeviceName(),
                 'deviceId'   => $helper->getDeviceId(),
                 'history'    => $helper->getHistory(dateRange: $dateRange, grouped: true),
                 'dailyStats' => $dailyStats ?? null,
+                'gas'        => $gas ?? 0,
             ];
 
             break;
@@ -114,12 +120,16 @@ class DeviceController extends AbstractController
             }
 
             $monthlyData   = array_filter($monthlyData);
-            $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0,];
+            $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0, 'gas' => 0];
 
-            $monthlyStats = array_reduce($monthlyData, static function ($carry, DeviceDailyStats $dailyStats) {
+            $monthlyStats = array_reduce($monthlyData, static function ($carry, DeviceDailyStats $dailyStats) use ($device) {
                 $carry['inclusions'] += $dailyStats->getInclusions();
                 $carry['energy']     += $dailyStats->getEnergy();
                 $carry['time']       += $dailyStats->getTotalActiveTime();
+
+                if ($device === 'piec') {
+                    $carry['gas'] += $dailyStats->getEnergy() * Boiler::EST_FUEL_CONSUME;
+                }
 
                 return $carry;
             }, $initialValues);
@@ -169,20 +179,25 @@ class DeviceController extends AbstractController
                         'inclusions' => 0,
                         'energy' => 0,
                         'time' => 0,
-                        'month' => $monthDate->format('M'),
+                        'gas' => 0,
+                        'month' => $monthDate->format('F'),
                     ];
                     continue;
                 }
 
-                $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0];
-                $monthSummary = array_reduce($monthlyData, static function ($carry, DeviceDailyStats $dailyStats) {
+                $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0, 'gas' => 0];
+                $monthSummary = array_reduce($monthlyData, function ($carry, DeviceDailyStats $dailyStats) use ($device) {
                     $carry['inclusions'] += $dailyStats->getInclusions();
                     $carry['energy']     += $dailyStats->getEnergy();
                     $carry['time']       += $dailyStats->getTotalActiveTime();
 
+                    if ($device === 'piec') {
+                        $carry['gas'] += $dailyStats->getEnergy() * Boiler::EST_FUEL_CONSUME;
+                    }
+
                     return $carry;
                 }, $initialValues);
-                $monthSummary['month'] = $monthDate->format('M');
+                $monthSummary['month'] = $monthDate->format('F');
 
                 $monthlyStats[$month] = $monthSummary;
             }
@@ -191,6 +206,7 @@ class DeviceController extends AbstractController
                 'inclusions' => array_sum(array_column($monthlyStats, 'inclusions')),
                 'energy' => array_sum(array_column($monthlyStats, 'energy')),
                 'time' => array_sum(array_column($monthlyStats, 'time')),
+                'gas' => array_sum(array_column($monthlyStats, 'gas')),
             ];
 
 
@@ -198,8 +214,8 @@ class DeviceController extends AbstractController
                 'name'         => $helper->getDeviceName(),
                 'deviceId'     => $helper->getDeviceId(),
                 'monthlyStats' => $monthlyStats,
-                'yearlyStats' => $yearlyStats,
-                'year' => $year,
+                'yearlyStats'  => $yearlyStats,
+                'year'         => $year,
             ];
 
             break;

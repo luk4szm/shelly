@@ -56,7 +56,7 @@
                                 <dd class="col-5 fw-bold">{{ device.monthlyStats.energy|default(0)|format_energy }}</dd>
                                 {% if device.name == 'piec' %}
                                     <dt class="col-7 fw-light">Użycie gazu:</dt>
-                                    <dd class="col-5 fw-bold">{{ (device.monthlyStats.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                                    <dd class="col-5 fw-bold">{{ device.monthlyStats.gas|format_gas_consume }}</dd>
                                 {% endif %}
                                 <dt class="col-7 fw-light">Czas pracy:</dt>
                                 <dd class="col-5 fw-bold">{{ device.monthlyStats.time|default(0)|readableDurationTime }}</dd>
@@ -73,15 +73,20 @@
                         {% set monthly_chart_data = [] %}
                         {% if device.monthlyData %}
                             {% for stat in device.monthlyData %}
+                                {% set gas = 0 %}
+                                {% if device.name == 'piec' %}
+                                    {% set gas = stat.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME') %}
+                                {% endif %}
                                 {% set monthly_chart_data = monthly_chart_data|merge([{
                                     'date': stat.date|date('Y-m-d'),
                                     'energy': stat.energy|default(0),
                                     'time': stat.totalActiveTime|default(0),
-                                    'inclusions': stat.inclusions|default(0)
+                                    'inclusions': stat.inclusions|default(0),
+                                    'gas': gas
                                 }]) %}
                             {% endfor %}
                         {% endif %}
-                        <div id="chart-power" class="position-relative" data-monthly-data="{{ monthly_chart_data is not empty ? monthly_chart_data|json_encode|e('html_attr') : '' }}">
+                        <div id="chart-power" class="position-relative" data-device-name="{{ device.name }}" data-monthly-data="{{ monthly_chart_data is not empty ? monthly_chart_data|json_encode|e('html_attr') : '' }}">
                             <div class="chart-loader position-absolute top-50 start-50 translate-middle" style="display: none; z-index: 10;">
                                 <div class="spinner-border" role="status"></div>
                             </div>

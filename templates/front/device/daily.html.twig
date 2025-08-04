@@ -54,7 +54,7 @@
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.energy|default(0)|format_energy }}</dd>
                                 {% if device.name == 'piec' %}
                                     <dt class="col-7 fw-light">Użycie gazu:</dt>
-                                    <dd class="col-5 fw-bold">{{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                                    <dd class="col-5 fw-bold">{{ device.gas|format_gas_consume }}</dd>
                                 {% endif %}
                                 <dt class="col-7 fw-light">Czas pracy:</dt>
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.totalActiveTime|default(0)|readableDurationTime }}</dd>
