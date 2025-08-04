@@ -108,7 +108,10 @@ class DeviceController extends AbstractController
             );
 
             $monthlyData = array_reverse($statsRepository->findForDeviceAndMonth($device, $date));
-            array_unshift($monthlyData, $dailyStats ?? null);
+
+            if ($date->format('Y-m') === (new \DateTime())->format('Y-m')) {
+                array_unshift($monthlyData, $dailyStats ?? null);
+            }
 
             $monthlyData   = array_filter($monthlyData);
             $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0,];
