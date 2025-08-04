@@ -141,6 +141,75 @@ class DeviceController extends AbstractController
         ]);
     }
 
+    #[Route('/yearly', name: 'yearly')]
+    public function yearly(
+        #[AutowireIterator('app.shelly.device_status_helper')]
+        iterable                   $statusHelpers,
+        Request                    $request,
+        DeviceDailyStatsRepository $statsRepository,
+        string                     $device,
+    ): Response {
+        $date = new \DateTime($request->get('date', ''));
+        $year = (int)$date->format('Y');
+
+        /** @var DeviceStatusHelperInterface $helper */
+        foreach ($statusHelpers as $helper) {
+            if (!$helper->supports($device)) {
+                continue;
+            }
+
+            $monthlyStats = [];
+
+            for ($month = 1; $month <= 12; $month++) {
+                $monthDate = (new \DateTime())->setDate($year, $month, 1);
+                $monthlyData = $statsRepository->findForDeviceAndMonth($device, $monthDate);
+
+                if (empty($monthlyData)) {
+                    $monthlyStats[$month] = [
+                        'inclusions' => 0,
+                        'energy' => 0,
+                        'time' => 0,
+                        'month' => $monthDate->format('M'),
+                    ];
+                    continue;
+                }
+
+                $initialValues = ['inclusions' => 0, 'energy' => 0, 'time' => 0];
+                $monthSummary = array_reduce($monthlyData, static function ($carry, DeviceDailyStats $dailyStats) {
+                    $carry['inclusions'] += $dailyStats->getInclusions();
+                    $carry['energy']     += $dailyStats->getEnergy();
+                    $carry['time']       += $dailyStats->getTotalActiveTime();
+
+                    return $carry;
+                }, $initialValues);
+                $monthSummary['month'] = $monthDate->format('M');
+
+                $monthlyStats[$month] = $monthSummary;
+            }
+
+            $yearlyStats = [
+                'inclusions' => array_sum(array_column($monthlyStats, 'inclusions')),
+                'energy' => array_sum(array_column($monthlyStats, 'energy')),
+                'time' => array_sum(array_column($monthlyStats, 'time')),
+            ];
+
+
+            $device = [
+                'name'         => $helper->getDeviceName(),
+                'deviceId'     => $helper->getDeviceId(),
+                'monthlyStats' => $monthlyStats,
+                'yearlyStats' => $yearlyStats,
+                'year' => $year,
+            ];
+
+            break;
+        }
+
+        return $this->render('front/device/yearly.html.twig', [
+            'device' => $device,
+        ]);
+    }
+
     #[Route('/power-data', name: 'power_data')]
     public function getPowerData(
         string         $device,

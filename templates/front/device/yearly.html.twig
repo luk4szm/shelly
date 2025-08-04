@@ -8,15 +8,15 @@
         <div class="btn-group me-3" role="group">
             <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off">
             <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_front_device_daily', {'device': device.name}) }}'">dzień</label>
-            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off" checked="checked">
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off">
             <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_front_device_monthly', {'device': device.name}) }}'">miesiąc</label>
-            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off">
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off" checked="checked">
             <label for="btn-radio-basic-3" type="button" class="btn" onclick="location.href='{{ path('app_front_device_yearly', {'device': device.name}) }}'">rok</label>
         </div>
         <div class="input-group">
-            <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
-            <input type="month" class="form-control" id="heating_date" value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}" min="2025-02" max="{{ "now"|date("Y-m") }}">
-            <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
+            <button class="btn" type="button" id="prev-year-btn" aria-label="Poprzedni rok">&#8592;</button>
+            <input type="number" class="form-control" id="heating_date" value="{{ device.year }}" min="2023" max="{{ "now"|date("Y") }}">
+            <button class="btn" type="button" id="next-year-btn" aria-label="Następny rok">&#8594;</button>
         </div>
     </div>
 {% endblock %}
@@ -26,42 +26,26 @@
         <div class="row row-cards">
             <div class="col-12 col-md-3">
                 <div class="card" id="device_stats">
-                    {% set selected_date = app.request.query.get('date') ? app.request.query.get('date') : 'now' %}
-                    {% if selected_date|date('Y-m') == 'now'|date('Y-m') %}
-                        {% set daysInMonth = 'now'|date('t') %}
-                        {% set dayOfMonth = 'now'|date('j') %}
-                        {% set progressWidth = (dayOfMonth / daysInMonth) * 100 %}
-                        {% set progressColor = 'bg-azure' %}
-                    {% else %}
-                        {% set progressWidth = 100 %}
-                        {% set progressColor = 'bg-green' %}
-                    {% endif %}
-                    <div class="progress progress-3 card-progress">
-                        <div class="progress-bar {{ progressColor }}" style="width: {{ progressWidth|round(2) }}%"
-                             role="progressbar" aria-valuenow="{{ progressWidth|round }}" aria-valuemin="0" aria-valuemax="100">
-                            <span class="visually-hidden">{{ progressWidth|round }}% Complete</span>
-                        </div>
-                    </div>
                     <div class="card-header">
-                        <h3 class="card-title">Statystyki miesięczne</h3>
+                        <h3 class="card-title">Statystyki roczne</h3>
                     </div>
                     <div class="card-body">
                         <dl class="row">
-                            {% if device.monthlyStats is not null %}
-                                <dt class="col-7 fw-light">Miesiąc:</dt>
-                                <dd class="col-5 fw-bold">{{ app.request.query.get('date') ? (app.request.query.get('date')|date('m.Y')) : ("now"|date('m.Y')) }}</dd>
+                            {% if device.yearlyStats is not null %}
+                                <dt class="col-7 fw-light">Rok:</dt>
+                                <dd class="col-5 fw-bold">{{ device.year }}</dd>
                                 <dt class="col-7 fw-light">Uruchomień:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.inclusions|default(0) }}</dd>
+                                <dd class="col-5 fw-bold">{{ device.yearlyStats.inclusions|default(0) }}</dd>
                                 <dt class="col-7 fw-light">Energia:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.energy|default(0)|format_energy }}</dd>
+                                <dd class="col-5 fw-bold">{{ device.yearlyStats.energy|default(0)|format_energy }}</dd>
                                 {% if device.name == 'piec' %}
                                     <dt class="col-7 fw-light">Użycie gazu:</dt>
-                                    <dd class="col-5 fw-bold">{{ (device.monthlyStats.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
+                                    <dd class="col-5 fw-bold">{{ (device.yearlyStats.energy|default(0) * constant('App\\\\Model\\\\Device\\\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</dd>
                                 {% endif %}
                                 <dt class="col-7 fw-light">Czas pracy:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.time|default(0)|readableDurationTime }}</dd>
+                                <dd class="col-5 fw-bold">{{ device.yearlyStats.time|default(0)|readableDurationTime }}</dd>
                             {% else %}
-                                <div class="text-muted">Brak danych miesięcznych.</div>
+                                <div class="text-muted">Brak danych rocznych.</div>
                             {% endif %}
                         </dl>
                     </div>
@@ -70,18 +54,18 @@
             <div class="col-md-9 col-12">
                 <div class="card">
                     <div class="card-body" style="min-height: 432px;">
-                        {% set monthly_chart_data = [] %}
-                        {% if device.monthlyData %}
-                            {% for stat in device.monthlyData %}
-                                {% set monthly_chart_data = monthly_chart_data|merge([{
-                                    'date': stat.date|date('Y-m-d'),
+                        {% set yearly_chart_data = [] %}
+                        {% if device.monthlyStats %}
+                            {% for stat in device.monthlyStats %}
+                                {% set yearly_chart_data = yearly_chart_data|merge([{
+                                    'month': stat.month,
                                     'energy': stat.energy|default(0),
-                                    'time': stat.totalActiveTime|default(0),
+                                    'time': stat.time|default(0),
                                     'inclusions': stat.inclusions|default(0)
                                 }]) %}
                             {% endfor %}
                         {% endif %}
-                        <div id="chart-power" class="position-relative" data-monthly-data="{{ monthly_chart_data is not empty ? monthly_chart_data|json_encode|e('html_attr') : '' }}">
+                        <div id="chart-power" class="position-relative" data-yearly-data="{{ yearly_chart_data is not empty ? yearly_chart_data|json_encode|e('html_attr') : '' }}">
                             <div class="chart-loader position-absolute top-50 start-50 translate-middle" style="display: none; z-index: 10;">
                                 <div class="spinner-border" role="status"></div>
                             </div>
@@ -90,21 +74,21 @@
                 </div>
                 <div class="card mt-3" id="device_stats">
                     <div class="card-header">
-                        <h3 class="card-title">Zestawienie miesięczne</h3>
+                        <h3 class="card-title">Zestawienie roczne</h3>
                     </div>
                     <div class="card-body">
-                        {% if device.monthlyData is not empty %}
+                        {% if device.monthlyStats is not empty %}
                             {% set maxDuration = 0 %}
-                            {% for row in device.monthlyData %}
-                                {% if row.totalActiveTime > maxDuration %}
-                                    {% set maxDuration = row.totalActiveTime %}
+                            {% for row in device.monthlyStats %}
+                                {% if row.time > maxDuration %}
+                                    {% set maxDuration = row.time %}
                                 {% endif %}
                             {% endfor %}
                             <table class="table table-sm table-striped lh-1">
                                 <thead>
                                 <tr>
                                     <th scope="col"></th>
-                                    <th scope="col" class="text-center">Data</th>
+                                    <th scope="col" class="text-center">Miesiąc</th>
                                     <th scope="col" class="text-center d-none d-md-block">Uruchomień</th>
                                     <th scope="col" class="text-end">Energia</th>
                                     {% if device.name == 'piec' %}
@@ -115,21 +99,21 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for row in device.monthlyData %}
+                                {% for row in device.monthlyStats %}
                                     <tr>
                                         <td class="text-muted">{{ loop.index }}</td>
-                                        <td class="text-center">{{ row.date|date('d.m.Y') }}</td>
+                                        <td class="text-center">{{ row.month }}</td>
                                         <td class="text-center d-none d-md-block">{{ row.inclusions }}</td>
                                         <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
-                                                {{ (row.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
+                                                {{ (row.energy * constant('App\\\\Model\\\\Device\\\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
                                             </td>
                                         {% endif %}
-                                        <td class="text-end">{{ row.totalActiveTime ? row.totalActiveTime|readableDurationTime : '' }}</td>
+                                        <td class="text-end">{{ row.time ? row.time|readableDurationTime : '' }}</td>
                                         <td class="ps-3 w-25">
                                             {% if maxDuration > 0 %}
-                                                {% set widthPercentage = (row.totalActiveTime / maxDuration) * 100 %}
+                                                {% set widthPercentage = (row.time / maxDuration) * 100 %}
                                             {% else %}
                                                 {% set widthPercentage = 0 %}
                                             {% endif %}
@@ -152,5 +136,31 @@
 {% endblock %}
 
 {% block pagejs %}
-    <script src="{{ asset('js/device/monthly_power_chart.js') }}"></script>
+    <script src="{{ asset('js/device/yearly_power_chart.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const heatingDate = document.getElementById('heating_date');
+            const prevBtn = document.getElementById('prev-year-btn');
+            const nextBtn = document.getElementById('next-year-btn');
+
+            function updateUrl() {
+                const year = heatingDate.value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('date', year);
+                window.location.href = url.toString();
+            }
+
+            heatingDate.addEventListener('change', updateUrl);
+
+            prevBtn.addEventListener('click', function() {
+                heatingDate.stepDown();
+                updateUrl();
+            });
+
+            nextBtn.addEventListener('click', function() {
+                heatingDate.stepUp();
+                updateUrl();
+            });
+        });
+    </script>
 {% endblock %}
