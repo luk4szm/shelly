@@ -80,7 +80,6 @@ class DeviceController extends AbstractController
         Request                    $request,
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
-        string                     $mode = 'daily',
     ): Response {
         $date = new \DateTime($request->get('date', ''));
 
@@ -135,7 +134,6 @@ class DeviceController extends AbstractController
         }
 
         return $this->render('front/device/monthly.html.twig', [
-            'mode'   => $mode,
             'device' => $device,
         ]);
     }

@@ -46,8 +46,8 @@ class DeviceDailyStatsRepository extends CrudRepository
 
     public function findForDeviceAndMonth(string $device, \DateTimeInterface $month): array
     {
-        $firstDayOfMonth = (clone $month)->modify('first day of this month');
-        $lastDayOfMonth = (clone $month)->modify('last day of this month');
+        $firstDayOfMonth = (clone $month)->modify('first day of this month')->setTime(0, 0);
+        $lastDayOfMonth = (clone $month)->modify('last day of this month')->setTime(23, 59, 59);
 
         return $this->createQueryBuilder('dds')
             ->where('dds.device = :device')
