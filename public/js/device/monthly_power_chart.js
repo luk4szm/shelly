@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const series = [
         { name: 'Zużyta energia', type: 'column', data: energyData },
         { name: 'Czas pracy', type: 'column', data: timeData },
-        { name: 'Liczba włączeń', type: 'line', data: inclusionsData }
+        { name: 'Liczba włączeń', type: 'column', data: inclusionsData }
     ];
 
     const yaxis = [
@@ -122,10 +122,9 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     if (deviceName === 'piec') {
-        series.push({ name: 'Zużycie gazu', type: 'line', data: gasData });
+        series.push({ name: 'Zużycie gazu', type: 'column', data: gasData });
         yaxis.push({
             seriesName: 'Zużycie gazu',
-            opposite: true,
             axisTicks: { show: true },
             axisBorder: { show: true, color: '#FF4560' },
             labels: {
@@ -186,4 +185,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const chart = new ApexCharts(chartElement, chartOptions);
     chart.render();
+    chart.hideSeries('Liczba włączeń');
+    if (deviceName === 'piec') {
+        chart.hideSeries('Zużyta energia');
+    }
 });
