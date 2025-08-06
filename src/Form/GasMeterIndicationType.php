@@ -22,12 +22,10 @@ class GasMeterIndicationType extends AbstractType
         $builder
             ->setAction($this->router->generate('app_gas_meter_form'))
             ->add('indication', NumberType::class, [
-                'attr'        => [
-                    'class' => 'form-control',
-                ],
-                'constraints' => [
-                    new GreaterThanOrEqual($options['lastIndication'])
-                ]
+                'required'    => true,
+                'attr'        => ['class' => 'form-control'],
+                'help'        => sprintf('Poprzedni odczyt: %s m³', $options['lastIndication']->getIndication()),
+                'constraints' => [new GreaterThanOrEqual($options['lastIndication'])],
             ])
         ;
     }

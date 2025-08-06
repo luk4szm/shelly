@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}Gazomierz{% endblock %}
+{% block pagePreTitle %}{% endblock %}
+
+{% block pageTitleActions %}{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Podaj odczyt</h3>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                        <div class="mb-3">
+                            <div>
+                                {{ form_widget(form.indication) }}
+                                <small class="form-hint">{{ form_help(form.indication) }}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Zapisz</button>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9 col-12">
+                <div class="card" id="device_history">
+                    <div class="card-header">
+                        <h3 class="card-title">Historia odczytów</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-striped lh-1">
+                            <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Data</th>
+                                <th scope="col" class="text-center">Odczyt <small>(m³)</small></th>
+                                <th scope="col" class="text-end" colspan="2">Zużycie <small>(m³)</small></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for index, row in indications %}
+                                <tr>
+                                    <td class="text-muted">{{ loop.index }}</td>
+                                    <td>{{ row.createdAt|date('d.m.Y') }} <small>{{ row.createdAt|date('H:i') }}</small></td>
+                                    <td class="text-center">{{ row.indication|number_format(3, '.', '') }}</td>
+                                    <td class="text-end text-nowrap">
+                                        {% if row[index + 1] is defined %}
+                                            {{ (row.indication - indications[index + 1].indication)|number_format(3) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        {% if not loop.first %}
+                                            {{ (indications[0].indication - row.indication)|number_format(3) }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

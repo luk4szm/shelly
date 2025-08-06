@@ -25,6 +25,16 @@ class GasMeterRepository extends CrudRepository
             ->getOneOrNullResult();
     }
 
+    public function findPreviousWithOffset(int $limit = 20, int $offset = 0): array
+    {
+        return $this->createQueryBuilder('g')
+            ->orderBy('g.id', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findForDate(\DateTimeInterface $date): array
     {
         return $this->createQueryBuilder('g')
