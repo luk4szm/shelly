@@ -6,6 +6,11 @@
 {% block pageTitleActions %}{% endblock %}
 
 {% block pageBody %}
+    <style>
+        .font-tabular-nums {
+           font-feature-settings: "tnum";
+       }
+    </style>
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
@@ -47,14 +52,14 @@
                             {% for index, row in indications %}
                                 <tr>
                                     <td class="text-muted">{{ loop.index }}</td>
-                                    <td>{{ row.createdAt|date('d.m.Y') }} <small>{{ row.createdAt|date('H:i') }}</small></td>
-                                    <td class="text-center">{{ row.indication|number_format(3, '.', '') }}</td>
-                                    <td class="text-end text-nowrap">
+                                    <td class="font-tabular-nums">{{ row.createdAt|date('d.m.Y') }} <small>{{ row.createdAt|date('H:i') }}</small></td>
+                                    <td class="text-center font-tabular-nums">{{ row.indication|number_format(3, '.', '') }}</td>
+                                    <td class="text-end text-nowrap font-tabular-nums">
                                         {% if row[index + 1] is defined %}
                                             {{ (row.indication - indications[index + 1].indication)|number_format(3) }}
                                         {% endif %}
                                     </td>
-                                    <td class="text-end text-nowrap">
+                                    <td class="text-end text-nowrap font-tabular-nums">
                                         {% if not loop.first %}
                                             {{ (indications[0].indication - row.indication)|number_format(3) }}
                                         {% endif %}
