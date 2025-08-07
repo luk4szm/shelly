@@ -24,7 +24,7 @@ class GasMeterIndicationType extends AbstractType
             ->add('indication', NumberType::class, [
                 'required'    => true,
                 'attr'        => ['class' => 'form-control'],
-                'help'        => sprintf('Poprzedni odczyt: %s m³', $options['lastIndication']->getIndication()),
+                'help'        => sprintf('Poprzedni odczyt: %s m³', $options['lastIndication']),
                 'constraints' => [new GreaterThanOrEqual($options['lastIndication'])],
             ])
         ;

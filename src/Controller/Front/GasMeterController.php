@@ -19,7 +19,7 @@ final class GasMeterController extends AbstractController
     {
         $indications  = $repository->findPreviousWithOffset();
         $gasMeterForm = $this->createForm(GasMeterIndicationType::class, options: [
-            'lastIndication' => $indications[0],
+            'lastIndication' => $indications[0]->getIndication(),
         ]);
 
         return $this->render('front/gas_meter/index.html.twig', [
