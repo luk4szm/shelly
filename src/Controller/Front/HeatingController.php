@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Front;
 
+use App\Model\DateRange;
 use App\Repository\HookRepository;
+use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
 use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -22,18 +25,19 @@ final class HeatingController extends AbstractController
 
     #[Route('/get-data/{date}', name: 'get_data')]
     public function getData(
-        LocationFinder          $locationFinder,
-        HookRepository          $hookRepository,
-        TemperatureGraphHandler $graphHandler,
-        string                  $date = '',
+        LocationFinder                                                  $locationFinder,
+        HookRepository                                                  $hookRepository,
+        TemperatureGraphHandler                                         $graphHandler,
+        #[AutowireIterator('app.shelly.device_status_helper')] iterable $statusHelpers,
+        string                                                          $date = '',
     ): Response {
         $from      = (new \DateTime($date))->setTime(0, 0);
-        $to        = (clone $from)->modify("+1 day");
+        $to        = (clone $from)->setTime(23, 59, 59);
         $locations = $locationFinder->getLocations('heating');
 
         $currentDayHooks = $hookRepository->findLocationTemperatures(
             $from,
-            $to,
+            (clone $to)->modify("+1 second"),
             $locations,
         );
 
@@ -43,9 +47,55 @@ final class HeatingController extends AbstractController
             $locations,
         );
 
+        // Prepare activities (active intervals) for the three devices
+        $dateRange   = new DateRange(clone $from, clone $to);
+        $activities  = [];
+
+        /** @var DeviceStatusHelperInterface $helper */
+        foreach ($statusHelpers as $helper) {
+            // Get grouped history so we have consecutive running/standby blocks
+            $history = $helper->getHistory(dateRange: $dateRange, grouped: true);
+            if ($history === null) {
+                continue;
+            }
+
+            $deviceName = $helper->getDeviceName();
+            $activities[$deviceName] = [];
+
+            foreach ($history as $group) {
+                // each group is an array-like with keys 'running' and/or 'standby'
+                if (!isset($group['running'])) {
+                    continue;
+                }
+
+                $status = $group['running'];
+                $start  = $status->getStartTime();
+                $end    = $status->getEndTime();
+
+                if ($start === null) {
+                    continue;
+                }
+
+                // Bounds safety
+                if ($start < $from) { $start = clone $from; }
+                if ($end === null || $end > $to) { $end = clone $to; }
+
+                $activities[$deviceName][] = [
+                    'from' => $start->format(DATE_ATOM),
+                    'to'   => $end->format(DATE_ATOM),
+                ];
+            }
+
+            // Remove empty arrays to keep payload compact
+            if (empty($activities[$deviceName])) {
+                unset($activities[$deviceName]);
+            }
+        }
+
         return $this->json([
             'currentDay'  => empty($currentDayHooks) ? [] : $graphHandler->prepareGroupedHooks($currentDayHooks),
             'previousDay' => empty($previousDayHooks) ? [] : $graphHandler->prepareGroupedHooks($previousDayHooks),
+            'activities'  => $activities,
         ]);
     }
 }

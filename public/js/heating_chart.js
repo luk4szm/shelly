@@ -160,6 +160,30 @@ document.addEventListener("DOMContentLoaded", function () {
         // ZMIANA: Pobieramy teraz również grubości linii
         const { series, colors, dashArrays, strokeWidths } = transformDataForChart(rawData, baseColors);
 
+        // Przygotuj adnotacje (zacienione zakresy) dla pracy urządzeń
+        const buildAnnotations = (activities) => {
+            if (!activities) return { xaxis: [] };
+            const deviceColors = {
+                'piec': 'rgba(220, 53, 69, 0.4)',      // red-ish
+                'kominek': 'rgba(253, 126, 20, 0.4)',  // orange
+                'solary': 'rgba(25, 135, 84, 0.4)',    // green
+            };
+            const xaxis = [];
+            Object.entries(activities).forEach(([device, intervals]) => {
+                const fillColor = deviceColors[device] || 'rgba(0,0,0,0.08)';
+                intervals.forEach(({ from, to }) => {
+                    const x = new Date(from).getTime();
+                    const x2 = new Date(to).getTime();
+                    if (!isNaN(x) && !isNaN(x2) && x < x2) {
+                        xaxis.push({ x, x2, fillColor, opacity: 1, borderColor: 'transparent' });
+                    }
+                });
+            });
+            return { xaxis };
+        };
+
+        const annotations = buildAnnotations(rawData.activities);
+
         const options = {
             chart: {
                 type: "line",
@@ -169,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 toolbar: { show: true, tools: { download: true, selection: true, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true } },
                 animations: { enabled: true },
             },
+            annotations: annotations,
             stroke: {
                 width: strokeWidths, // ZMIANA: Użycie tablicy grubości linii
                 lineCap: "round",
