@@ -46,6 +46,7 @@
                                 <th scope="col">Data</th>
                                 <th scope="col" class="text-center">Odczyt <small>(m³)</small></th>
                                 <th scope="col" class="text-end" colspan="2">Zużycie <small>(m³)</small></th>
+                                <th scope="col" class="text-end" colspan="2">Szac. zużycie <small>(m³)</small></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -55,13 +56,23 @@
                                     <td class="font-tabular-nums">{{ row.createdAt|date('d.m.Y') }} <small>{{ row.createdAt|date('H:i') }}</small></td>
                                     <td class="text-center font-tabular-nums">{{ row.indication|number_format(3, '.', '') }}</td>
                                     <td class="text-end text-nowrap font-tabular-nums">
-                                        {% if row[index + 1] is defined %}
+                                        {% if indications[index + 1] is defined %}
                                             {{ (row.indication - indications[index + 1].indication)|number_format(3) }}
                                         {% endif %}
                                     </td>
                                     <td class="text-end text-nowrap font-tabular-nums">
                                         {% if not loop.first %}
                                             {{ (indications[0].indication - row.indication)|number_format(3) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap font-tabular-nums">
+                                        {% if estimated[index] is defined and estimated[index].interval is not null %}
+                                            {{ estimated[index].interval|number_format(3, '.', '') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap font-tabular-nums">
+                                        {% if estimated[index] is defined and estimated[index].cumulative is not null %}
+                                            {{ estimated[index].cumulative|number_format(3, '.', '') }}
                                         {% endif %}
                                     </td>
                                 </tr>
