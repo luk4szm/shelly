@@ -224,8 +224,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.ApexCharts && datePicker && chartElement && locationSlug) {
         // Nasłuchuj na zmiany w polu daty
         datePicker.addEventListener('change', (event) => {
+            const newDate = event.target.value;
+
+            // Aktualizuj URL bez przeładowywania strony
+            const url = new URL(window.location.href);
+            url.searchParams.set('date', newDate);
+            window.history.pushState({path: url.href}, '', url.href);
+
             updateNextButtonState();
-            loadAndRenderChart(event.target.value, locationSlug);
+            loadAndRenderChart(newDate, locationSlug);
         });
 
         // Nasłuchiwanie na przyciski nawigacji
