@@ -132,7 +132,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     labels: {
                         formatter: (value) => value ? value.toFixed(1) + "°C" : '',
                     },
-                    // Można tu dodać podobną logikę dla min/max temperatury, jeśli zajdzie potrzeba
+                    max: function (maxDataValue) {
+                        if (typeof maxDataValue === 'undefined' || maxDataValue === null) {
+                            return 40; // Wartość domyślna
+                        }
+                        return maxDataValue + 2;
+                    },
+                    min: function (minDataValue) {
+                        if (typeof minDataValue === 'undefined' || minDataValue === null) {
+                            return 0; // Wartość domyślna
+                        }
+                        return minDataValue - 2;
+                    },
                 },
                 {
                     seriesName: 'Wilgotność',
@@ -146,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             return 100; // Wartość domyślna
                         }
                         // Dodaj bufor, ale nie przekraczaj 100
-                        return Math.min(maxDataValue + 10, 100);
+                        return Math.min(maxDataValue + 5, 100);
                     },
 
                     // NOWOŚĆ: Dynamiczne minimum, które nie będzie niższe niż 0%
@@ -155,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             return 0; // Wartość domyślna
                         }
                         // Odejmij bufor, ale nie schodź poniżej 0
-                        return Math.max(minDataValue - 10, 0);
+                        return Math.max(minDataValue - 5, 0);
                     },
 
                     labels: {
