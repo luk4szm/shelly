@@ -132,7 +132,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return $usedEnergy / 3600; // Wh
     }
 
-    private function findFirstHookOfCurrentStatus(): ?int
+    private function findFirstHookOfCurrentStatus(): int
     {
         for ($i = $this->pointer; $i < count($this->hooks); $i++) {
             if ($this->isActive($this->hooks[$this->pointer]) !== $this->isActive($this->hooks[$i])) {
@@ -142,7 +142,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         }
 
         // no change in the state was found
-        return null;
+        return count($this->hooks) - 1;
     }
 
     private function setPointerOnNextHook(DeviceStatus $deviceStatus): void
