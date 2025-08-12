@@ -33,6 +33,7 @@ final class HeatingController extends AbstractController
     ): Response {
         $from      = (new \DateTime($date))->setTime(0, 0);
         $to        = (clone $from)->setTime(23, 59, 59);
+        $isToday   = $from->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
         $locations = $locationFinder->getLocations('heating');
 
         $currentDayHooks = $hookRepository->findLocationTemperatures(
@@ -77,8 +78,15 @@ final class HeatingController extends AbstractController
                 }
 
                 // Bounds safety
-                if ($start < $from) { $start = clone $from; }
-                if ($end === null || $end > $to) { $end = clone $to; }
+                if ($start < $from) {
+                    $start = clone $from;
+                }
+
+                if ($end === null) {
+                    $end = $isToday ? new \DateTime() : clone $to;
+                } elseif ($end > $to) {
+                    $end = clone $to;
+                }
 
                 $activities[$deviceName][] = [
                     'from' => $start->format(DATE_ATOM),
