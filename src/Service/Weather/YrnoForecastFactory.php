@@ -13,21 +13,29 @@ class YrnoForecastFactory
      */
     public static function create(array $data, \DateTime $time): WeatherForecast
     {
+        $cloudAreaFraction = $data['instant']['details']['cloud_area_fraction'];
+        $fogAreaFraction   = $data['instant']['details']['fog_area_fraction'];
+        $sunlightFactor    = max(0, 100 - ($cloudAreaFraction + $fogAreaFraction));
+
+
         return (new WeatherForecast())
             ->setTime($time)
             ->setTemperature($data['instant']['details']['air_temperature'])
             ->setPrecipitation($data['next_1_hours']['details']['precipitation_amount'])
             ->setAirPressure($data['instant']['details']['air_pressure_at_sea_level'])
-            ->setClouds($data['instant']['details']['cloud_area_fraction'])
+            ->setClouds($cloudAreaFraction)
             ->setCloudsLow($data['instant']['details']['cloud_area_fraction_low'])
             ->setCloudsMedium($data['instant']['details']['cloud_area_fraction_medium'])
             ->setCloudsHigh($data['instant']['details']['cloud_area_fraction_high'])
             ->setHumidity($data['instant']['details']['relative_humidity'])
             ->setWindSpeed($data['instant']['details']['wind_speed'])
             ->setWindDirection($data['instant']['details']['wind_from_direction'])
-            ->setFog($data['instant']['details']['fog_area_fraction'])
+            ->setFog($fogAreaFraction)
             ->setUvIndex($data['instant']['details']['ultraviolet_index_clear_sky'])
-            ->setDewPointTemperature($data['instant']['details']['dew_point_temperature']);
+            ->setDewPointTemperature($data['instant']['details']['dew_point_temperature'])
+            ->setSymbolCode($data['next_1_hours']['summary']['symbol_code'])
+            ->setSunlightFactor($sunlightFactor)
+        ;
     }
 
     /**
@@ -50,6 +58,9 @@ class YrnoForecastFactory
             ->setWindDirection($newData->getWindDirection())
             ->setFog($newData->getFog())
             ->setUvIndex($newData->getUvIndex())
-            ->setDewPointTemperature($newData->getDewPointTemperature());
+            ->setDewPointTemperature($newData->getDewPointTemperature())
+            ->setSymbolCode($newData->getSymbolCode())
+            ->setSunlightFactor($newData->getSunlightFactor())
+        ;
     }
 }

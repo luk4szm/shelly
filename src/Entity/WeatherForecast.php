@@ -57,6 +57,12 @@ class WeatherForecast
     #[ORM\Column]
     private ?float $dewPointTemperature = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $symbolCode = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $sunlightFactor = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
 
@@ -236,6 +242,30 @@ class WeatherForecast
     public function setDewPointTemperature(float $dewPointTemperature): static
     {
         $this->dewPointTemperature = $dewPointTemperature;
+
+        return $this;
+    }
+
+    public function getSymbolCode(): ?string
+    {
+        return $this->symbolCode;
+    }
+
+    public function setSymbolCode(?string $symbolCode): static
+    {
+        $this->symbolCode = $symbolCode;
+
+        return $this;
+    }
+
+    public function getSunlightFactor(): ?int
+    {
+        return $this->sunlightFactor;
+    }
+
+    public function setSunlightFactor(?int $sunlightFactor): static
+    {
+        $this->sunlightFactor = $sunlightFactor;
 
         return $this;
     }
