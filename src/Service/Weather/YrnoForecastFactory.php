@@ -15,7 +15,7 @@ class YrnoForecastFactory
     {
         $cloudAreaFraction = $data['instant']['details']['cloud_area_fraction'];
         $fogAreaFraction   = $data['instant']['details']['fog_area_fraction'];
-        $sunlightFactor    = max(0, 100 - ($cloudAreaFraction + $fogAreaFraction));
+        $sunlightFactor    = (int)max(0, 100 - ($cloudAreaFraction + $fogAreaFraction));
 
 
         return (new WeatherForecast())
