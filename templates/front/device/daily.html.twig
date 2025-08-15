@@ -46,8 +46,6 @@
                     <div class="card-body">
                         <dl class="row">
                             {% if device.dailyStats is not null %}
-                                {{ dump(device.dailyStats) }}
-
                                 <dt class="col-7 fw-light">Data:</dt>
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.date|date('d.m.Y') }}</dd>
                                 <dt class="col-7 fw-light">Uruchomień:</dt>
