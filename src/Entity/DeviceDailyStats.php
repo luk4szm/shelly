@@ -41,14 +41,22 @@ class DeviceDailyStats
     /** in seconds */
     private ?int $totalActiveTime = 0;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $firstSeenAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastSeenAt = null;
+
     public function __construct(
-        string            $device,
-        DateTimeInterface $date,
-        ?float            $energy = null,
-        ?int              $inclusions = null,
-        ?int              $longestRunTime = null,
-        ?int              $longestPauseTime = null,
-        ?int              $totalActiveTime = null,
+        string             $device,
+        DateTimeInterface  $date,
+        ?float             $energy = null,
+        ?int               $inclusions = null,
+        ?int               $longestRunTime = null,
+        ?int               $longestPauseTime = null,
+        ?int               $totalActiveTime = null,
+        ?DateTimeInterface $firstSeenAt = null,
+        ?DateTimeInterface $lastSeenAt = null
     ) {
         $this->device = $device;
         $this->date   = $date;
@@ -57,16 +65,22 @@ class DeviceDailyStats
             ->setInclusions($inclusions)
             ->setLongestRunTime($longestRunTime)
             ->setLongestPauseTime($longestPauseTime)
-            ->setTotalActiveTime($totalActiveTime);
+            ->setTotalActiveTime($totalActiveTime)
+            ->setFirstSeenAt($firstSeenAt)
+            ->setLastSeenAt($lastSeenAt)
+        ;
     }
 
     public function paste(self $dailyStats) : self
     {
         $this->setEnergy($dailyStats->getEnergy())
-             ->setInclusions($dailyStats->getInclusions())
-             ->setLongestRunTime($dailyStats->getLongestRunTime())
-             ->setLongestPauseTime($dailyStats->getLongestPauseTime())
-             ->setTotalActiveTime($dailyStats->getTotalActiveTime());
+            ->setInclusions($dailyStats->getInclusions())
+            ->setLongestRunTime($dailyStats->getLongestRunTime())
+            ->setLongestPauseTime($dailyStats->getLongestPauseTime())
+            ->setTotalActiveTime($dailyStats->getTotalActiveTime())
+            ->setFirstSeenAt($dailyStats->getFirstSeenAt())
+            ->setLastSeenAt($dailyStats->getLastSeenAt())
+        ;
 
         return $this;
     }
@@ -171,6 +185,30 @@ class DeviceDailyStats
     public function setTotalActiveTime(?int $totalActiveTime): static
     {
         $this->totalActiveTime = $totalActiveTime;
+
+        return $this;
+    }
+
+    public function getFirstSeenAt(): ?\DateTimeInterface
+    {
+        return $this->firstSeenAt;
+    }
+
+    public function setFirstSeenAt(?\DateTimeInterface $firstSeenAt): static
+    {
+        $this->firstSeenAt = $firstSeenAt;
+
+        return $this;
+    }
+
+    public function getLastSeenAt(): ?\DateTimeInterface
+    {
+        return $this->lastSeenAt;
+    }
+
+    public function setLastSeenAt(?\DateTimeInterface $lastSeenAt): static
+    {
+        $this->lastSeenAt = $lastSeenAt;
 
         return $this;
     }

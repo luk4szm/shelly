@@ -46,6 +46,8 @@
                     <div class="card-body">
                         <dl class="row">
                             {% if device.dailyStats is not null %}
+                                {{ dump(device.dailyStats) }}
+
                                 <dt class="col-7 fw-light">Data:</dt>
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.date|date('d.m.Y') }}</dd>
                                 <dt class="col-7 fw-light">Uruchomień:</dt>
@@ -62,6 +64,14 @@
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.longestRunTime|default(0)|readableDurationTime }}</dd>
                                 <dt class="col-7 fw-light">Najdłuższa pauza:</dt>
                                 <dd class="col-5 fw-bold">{{ device.dailyStats.longestPauseTime|default(0)|readableDurationTime }}</dd>
+                                {% if device.dailyStats.firstSeenAt is not null %}
+                                    <dt class="col-7 fw-light">Pierwszy start:</dt>
+                                    <dd class="col-5 fw-bold">{{ device.dailyStats.firstSeenAt|date('H:i:s') }}</dd>
+                                {% endif %}
+                                {% if device.dailyStats.lastSeenAt is not null %}
+                                    <dt class="col-7 fw-light">Ostatnia aktywność:</dt>
+                                    <dd class="col-5 fw-bold">{{ device.dailyStats.lastSeenAt|date('H:i:s') }}</dd>
+                                {% endif %}
                             {% else %}
                                 <div class="text-muted">Brak danych dla tego dnia.</div>
                             {% endif %}

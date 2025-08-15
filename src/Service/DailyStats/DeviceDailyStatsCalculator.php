@@ -48,12 +48,20 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
         $longestPauseTime = 0; // seconds
         $energy           = 0; // Ws
         $inclusions       = 0;
+        $firstSeenAt      = null;
+        $lastSeenAt       = null;
 
         for ($i = 0; $i < count($this->hooks); $i++) {
             $isActive = $this->statusHelper->isActive($this->hooks[$i]);
             $duration = HookDurationUtil::calculateHookDuration($this->hooks[$i], $this->hooks[$i + 1] ?? null);
 
             if ($isActive) {
+                if ($firstSeenAt === null) {
+                    $firstSeenAt = $this->hooks[$i]->getCreatedAt();
+                }
+
+                $lastSeenAt = $this->hooks[$i]->getCreatedAt();
+
                 if (
                     $i !== 0
                     && !$this->statusHelper->isActive($this->hooks[$i - 1])
@@ -79,6 +87,8 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
             ->setTotalActiveTime($activeTime)
             ->setLongestRunTime($longestRunTime)
             ->setLongestPauseTime($longestPauseTime)
+            ->setFirstSeenAt($firstSeenAt)
+            ->setLastSeenAt($lastSeenAt)
         ;
     }
 
