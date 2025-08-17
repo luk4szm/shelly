@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/** @deprecated  */
 class SceneController extends AbstractController
 {
     #[Route('/scene', name: 'app_scene_index', methods: ['PATCH'])]

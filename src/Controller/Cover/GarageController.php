@@ -16,13 +16,51 @@ final class GarageController extends AbstractController
     #[Route('/move', name: 'move', methods: ['PATCH'])]
     public function index(Request $request, ShellyGarageService $garageService): Response
     {
-        match ($request->get('direction')) {
-            'move'  => $garageService->move(),
-            default => $this->json(
-                sprintf("%s is not a valid direction", $request->get('direction')),
-                Response::HTTP_BAD_REQUEST
-            ),
-        };
+        $direction = (string)$request->get('direction');
+
+        switch ($direction) {
+            case 'move':
+                $garageService->move();
+                break;
+
+            case 'open':
+                try {
+                    $isOpen = $garageService->isOpen();
+                } catch (\Exception $e) {
+                    return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+
+                // If closed or unknown, trigger move to open
+                if ($isOpen === false || $isOpen === null) {
+                    // shelly has limit for cloud request
+                    sleep(2);
+
+                    $garageService->move();
+                }
+                break;
+
+            case 'close':
+                try {
+                    $isOpen = $garageService->isOpen();
+                } catch (\Exception $e) {
+                    return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+
+                // If open or unknown, trigger move to close
+                if ($isOpen === true || $isOpen === null) {
+                    // shelly has limit for cloud request
+                    sleep(2);
+
+                    $garageService->move();
+                }
+                break;
+
+            default:
+                return $this->json(
+                    sprintf("%s is not a valid direction", $direction),
+                    Response::HTTP_BAD_REQUEST
+                );
+        }
 
         return $this->json([]);
     }
