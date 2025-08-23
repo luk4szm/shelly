@@ -95,7 +95,7 @@
                                 </thead>
                                 <tbody>
                                 {% for row in device.monthlyStats %}
-                                    <tr>
+                                    <tr{{ row.totalActiveTime < 60 ? ' class="text-muted"' }}>
                                         <td class="text-muted">{{ loop.index }}</td>
                                         <td class="text-center">{{ row.month }}</td>
                                         <td class="text-center d-none d-md-block">{{ row.inclusions }}</td>
