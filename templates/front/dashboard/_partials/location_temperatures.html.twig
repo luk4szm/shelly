@@ -6,7 +6,7 @@
                     <div class="d-flex align-items-center">
                         <div class="subheader">
                             {% if location == 'bufor' or location == 'bufor-solary' %}
-                                <a class="text-secondary" href="{{ path('app_front_location_buffer') }}">{{ location|trans }}</a>
+                                <a class="text-secondary" href="{{ path('app_front_location_buffer_index') }}">{{ location|trans }}</a>
                             {% elseif location == 'garage' %}
                                 <a class="text-secondary" href="{{ path('app_front_location_garage_index') }}">{{ location|trans }}</a>
                             {% elseif location == 'salon' %}
