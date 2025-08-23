@@ -35,10 +35,10 @@ class BufferController extends AbstractController
         $to   = (new \DateTime($date))->setTime(23, 59, 59);
 
         return $this->json([
-            'temperature_05m' => array_map(function (Hook $hook) {
+            'temperature_15m' => array_map(function (Hook $hook) {
                 return TemperatureGraphHandler::serialize($hook);
             }, $hookRepository->findLocationTemperatures($from, $to, 'bufor')),
-            'temperature_15m' => array_map(function (Hook $hook) {
+            'temperature_05m' => array_map(function (Hook $hook) {
                 return TemperatureGraphHandler::serialize($hook);
             }, $hookRepository->findLocationTemperatures($from, $to, 'bufor-solary')),
             'pressure'        => array_map(function (Hook $hook) {
