@@ -1,7 +1,7 @@
 (function ($) {
     let inactivityTimer = null;
     const defaultInactivityTime = 30000;
-    const divToReload = '#content-box';
+    const divToReload = '#reloadable-box';
 
     function reloadDiv() {
         const noCacheUrl = window.location.href.split('#')[0] + ' ' + divToReload;

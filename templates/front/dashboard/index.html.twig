@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block pageBody %}
-    <div id="content-box">
-        <div id="devices_controllers" class="container-xl">
-            <div class="row row-deck row-cards">
-                {% include 'front/dashboard/_partials/device_controllers.html.twig' %}
-            </div>
+    <div id="devices_controllers" class="container-xl">
+        <div class="row row-deck row-cards">
+            {% include 'front/dashboard/_partials/device_controllers.html.twig' %}
         </div>
+    </div>
+    <div id="reloadable-box">
         <div id="devices_status" class="container-xl mt-3" data-device-names="{{ devices|map((device) => device.name)|join('|') }}">
             <div class="row row-cards">
                 {% include 'front/dashboard/_partials/device_status.html.twig' %}
