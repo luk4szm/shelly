@@ -16,7 +16,7 @@ readonly final class SmsSender
 
     public function sendMessage(int $phoneNumber, string $message): true
     {
-        $smsBag = SendSmsBag::withMessage($phoneNumber, $message);
+        $smsBag = SendSmsBag::withMessage($phoneNumber, 'HA_MSG: ' . $message);
         $smsBag->test = $_ENV['APP_ENV'] === 'dev';
 
         $response = (new SmsapiHttpClient())

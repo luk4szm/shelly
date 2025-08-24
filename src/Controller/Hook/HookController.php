@@ -3,6 +3,7 @@
 namespace App\Controller\Hook;
 
 use App\Entity\Hook;
+use App\Event\Hook\CoHookEvent;
 use App\Event\Hook\TvHookEvent;
 use App\Repository\HookRepository;
 use Psr\Log\LoggerInterface;
@@ -42,6 +43,7 @@ final class HookController extends AbstractController
 
         match ($device) {
             'tv'    => $dispatcher->dispatch(new TvHookEvent($hook)),
+            'co'    => $dispatcher->dispatch(new CoHookEvent($hook)),
             default => null,
         };
 
