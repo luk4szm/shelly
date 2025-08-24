@@ -21,8 +21,6 @@ final class DashboardController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
     ): Response {
-        $rooms = array_merge($locationFinder->getLocations('rooms'));
-
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
             /** @var DailyStatsCalculatorInterface $helper */
@@ -46,25 +44,21 @@ final class DashboardController extends AbstractController
             ];
         }
 
-        $locationCurrentState['bufor'] = [
-            'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
-            'temperature_05m' => $hookRepository->findActualTempForLocation('bufor-solary'),
-            'pressure'         => $hookRepository->findActualPressureForLocation('co'),
-        ];
-
-        foreach ($rooms as $location) {
-            $locationCurrentState[$location] = [
-                'temperature' => $hookRepository->findActualTempForLocation($location),
-                'humidity' => $hookRepository->findActualHumidityForLocation($location),
+        foreach ($locationFinder->getLocations('rooms') as $roomName) {
+            $rooms[$roomName] = [
+                'temperature' => $hookRepository->findActualTempForLocation($roomName),
+                'humidity'    => $hookRepository->findActualHumidityForLocation($roomName),
             ];
         }
 
         return $this->render('front/dashboard/index.html.twig', [
-            'devices'      => $devices ?? [],
-            'locations'    => $locationCurrentState ?? [],
-            'rooms'        => $rooms,
-            'temperatures' => array_values($hookRepository->findActualTemps($rooms)),
-            'humidity'     => array_values($hookRepository->findActualHumidity($rooms)),
+            'buffer'  => [
+                'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
+                'temperature_05m' => $hookRepository->findActualTempForLocation('bufor-solary'),
+                'pressure'        => $hookRepository->findActualPressureForLocation('co'),
+            ],
+            'devices' => $devices ?? [],
+            'rooms'   => $rooms ?? [],
         ]);
     }
 }
