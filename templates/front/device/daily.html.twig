@@ -74,6 +74,10 @@
                                 <div class="text-muted">Brak danych dla tego dnia.</div>
                             {% endif %}
                         </dl>
+                        <a href="{{ path('app_front_heating_index', {'date': device.dailyStats.date|date('Y-m-d')}) }}"
+                           class="btn btn-azure mt-2 w-100">
+                            Show heating chart
+                        </a>
                     </div>
                 </div>
             </div>
