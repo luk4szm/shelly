@@ -123,7 +123,11 @@
                                 {% for row in device.monthlyData %}
                                     <tr{{ row.totalActiveTime < 60 ? ' class="text-muted"' }}>
                                         <td class="text-muted">{{ loop.index }}</td>
-                                        <td class="text-center">{{ row.date|date('d.m.Y') }}</td>
+                                        <td class="text-center">
+                                            <a class="link-white" href="{{ path('app_front_device_daily', {'device': device.name, 'date': row.date|date('Y-m-d')}) }}">
+                                                {{ row.date|date('d.m.Y') }}
+                                            </a>
+                                        </td>
                                         <td class="text-center d-none d-md-block">{{ row.inclusions }}</td>
                                         <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
