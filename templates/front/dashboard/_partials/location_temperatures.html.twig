@@ -1,16 +1,42 @@
-{% for location in locations %}
-    <div class="col-sm-6 col-lg-3">
-        {% for device in temperatures|filter(v => v.device == location) %}
+<div class="col-sm-6 col-lg-4">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="subheader">
+                    <a class="text-secondary" href="{{ path('app_front_location_buffer_index') }}">Bufor</a>
+                </div>
+                <div class="ms-auto lh-1 text-secondary">from 8h</div>
+            </div>
+            <div class="d-flex align-items-baseline">
+                <div class="h1 mb-0 me-2">{{ locations.bufor.temperature_15m.value|number_format(1) }} °C</div>
+                <div class="h3 mb-0 me-2">/ {{ locations.bufor.temperature_05m.value|number_format(1) }} °C</div>
+                <div class="me-auto">
+                    <span class="text-azure d-inline-flex align-items-center mb-0"
+                          style="height: 16px; width: 16px; position: relative; top: 4px">
+                        {{ include ('_icons/scuba-diving-icon.svg.twig') }}
+                    </span>
+                    <span class="text-azure d-inline-flex align-items-center">
+                        {{ (locations.bufor.pressure.value/100)|number_format(1) }} bar
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div id="chart-temp-bufor" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
+    </div>
+</div>
+
+{% for room in rooms %}
+    {# TODO: refactor this #}
+    <div class="col-sm-6 col-lg-4">
+        {% for device in temperatures|filter(v => v.device == room) %}
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="subheader">
-                            {% if location == 'bufor' or location == 'bufor-solary' %}
-                                <a class="text-secondary" href="{{ path('app_front_location_buffer_index') }}">{{ location|trans }}</a>
-                            {% elseif location == 'garage' %}
-                                <a class="text-secondary" href="{{ path('app_front_location_garage_index') }}">{{ location|trans }}</a>
-                            {% elseif location == 'salon' %}
-                                <a class="text-secondary" href="{{ path('app_front_location_living_room_index') }}">{{ location|trans }}</a>
+                            {% if room == 'garage' %}
+                                <a class="text-secondary" href="{{ path('app_front_location_garage_index') }}">{{ room|trans }}</a>
+                            {% elseif room == 'salon' %}
+                                <a class="text-secondary" href="{{ path('app_front_location_living_room_index') }}">{{ room|trans }}</a>
                             {% endif %}
                         </div>
                         <div class="ms-auto lh-1 text-secondary">from 8h</div>
@@ -18,7 +44,7 @@
                     <div class="d-flex align-items-baseline">
                         <div class="h1 mb-0 me-2">{{ device.value|number_format(1) }} °C</div>
                         <div class="me-auto">
-                            {% for hum in humidity|filter(v => v.device == location) %}
+                            {% for hum in humidity|filter(v => v.device == room) %}
                                 <span class="text-azure d-inline-flex align-items-center mb-0"
                                       style="height: 16px; width: 16px; position: relative; top: 4px">
                                     {{ include ('_icons/droplet-icon.svg.twig') }}
@@ -30,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="chart-temp-{{ location }}" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
+                <div id="chart-temp-{{ room }}" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
             </div>
         {% endfor %}
     </div>

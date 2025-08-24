@@ -21,7 +21,7 @@ final class DashboardController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
     ): Response {
-        $locations = array_merge($locationFinder->getLocations('buffer'), $locationFinder->getLocations('rooms'));
+        $rooms = array_merge($locationFinder->getLocations('rooms'));
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
@@ -46,11 +46,25 @@ final class DashboardController extends AbstractController
             ];
         }
 
+        $locationCurrentState['bufor'] = [
+            'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
+            'temperature_05m' => $hookRepository->findActualTempForLocation('bufor-solary'),
+            'pressure'         => $hookRepository->findActualPressureForLocation('co'),
+        ];
+
+        foreach ($rooms as $location) {
+            $locationCurrentState[$location] = [
+                'temperature' => $hookRepository->findActualTempForLocation($location),
+                'humidity' => $hookRepository->findActualHumidityForLocation($location),
+            ];
+        }
+
         return $this->render('front/dashboard/index.html.twig', [
             'devices'      => $devices ?? [],
-            'locations'    => $locations,
-            'temperatures' => array_values($hookRepository->findActualTemps($locations)),
-            'humidity'     => array_values($hookRepository->findActualHumidity($locations)),
+            'locations'    => $locationCurrentState ?? [],
+            'rooms'        => $rooms,
+            'temperatures' => array_values($hookRepository->findActualTemps($rooms)),
+            'humidity'     => array_values($hookRepository->findActualHumidity($rooms)),
         ]);
     }
 }
