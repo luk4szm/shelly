@@ -55,9 +55,9 @@ function renderChart(chartElement, chartData) {
                 enabled: true,
             },
             animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800,
+                enabled: false,
+                // easing: 'easeinout',
+                // speed: 800,
             },
         },
         dataLabels: {
