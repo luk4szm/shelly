@@ -11,6 +11,7 @@ use App\Service\Location\LocationFinder;
 use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -18,9 +19,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HeatingController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        return $this->render('front/heating/index.html.twig');
+        return $this->render('front/heating/index.html.twig', [
+            'date' => $request->get('date'),
+        ]);
     }
 
     #[Route('/get-data/{date}', name: 'get_data')]
