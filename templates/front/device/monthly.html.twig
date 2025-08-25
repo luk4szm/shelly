@@ -27,8 +27,8 @@
             <div class="col-12 col-md-3">
                 <div class="card" id="device_stats">
                     {% set selected_date = app.request.query.get('date') ? app.request.query.get('date') : 'now' %}
+                    {% set daysInMonth = 'now'|date('t') %}
                     {% if selected_date|date('Y-m') == 'now'|date('Y-m') %}
-                        {% set daysInMonth = 'now'|date('t') %}
                         {% set dayOfMonth = 'now'|date('j') %}
                         {% set progressWidth = (dayOfMonth / daysInMonth) * 100 %}
                         {% set progressColor = 'bg-azure' %}
@@ -51,15 +51,63 @@
                                 <dt class="col-7 fw-light">Miesiąc:</dt>
                                 <dd class="col-5 fw-bold">{{ app.request.query.get('date') ? (app.request.query.get('date')|date('m.Y')) : ("now"|date('m.Y')) }}</dd>
                                 <dt class="col-7 fw-light">Uruchomień:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.inclusions|default(0) }}</dd>
+                                <dd class="col-5">
+                                    {% set inclusions = device.monthlyStats.inclusions|default(0) %}
+                                    <div class="fw-bold">{{ inclusions }}</div>
+                                    {% if inclusions > 0 %}
+                                        <div class="text-muted">
+                                            {% if progressWidth == 100 %}
+                                                {{ (inclusions/daysInMonth)|number_format(1) }}
+                                            {% else %}
+                                                {{ (inclusions/dayOfMonth)|number_format(1) }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </dd>
                                 <dt class="col-7 fw-light">Energia:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.energy|default(0)|format_energy }}</dd>
+                                <dd class="col-5">
+                                    {% set energy = device.monthlyStats.energy|default(0) %}
+                                    <div class="fw-bold">{{ energy|format_energy }}</div>
+                                    {% if energy > 0 %}
+                                        <div class="text-muted">
+                                            {% if progressWidth == 100 %}
+                                                {{ (energy/daysInMonth)|format_energy }}
+                                            {% else %}
+                                                {{ (energy/dayOfMonth)|format_energy }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </dd>
                                 {% if device.name == 'piec' %}
                                     <dt class="col-7 fw-light">Użycie gazu:</dt>
-                                    <dd class="col-5 fw-bold">{{ device.monthlyStats.gas|format_gas_consume }}</dd>
+                                    <dd class="col-5">
+                                        {% set gasConsume = device.monthlyStats.gas|default(0) %}
+                                        <div class="fw-bold">{{ gasConsume|format_gas_consume }}</div>
+                                        {% if gasConsume > 0 %}
+                                            <div class="text-muted">
+                                                {% if progressWidth == 100 %}
+                                                    {{ (gasConsume/daysInMonth)|format_gas_consume }}
+                                                {% else %}
+                                                    {{ (gasConsume/dayOfMonth)|format_gas_consume }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </dd>
                                 {% endif %}
                                 <dt class="col-7 fw-light">Czas pracy:</dt>
-                                <dd class="col-5 fw-bold">{{ device.monthlyStats.time|default(0)|readableDurationTime }}</dd>
+                                <dd class="col-5">
+                                    {% set time = device.monthlyStats.time|default(0) %}
+                                    <div class="fw-bold">{{ time|readableDurationTime }}</div>
+                                    {% if time > 0 %}
+                                        <div class="text-muted">
+                                            {% if progressWidth == 100 %}
+                                                {{ (time/daysInMonth)|readableDurationTime }}
+                                            {% else %}
+                                                {{ (time/dayOfMonth)|readableDurationTime }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </dd>
                             {% else %}
                                 <div class="text-muted">Brak danych miesięcznych.</div>
                             {% endif %}
