@@ -97,8 +97,10 @@
                                 {% for row in device.monthlyStats %}
                                     <tr{{ row.time < 60 ? ' class="text-muted"' }}>
                                         <td class="text-muted">{{ loop.index }}</td>
-                                        <td class="text-center">{{ row.month }}</td>
-                                        <td class="text-center d-none d-md-block">{{ row.inclusions }}</td>
+                                        <td class="text-center">{{ row.month|trans }}</td>
+                                        <td class="text-center d-none d-md-block align-middle">
+                                            {{ row.inclusions }}
+                                        </td>
                                         <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
