@@ -12,6 +12,7 @@ use App\Service\DeviceStatus\BoilerDeviceStatusHelper;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -19,6 +20,7 @@ final class GasMeterController extends AbstractController
 {
     #[Route('/gas-meter', name: 'app_front_gas_meter')]
     public function index(
+        Request                  $request,
         GasMeterRepository       $repository,
         BoilerDeviceStatusHelper $boilerStatusHelper,
     ): Response
@@ -26,7 +28,7 @@ final class GasMeterController extends AbstractController
         $indications  = $repository->findPreviousWithOffset();
         $gasMeterForm = $this->createForm(GasMeterIndicationType::class, options: [
             'lastIndication' => $indications[0]->getIndication(),
-        ]);
+        ])->handleRequest($request);
 
         // Calculate estimated gas consumption between indications based on boiler active energy usage
         $estimated = [];

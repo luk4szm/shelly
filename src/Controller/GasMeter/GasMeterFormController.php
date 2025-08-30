@@ -25,7 +25,7 @@ final class GasMeterFormController extends AbstractController
         if ($form->isValid() === false) {
             $this->addFlash('error', 'Niepoprawna wartość odczytu');
 
-            return $this->redirectToRoute('app_front_gas_meter');
+            return $this->forward('App\Controller\Front\GasMeterController::index');
         }
 
         $repository->save($form->getData());

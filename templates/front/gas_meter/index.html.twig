@@ -22,6 +22,7 @@
                         {{ form_start(form) }}
                         <div class="mb-3">
                             <div>
+                                {{ form_errors(form.indication) }}
                                 {{ form_widget(form.indication) }}
                                 <small class="form-hint">{{ form_help(form.indication) }}</small>
                             </div>

@@ -25,7 +25,7 @@ class GasMeterIndicationType extends AbstractType
                 'required'    => true,
                 'attr'        => ['class' => 'form-control'],
                 'help'        => sprintf('Poprzedni odczyt: %s m³', $options['lastIndication']),
-                'constraints' => [new GreaterThanOrEqual($options['lastIndication'])],
+                'constraints' => [new GreaterThanOrEqual($options['lastIndication'], message: "Podany odczyt nie może być mniejszy niz poprzedni")],
             ])
         ;
     }
