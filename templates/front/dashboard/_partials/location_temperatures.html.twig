@@ -15,9 +15,11 @@
                           style="height: 16px; width: 16px; position: relative; top: 4px">
                         {{ include ('_icons/scuba-diving-icon.svg.twig') }}
                     </span>
-                    <span class="text-azure d-inline-flex align-items-center">
-                        {{ (buffer.pressure.value/100)|number_format(1) }} bar
-                    </span>
+                    {% if buffer.pressure is not null %}
+                        <span class="text-azure d-inline-flex align-items-center">
+                            {{ (buffer.pressure.value/100)|number_format(1) }} bar
+                        </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -40,8 +42,10 @@
                     <div class="ms-auto lh-1 text-secondary">from 8h</div>
                 </div>
                 <div class="d-flex align-items-baseline">
-                    <div class="h1 mb-0 me-2">{{ room.temperature.value|number_format(1) }} °C</div>
-                    {% if room.humidity is defined %}
+                    {% if room.temperature is not null %}
+                        <div class="h1 mb-0 me-2">{{ room.temperature.value|number_format(1) }} °C</div>
+                    {% endif %}
+                    {% if room.humidity is defined and room.humidity is not null %}
                         <div class="me-auto">
                             <span class="text-azure d-inline-flex align-items-center mb-0"
                                   style="height: 16px; width: 16px; position: relative; top: 4px">
