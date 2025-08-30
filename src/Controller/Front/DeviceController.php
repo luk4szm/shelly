@@ -104,7 +104,7 @@ class DeviceController extends AbstractController
                     } catch (\Exception) {
                     }
 
-                    $dailyStats = new DeviceDailyStats($helper->getDeviceName(), $date);
+//                    $dailyStats = new DeviceDailyStats($helper->getDeviceName(), $date);
                 }
             }
 
