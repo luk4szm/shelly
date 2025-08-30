@@ -17,12 +17,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class BufferController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(HookRepository $hookRepository): Response
+    public function index(): Response
     {
-        return $this->render('front/location/buffer/index.html.twig', [
-            'temperature_15m' => $hookRepository->findGroupedHooks('salon', 'temp'),
-            'temperature_05m'  => $hookRepository->findGroupedHooks('salon', 'humidity'),
-        ]);
+        return $this->render('front/location/buffer/index.html.twig');
     }
 
     #[Route('/get-data', name: 'get_data')]
