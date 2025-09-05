@@ -5,20 +5,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const chartType = chartElement ? chartElement.dataset.chartType : 'monthly';
 
     // Przyciski nawigacji daty
-    const prevDayBtn = document.getElementById('prev-day-btn');
-    const nextDayBtn = document.getElementById('next-day-btn');
+    const prevMonthBtn = document.getElementById('prev-month-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
 
     let chart = null;
 
     /**
      * Asynchroniczna funkcja do pobierania danych (temperatury i wilgotności) z backendu.
-     * @param {string} dateString - Data w formacie YYYY-MM-DD.
+     * @param {string} dateString - Data w formacie YYYY-MM.
      * @param {string} slug - Identyfikator lokalizacji.
      * @returns {Promise<Object|null>} - Obiekt z danymi lub null w przypadku błędu.
      */
-    const fetchChartData = async (dateString, slug, chartType) => {
+    const fetchChartData = async (dateString, slug) => {
         // Endpoint zwraca dane dla temperatury i wilgotności dla danej lokalizacji i daty
-        const url = `/location/${slug}/get-data?date=${dateString}&type=${chartType}`;
+        const url = `/location/${slug}/get-data?type=${chartType}&date=${dateString}`;
 
         if (chartElement) {
             chartElement.innerHTML = '<div class="text-center p-5">Ładowanie danych...</div>';
@@ -40,21 +40,16 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     /**
-     * Przekształca surowe dane na format wymagany przez ApexCharts.
+     * Przekształca surowe dane na format wymagany przez ApexCharts dla wykresu rangeBar.
      * @param {Object} rawData - Surowe dane z backendu (np. { "temperature": [...], "humidity": [...] }).
      * @returns {{series: Array<Object>}} - Obiekt z seriami danych.
      */
     const transformDataForChart = (rawData) => {
-        // Uniwersalne przetwarzanie serii – akceptuje dowolne klucze z backendu
-        // Oczekiwany format wartości: [{ datetime: 'Y-m-d H:i:s', value: number }]
-
         const prettyName = (key) => {
             const map = {
                 temperature: 'Temperatura',
                 humidity: 'Wilgotność',
                 pressure: 'Ciśnienie',
-                temperature_05m: 'Temperatura 0,5 m',
-                temperature_15m: 'Temperatura 1,5 m',
             };
             if (map[key]) return map[key];
             // Fallback: humanizuj klucz
@@ -62,9 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .replace(/_/g, ' ')
                 .replace(/\btemp(erature)?\b/i, 'Temperatura')
                 .replace(/\bhumidity\b/i, 'Wilgotność')
-                .replace(/\bpressure\b/i, 'Ciśnienie')
-                .replace(/\b05m\b/i, '0,5 m')
-                .replace(/\b15m\b/i, '1,5 m');
+                .replace(/\bpressure\b/i, 'Ciśnienie');
         };
 
         const detectType = (key) => {
@@ -78,13 +71,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const chartSeries = [];
         const seriesTypes = [];
 
-        // Zachowujemy kolejność kluczy tak, jak przyjdzie z backendu
         for (const key of Object.keys(rawData)) {
             const dataPoints = rawData[key] || [];
             const t = detectType(key);
             const seriesData = dataPoints.map(point => ({
-                x: new Date(point.datetime).getTime(),
-                y: point.value
+                x: point.date, // 'YYYY-MM-DD'
+                y: [point.min, point.max]
             }));
 
             chartSeries.push({
@@ -99,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /**
      * Główna funkcja, która pobiera dane i renderuje lub aktualizuje wykres.
-     * @param {string} dateString - Data w formacie YYYY-MM-DD.
+     * @param {string} dateString - Data w formacie YYYY-MM.
      * @param {string} slug - Identyfikator lokalizacji.
      */
     const loadAndRenderChart = async (dateString, slug) => {
@@ -108,14 +100,14 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const rawData = await fetchChartData(dateString, slug, chartType);
+        const rawData = await fetchChartData(dateString, slug);
 
-        if (!rawData || Object.keys(rawData).length === 0) {
+        if (!rawData || Object.keys(rawData).length === 0 || Object.values(rawData).every(arr => arr.length === 0)) {
             if (chart) {
                 chart.destroy();
                 chart = null;
             }
-            chartElement.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia dla wybranego dnia.</div>';
+            chartElement.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
             return;
         }
 
@@ -129,8 +121,11 @@ document.addEventListener("DOMContentLoaded", function () {
         let tempAllValues = [];
         chartData.series.forEach((s, idx) => {
             if (types[idx] === 'temperature') {
-                (s.data || []).forEach(p => {
-                    if (p && typeof p.y === 'number' && !isNaN(p.y)) tempAllValues.push(p.y);
+                (s.data || []).forEach(point => {
+                    if (point && Array.isArray(point.y)) {
+                        if (typeof point.y[0] === 'number' && !isNaN(point.y[0])) tempAllValues.push(point.y[0]); // min
+                        if (typeof point.y[1] === 'number' && !isNaN(point.y[1])) tempAllValues.push(point.y[1]); // max
+                    }
                 });
             }
         });
@@ -155,7 +150,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ];
 
         const colors = Array.from({ length: seriesCount }, (_, i) => palette[i % palette.length]);
-        const strokes = Array.from({ length: seriesCount }, () => 2);
 
         const unitFormat = (val, type) => {
             if (val === null || typeof val === 'undefined' || isNaN(val)) return '';
@@ -212,7 +206,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Deduplicate temperature axis: one shared temp axis mapped to all temperature series
         // Build seriesName arrays to explicitly map each axis to its series
         let yaxes = [];
-        const hasType = (t) => types.includes(t);
 
         const tempSeriesNames = chartData.series
             .map((s, i) => (types[i] === 'temperature' ? s.name : null))
@@ -248,39 +241,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const options = {
             chart: {
-                type: "line",
+                type: "rangeBar",
                 fontFamily: "inherit",
                 height: 400,
                 parentHeightOffset: 0,
                 toolbar: { show: false },
                 animations: { enabled: true },
             },
-            stroke: {
-                width: strokes, // Szerokość linii dla każdej serii
-                curve: "smooth",
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '80%',
+                }
             },
             series: chartData.series,
             tooltip: {
                 theme: "dark",
-                x: { format: 'dd MMM, HH:mm' },
+                x: { format: 'dd MMM yyyy' },
                 y: {
                     formatter: function(val, opts) {
                         const idx = opts?.seriesIndex ?? 0;
                         const type = types[idx] || 'generic';
-                        return unitFormat(val, type);
+                        const series = opts.w.config.series[idx];
+                        const dataPoint = series.data[opts.dataPointIndex];
+                        if (dataPoint && Array.isArray(dataPoint.y)) {
+                            const min = unitFormat(dataPoint.y[0], type);
+                            const max = unitFormat(dataPoint.y[1], type);
+                            return `${min} &mdash; ${max}`;
+                        }
+                        return unitFormat(val, type); // Fallback
                     }
                 }
             },
             grid: {
                 padding: { top: -20, right: 0, left: -4, bottom: -4 },
                 strokeDashArray: 4,
+                xaxis: { lines: { show: true } }
             },
             dataLabels: { enabled: false },
             xaxis: {
                 type: 'datetime',
                 labels: {
                     padding: 0,
-                    format: 'HH:mm',
+                    format: 'dd',
                     datetimeUTC: false,
                 },
                 tooltip: { enabled: false },
@@ -288,13 +291,9 @@ document.addEventListener("DOMContentLoaded", function () {
             yaxis: yaxes,
             colors: colors,
             legend: {
-                show: true,
+                show: seriesCount > 1,
                 position: 'bottom',
                 horizontalAlign: 'center'
-            },
-            markers: {
-                size: 0,
-                hover: { sizeOffset: 1 }
             },
         };
 
@@ -309,24 +308,31 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     /**
-     * Aktualizuje stan przycisku "następny dzień".
+     * Aktualizuje stan przycisku "następny miesiąc".
      */
     const updateNextButtonState = () => {
         const today = new Date();
-        const currentDate = new Date(datePicker.value);
-        today.setHours(0, 0, 0, 0);
-        currentDate.setHours(0, 0, 0, 0);
-        nextDayBtn.disabled = currentDate >= today;
+        const currentDate = new Date(datePicker.value + '-01'); // Użyj pierwszego dnia miesiąca do porównania
+
+        const isSameOrFutureMonth = currentDate.getFullYear() > today.getFullYear() ||
+            (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() >= today.getMonth());
+
+        if (nextMonthBtn) {
+            nextMonthBtn.disabled = isSameOrFutureMonth;
+        }
     };
 
     /**
      * Zmienia datę w polu datePicker i odświeża wykres.
-     * @param {number} days - Liczba dni do dodania/odjęcia.
+     * @param {number} months - Liczba miesięcy do dodania/odjęcia.
      */
-    const changeDate = (days) => {
-        const currentDate = new Date(datePicker.value);
-        currentDate.setDate(currentDate.getDate() + days);
-        datePicker.value = currentDate.toISOString().split('T')[0];
+    const changeMonth = (months) => {
+        const currentDate = new Date(datePicker.value + '-01');
+        currentDate.setMonth(currentDate.getMonth() + months);
+
+        const year = currentDate.getFullYear();
+        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+        datePicker.value = `${year}-${month}`;
 
         // Ręczne wywołanie zdarzenia 'change', aby zaktualizować wykres
         datePicker.dispatchEvent(new Event('change', { 'bubbles': true }));
@@ -348,9 +354,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Nasłuchiwanie na przyciski nawigacji
-        if (prevDayBtn && nextDayBtn) {
-            prevDayBtn.addEventListener('click', () => changeDate(-1));
-            nextDayBtn.addEventListener('click', () => changeDate(1));
+        if (prevMonthBtn && nextMonthBtn) {
+            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+            nextMonthBtn.addEventListener('click', () => changeMonth(1));
         }
 
         // Inicjalizacja stanu przycisku i załadowanie wykresu

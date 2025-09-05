@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const chartElement = document.getElementById('location-chart');
     const datePicker = document.getElementById('location_date');
     const locationSlug = chartElement ? chartElement.dataset.locationSlug : null;
-    const chartType = chartElement ? chartElement.dataset.chartType : 'monthly';
 
     // Przyciski nawigacji daty
     const prevDayBtn = document.getElementById('prev-day-btn');
@@ -16,9 +15,9 @@ document.addEventListener("DOMContentLoaded", function () {
      * @param {string} slug - Identyfikator lokalizacji.
      * @returns {Promise<Object|null>} - Obiekt z danymi lub null w przypadku błędu.
      */
-    const fetchChartData = async (dateString, slug, chartType) => {
+    const fetchChartData = async (dateString, slug) => {
         // Endpoint zwraca dane dla temperatury i wilgotności dla danej lokalizacji i daty
-        const url = `/location/${slug}/get-data?date=${dateString}&type=${chartType}`;
+        const url = `/location/${slug}/get-data?date=${dateString}`;
 
         if (chartElement) {
             chartElement.innerHTML = '<div class="text-center p-5">Ładowanie danych...</div>';
@@ -108,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const rawData = await fetchChartData(dateString, slug, chartType);
+        const rawData = await fetchChartData(dateString, slug);
 
         if (!rawData || Object.keys(rawData).length === 0) {
             if (chart) {

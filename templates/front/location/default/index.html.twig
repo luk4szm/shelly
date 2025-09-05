@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}{{ location|trans }}{% endblock %}
+{% block pagePreTitle %}Location{% endblock %}
+
+{% block pageTitleActions %}
+<div class="d-inline-flex">
+    <div class="btn-group me-3" role="group">
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off" {{ type == 'daily' ? 'checked="checked"' }}>
+        <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_front_default_location_index', {'location': location, 'type': 'daily'}) }}'">dzień</label>
+        <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off" {{ type == 'monthly' ? 'checked="checked"' }}>
+        <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_front_default_location_index', {'location': location, 'type': 'monthly'}) }}'">miesiąc</label>
+{#            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off">#}
+{#            <label for="btn-radio-basic-3" type="button" class="btn" onclick="location.href='{{ path('app_front_device_yearly', {'device': device.name}) }}'">rok</label>#}
+    </div>
+    {% if type == 'daily' %}
+        <div class="input-group">
+            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
+            <input type="date" class="form-control" id="location_date"
+                   value="{{ "now"|date("Y-m-d") }}"
+                   min="2025-06-29" max="{{ "now"|date("Y-m-d") }}" />
+            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
+        </div>
+    {% else %}
+        <div class="input-group">
+            <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
+            <input type="month" class="form-control" id="location_date"
+                   value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}"
+                   min="2025-02" max="{{ "now"|date("Y-m") }}" />
+            <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
+        </div>
+    {% endif %}
+    </div>
+{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        <div id="location-chart" class="position-relative" data-location-slug="{{ location }}" data-chart-type="{{ type }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    {% if type == 'daily' %}
+        <script src="{{ asset('js/location_chart.js') }}"></script>
+    {% elseif type == 'monthly' %}
+        <script src="{{ asset('js/location_chart_monthly.js') }}"></script>
+    {% endif %}
+{% endblock %}

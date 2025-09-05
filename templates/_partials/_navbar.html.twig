@@ -57,8 +57,8 @@
                                     <span class="nav-link-title"> Locations </span>
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ path('app_front_location_living_room_index') }}"> Salon </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_location_garage_index') }}"> Garaż </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_default_location_index', {'location': 'salon', 'type': 'monthly'}) }}"> Salon </a>
+                                    <a class="dropdown-item" href="{{ path('app_front_default_location_index', {'location': 'garage', 'type': 'monthly'}) }}"> Garaż </a>
                                     <a class="dropdown-item" href="{{ path('app_front_location_buffer_index') }}"> Bufor </a>
                                 </div>
                             </li>

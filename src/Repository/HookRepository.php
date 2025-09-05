@@ -208,21 +208,27 @@ class HookRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findGroupedHooks(string $device, string $property): array
+    public function findMinMaxForDeviceAndProperty(
+        string    $device,
+        string    $property,
+        \DateTime $from,
+        \DateTime $to
+    ): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-            SELECT DATE(created_at) AS date, ROUND(AVG(VALUE), 1) AS avg,  ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min
+            SELECT DATE(created_at) AS date, ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min
             FROM hook
-            WHERE device = :device AND property = :property AND created_at >= :from
+            WHERE device = :device AND property = :property AND created_at >= :from AND created_at <= :to
             GROUP BY date
         ';
 
         $resultSet = $conn->executeQuery($sql, [
-            'device' => $device,
+            'device'   => $device,
             'property' => $property,
-            'from' => (new \DateTime("-1 month"))->format("Y-m-d"),
+            'from'     => $from->format("Y-m-d"),
+            'to'       => $to->format("Y-m-d"),
         ]);
 
         // returns an array of arrays (i.e. a raw data set)
