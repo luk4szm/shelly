@@ -119,15 +119,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Wyznacz globalny zakres dla wszystkich serii temperatury (ujednolicona skala Y)
         let tempAllValues = [];
+        let humidityAllValues = [];
         chartData.series.forEach((s, idx) => {
-            if (types[idx] === 'temperature') {
-                (s.data || []).forEach(point => {
-                    if (point && Array.isArray(point.y)) {
-                        if (typeof point.y[0] === 'number' && !isNaN(point.y[0])) tempAllValues.push(point.y[0]); // min
-                        if (typeof point.y[1] === 'number' && !isNaN(point.y[1])) tempAllValues.push(point.y[1]); // max
+            const t = types[idx];
+            (s.data || []).forEach(point => {
+                if (point && Array.isArray(point.y)) {
+                    const vmin = point.y[0];
+                    const vmax = point.y[1];
+                    if (typeof vmin === 'number' && !isNaN(vmin)) {
+                        if (t === 'temperature') tempAllValues.push(vmin);
+                        if (t === 'humidity') humidityAllValues.push(vmin);
                     }
-                });
-            }
+                    if (typeof vmax === 'number' && !isNaN(vmax)) {
+                        if (t === 'temperature') tempAllValues.push(vmax);
+                        if (t === 'humidity') humidityAllValues.push(vmax);
+                    }
+                }
+            });
         });
         const hasTemps = tempAllValues.length > 0;
         const tempMinRaw = hasTemps ? Math.min(...tempAllValues) : null;
@@ -135,6 +143,22 @@ document.addEventListener("DOMContentLoaded", function () {
         // Dodaj niewielki bufor do zakresu
         const tempMinUnified = hasTemps ? Math.floor(tempMinRaw - 2) : 0;
         const tempMaxUnified = hasTemps ? Math.ceil(tempMaxRaw + 2) : 40;
+
+        // Wyznacz globalny zakres dla wilgotności (stabilna skala dla wąskich zakresów)
+        const hasHum = humidityAllValues.length > 0;
+        let humMin = hasHum ? Math.min(...humidityAllValues) : 0;
+        let humMax = hasHum ? Math.max(...humidityAllValues) : 100;
+        // Zabezpieczenie przed zbyt małą rozpiętością: min. 2 pp
+        if (hasHum && humMax - humMin < 2) {
+            const mid = (humMax + humMin) / 2;
+            humMin = mid - 1;
+            humMax = mid + 1;
+        }
+        // Dodaj niewielki bufor i ogranicz do [0, 100]
+        if (hasHum) {
+            humMin = Math.max(0, Math.floor(humMin - 2));
+            humMax = Math.min(100, Math.ceil(humMax + 2));
+        }
 
         const palette = [
             "var(--tblr-red)",
@@ -178,14 +202,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return {
                     title: { text: 'Wilgotność' },
                     opposite: true,
-                    max: function (maxDataValue) {
-                        if (typeof maxDataValue === 'undefined' || maxDataValue === null) return 100;
-                        return Math.min(maxDataValue + 5, 100);
-                    },
-                    min: function (minDataValue) {
-                        if (typeof minDataValue === 'undefined' || minDataValue === null) return 0;
-                        return Math.max(minDataValue - 5, 0);
-                    },
+                    max: hasHum ? humMax : 100,
+                    min: hasHum ? humMin : 0,
                     labels: { formatter: (value) => unitFormat(value, 'humidity') },
                 };
             }
