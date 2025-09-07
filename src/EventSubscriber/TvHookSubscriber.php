@@ -38,7 +38,7 @@ class TvHookSubscriber implements EventSubscriberInterface
         $power = (float)$hook->getValue();
         $cache = new FilesystemAdapter();
 
-        if ($power > 15) {
+        if ($power > 10) {
             $cache->get(self::TV_ON_CACHE_KEY, function (ItemInterface $item) {
                 $item->expiresAfter(86400);
             });
@@ -52,7 +52,7 @@ class TvHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($power < 4) {
+        if ($power < 6) {
             if ($cache->getItem(self::TV_ON_CACHE_KEY)->isHit()) {
                 $cache->deleteItem(self::TV_ON_CACHE_KEY);
 
