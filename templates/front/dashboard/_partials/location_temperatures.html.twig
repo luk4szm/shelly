@@ -35,8 +35,8 @@
                     <div class="subheader">
                         {% if name == 'garage' %}
                             <a class="text-secondary" href="{{ path('app_front_default_location_index', {'location': 'garage', 'type': 'daily'}) }}">{{ name|trans }}</a>
-                        {% elseif name == 'salon' %}
-                            <a class="text-secondary" href="{{ path('app_front_default_location_index', {'location': 'salon', 'type': 'daily'}) }}">{{ name|trans }}</a>
+                        {% else %}
+                            <a class="text-secondary" href="{{ path('app_front_default_location_index', {'location': name, 'type': 'daily'}) }}">{{ name|trans }}</a>
                         {% endif %}
                     </div>
                     <div class="ms-auto lh-1 text-secondary">from 8h</div>
