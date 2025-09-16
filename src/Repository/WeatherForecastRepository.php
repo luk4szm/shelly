@@ -26,4 +26,15 @@ class WeatherForecastRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findActualForecast(): ?WeatherForecast
+    {
+        return $this->createQueryBuilder('wf')
+            ->where('wf.time >= :start')
+            ->setParameter('start', new \DateTime())
+            ->orderBy('wf.time', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

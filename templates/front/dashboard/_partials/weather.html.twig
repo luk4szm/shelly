@@ -1,0 +1,56 @@
+<div class="col-md-4 col-12">
+    <div class="card card-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+
+                <div class="col">
+                    <div class="mb-0">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/temperature-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.temperature }} °C</span>
+                    </div>
+                    <div class="mb-0">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/droplet-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.humidity }} %</span>
+                    </div>
+                    <div class="mb-0">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/umbrella-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.precipitation }} mm</span>
+                    </div>
+                    <div class="mb-0">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/wind-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.windSpeed }} m/s</span>
+                        <span class="wind-arrow__arrow" style="display:inline-block; transform: rotate({{ weather.windDirection }}deg); transform-origin: center;">
+                            {{ include('_icons/arrow-up-icon.svg.twig', { size: 20 }) }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col text-end">
+                    <img src="{{ weather_symbol(weather.symbolCode) }}" alt="{{ weather.symbolCode }}" style="width: 80px; height: 80px;"/>
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{#<div class="col-md-8 d-none d-md-block">#}
+{#    <div class="card card-sm h-100">#}
+{#        <div class="card-body">#}
+{#            <div class="row align-items-center">#}
+{#                <div class="col">#}
+{#                    <h2>Ogrzewanie</h2>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}

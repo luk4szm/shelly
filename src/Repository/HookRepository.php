@@ -131,6 +131,7 @@ class HookRepository extends CrudRepository
         \DateTime         $from,
         \DateTime         $to,
         string|array|null $location = null,
+        bool              $findStartHook = false,
     ): array
     {
         $qb = $this->createQueryBuilder('hook')

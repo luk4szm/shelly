@@ -1,7 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block pageBody %}
-    <div id="devices_controllers" class="container-xl">
+    <div id="weather" class="container-xl">
+        <div class="row row-deck row-cards">
+            {% include 'front/dashboard/_partials/weather.html.twig' %}
+        </div>
+    </div>
+    <div id="devices_controllers" class="container-xl mt-3">
         <div class="row row-deck row-cards">
             {% include 'front/dashboard/_partials/device_controllers.html.twig' %}
         </div>

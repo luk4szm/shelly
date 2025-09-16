@@ -4,6 +4,7 @@ namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\HookRepository;
+use App\Repository\WeatherForecastRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
@@ -20,6 +21,7 @@ final class DashboardController extends AbstractController
         #[AutowireIterator('app.shelly.daily_stats')] iterable          $dailyStatsCalculators,
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
+        WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
@@ -59,6 +61,7 @@ final class DashboardController extends AbstractController
             ],
             'devices' => $devices ?? [],
             'rooms'   => $rooms ?? [],
+            'weather' => $weatherRepository->findActualForecast(),
         ]);
     }
 }
