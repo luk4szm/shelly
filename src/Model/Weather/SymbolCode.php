@@ -72,6 +72,11 @@ enum SymbolCode: string
         return null;
     }
 
+    /**
+     * @param string $name
+     * @return string
+     * @throws \InvalidArgumentException
+     */
     public static function valueFromName(string $name): string
     {
         $case = self::tryFromName($name);
