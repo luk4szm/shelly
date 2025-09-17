@@ -31,7 +31,7 @@ class WeatherForecastRepository extends CrudRepository
     {
         return $this->createQueryBuilder('wf')
             ->where('wf.time >= :start')
-            ->setParameter('start', new \DateTime())
+            ->setParameter('start', new \DateTime("-1 hour"))
             ->orderBy('wf.time', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
