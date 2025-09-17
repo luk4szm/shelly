@@ -40,14 +40,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Chart Logic ---
     const yearlyDataRaw = chartElement.dataset.yearlyData;
     if (!yearlyDataRaw) {
-        chartElement.innerHTML = '<div class="text-muted text-center pt-5">Brak danych do wyświetlenia dla wybranego roku.</div>';
+        chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego roku.</div>';
         return;
     }
 
     const yearlyData = JSON.parse(yearlyDataRaw);
 
     if (Object.keys(yearlyData).length === 0) {
-        chartElement.innerHTML = '<div class="text-muted text-center pt-5">Brak danych do wyświetlenia dla wybranego roku.</div>';
+        chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego roku.</div>';
         return;
     }
 
@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const chart = new ApexCharts(chartElement, chartOptions);
     chart.render();
     chart.hideSeries('Liczba włączeń');
+    chart.hideSeries('Czas pracy');
     if (deviceName === 'piec') {
         chart.hideSeries('Zużyta energia');
     }

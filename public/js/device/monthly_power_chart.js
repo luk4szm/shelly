@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Logika wykresu ---
     const monthlyDataRaw = chartElement.dataset.monthlyData;
     if (!monthlyDataRaw) {
-        chartElement.innerHTML = '<div class="text-muted text-center pt-5">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
+        chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
         return;
     }
 
     const monthlyData = JSON.parse(monthlyDataRaw);
 
     if (monthlyData.length === 0) {
-        chartElement.innerHTML = '<div class="text-muted text-center pt-5">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
+        chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
         return;
     }
 
@@ -186,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const chart = new ApexCharts(chartElement, chartOptions);
     chart.render();
     chart.hideSeries('Liczba włączeń');
+    chart.hideSeries('Czas pracy');
     if (deviceName === 'piec') {
         chart.hideSeries('Zużyta energia');
     }
