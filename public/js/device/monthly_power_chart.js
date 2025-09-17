@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const monthlyDataRaw = chartElement.dataset.monthlyData;
     if (!monthlyDataRaw) {
         chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
+        let cardBody = chartElement.closest('.card-body');
+        if (cardBody) {
+            cardBody.style.removeProperty('min-height');
+        }
         return;
     }
 
@@ -59,6 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (monthlyData.length === 0) {
         chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
+        let cardBody = chartElement.closest('.card-body');
+        if (cardBody) {
+            cardBody.style.removeProperty('min-height');
+        }
         return;
     }
 

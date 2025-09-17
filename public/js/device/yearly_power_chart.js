@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const yearlyDataRaw = chartElement.dataset.yearlyData;
     if (!yearlyDataRaw) {
         chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego roku.</div>';
+        let cardBody = chartElement.closest('.card-body');
+        if (cardBody) {
+            cardBody.style.removeProperty('min-height');
+        }
         return;
     }
 
@@ -48,6 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (Object.keys(yearlyData).length === 0) {
         chartElement.innerHTML = '<div class="text-muted text-center">Brak danych do wyświetlenia dla wybranego roku.</div>';
+        let cardBody = chartElement.closest('.card-body');
+        if (cardBody) {
+            cardBody.style.removeProperty('min-height');
+        }
         return;
     }
 
