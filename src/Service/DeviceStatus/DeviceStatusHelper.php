@@ -116,7 +116,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     private function calculateUsedEnergy(array $hooks): float
     {
         $usedEnergy  = 0; // Ws
-        $endDateTime = $this->dateRange && $this->dateRange->getTo() > new \DateTime() ? new \DateTime() : $this->dateRange->getTo();
+        $endDateTime = $this->dateRange && $this->dateRange->getTo() > new \DateTime() ? new \DateTime() : $this->dateRange?->getTo();
         $reference   = $this->pointer === 0 ? $endDateTime : end($hooks)->getCreatedAt();
 
         /** @var Hook $hook */
