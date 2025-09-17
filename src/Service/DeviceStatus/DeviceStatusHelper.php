@@ -106,7 +106,7 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
 
     private function countStatusDuration(array $hooks): int
     {
-        $endDateTime = $this->dateRange && $this->dateRange->getTo() > new \DateTime() ? new \DateTime() : $this->dateRange->getTo();
+        $endDateTime = $this->dateRange && $this->dateRange->getTo() > new \DateTime() ? new \DateTime() : $this->dateRange?->getTo();
         $reference   = $this->pointer === 0 ? $endDateTime : end($hooks)->getCreatedAt();
         $interval    = $reference->diff($hooks[0]->getCreatedAt());
 
