@@ -219,7 +219,7 @@ class HookRepository extends CrudRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-            SELECT DATE(created_at) AS date, ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min
+            SELECT DATE(created_at) AS date, ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min, ROUND(AVG(VALUE), 1) AS avg
             FROM hook
             WHERE device = :device AND property = :property AND created_at >= :from AND created_at <= :to
             GROUP BY date

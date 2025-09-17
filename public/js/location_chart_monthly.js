@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const chartSeries = [];
         const seriesTypes = [];
+        let tempAvgPoints = [];
 
         for (const key of Object.keys(rawData)) {
             const dataPoints = rawData[key] || [];
@@ -79,11 +80,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 y: [point.min, point.max]
             }));
 
+            // Jeśli to seria temperatury i punkty mają 'avg', zbuduj serię liniową dla średniej
+            if (t === 'temperature') {
+                const avgCandidates = dataPoints
+                    .filter(p => typeof p.avg === 'number' && !isNaN(p.avg))
+                    .map(p => ({ x: p.date, y: p.avg }));
+                if (avgCandidates.length > 0) {
+                    tempAvgPoints = avgCandidates;
+                }
+            }
+
             chartSeries.push({
                 name: prettyName(key),
                 data: seriesData
             });
             seriesTypes.push(t);
+        }
+
+        // Dodaj linię średniej temperatury jako osobną serię (przerywana)
+        if (tempAvgPoints.length > 0) {
+            chartSeries.push({
+                name: 'Temperatura (średnia)',
+                data: tempAvgPoints,
+                type: 'line',
+                _isAvg: true, // niestandardowa flaga do stylowania (zignorowana przez ApexCharts)
+            });
+            seriesTypes.push('temperature'); // mapuj na oś temperatury
         }
 
         return { series: chartSeries, types: seriesTypes };
@@ -273,6 +295,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             },
             series: chartData.series,
+            stroke: {
+                // 0 dla słupków (rangeBar), 2 dla linii
+                width: chartData.series.map(s => (s.type === 'line' ? 2 : 0)),
+                // przerywana linia tylko dla serii średniej
+                dashArray: chartData.series.map(s => (s._isAvg ? 6 : 0)),
+                curve: 'straight',
+            },
+            markers: {
+                size: 0,
+                hover: { size: 0 },
+                strokeWidth: 0
+            },
             tooltip: {
                 theme: "dark",
                 x: { format: 'dd MMM yyyy' },
@@ -287,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             const max = unitFormat(dataPoint.y[1], type);
                             return `${min} &mdash; ${max}`;
                         }
-                        return unitFormat(val, type); // Fallback
+                        return unitFormat(val, type); // Fallback (np. dla linii średniej)
                     }
                 }
             },
