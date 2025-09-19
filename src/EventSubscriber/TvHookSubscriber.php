@@ -3,6 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Event\Hook\TvHookEvent;
+use App\Model\Device\Tv;
 use App\Model\Device\TvLedsBoard;
 use App\Model\Device\TvLedsCabinet;
 use App\Model\Device\TvLedsMonitor;
@@ -38,7 +39,7 @@ class TvHookSubscriber implements EventSubscriberInterface
         $power = (float)$hook->getValue();
         $cache = new FilesystemAdapter();
 
-        if ($power > 10) {
+        if ($power >= Tv::BOUNDARY_POWER) {
             $cache->get(self::TV_ON_CACHE_KEY, function (ItemInterface $item) {
                 $item->expiresAfter(86400);
             });
@@ -52,7 +53,7 @@ class TvHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($power < 6) {
+        if ($power < 7) {
             if ($cache->getItem(self::TV_ON_CACHE_KEY)->isHit()) {
                 $cache->deleteItem(self::TV_ON_CACHE_KEY);
 
