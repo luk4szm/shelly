@@ -25,6 +25,10 @@ final class DashboardController extends AbstractController
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
+            if (!$helper->showOnDashboard()) {
+                continue;
+            }
+
             /** @var DailyStatsCalculatorInterface $helper */
             foreach ($dailyStatsCalculators as $statsCalculator) {
                 if ($statsCalculator->supports($helper->getDeviceName())) {

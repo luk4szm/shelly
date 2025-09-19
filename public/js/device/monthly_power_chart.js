@@ -194,7 +194,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const chart = new ApexCharts(chartElement, chartOptions);
     chart.render();
     chart.hideSeries('Liczba włączeń');
-    chart.hideSeries('Czas pracy');
+
+    if (deviceName !== 'tv') {
+        chart.hideSeries('Czas pracy');
+    } else {
+        chart.hideSeries('Zużyta energia');
+    }
+
     if (deviceName === 'piec') {
         chart.hideSeries('Zużyta energia');
     }

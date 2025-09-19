@@ -56,6 +56,11 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return $this;
     }
 
+    public function showOnDashboard(): bool
+    {
+        return true;
+    }
+
     private function getStatus(): ?DeviceStatus
     {
         if (
