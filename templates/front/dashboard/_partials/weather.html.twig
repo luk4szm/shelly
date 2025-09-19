@@ -41,7 +41,7 @@
                         </div>
                         <div class="mb-0">
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/umbrella-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                                {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                             </span>
                             <span class="fs-3">{{ weather.precipitation }} mm</span>
                         </div>
@@ -65,21 +65,48 @@
                     <span class="fs-5 text-center text-muted">Brak danych o pogodzie</span>
                 {% endif %}
             </div>
-            <div class="row align-items-center">
-                <div class="col">
+            <div class="row align-items-center mt-3">
+                <div class="col-auto">
+                    <img src="{{ weather_symbol(weather.symbolCode1h) }}" alt="{{ weather.symbolCode1h }}" style="width: 28px; height: 28px;"/>
+                    <span class="text-muted">/</span>
+                    <img src="{{ weather_symbol(weather.symbolCode6h) }}" alt="{{ weather.symbolCode6h }}" style="width: 28px; height: 28px;"/>
+                    <span class="text-muted">/</span>
+                    <img src="{{ weather_symbol(weather.symbolCode12h) }}" alt="{{ weather.symbolCode12h }}" style="width: 28px; height: 28px;"/>
+                </div>
+                <div class="col-auto">
+                    <div class="row">
+                        <div class="col-auto">
+                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                                {{ include('_icons/temperature-plus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            </span>
+                            <span class="fs-3">{{ weather.temperature6hMax }} °C</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                                {{ include('_icons/temperature-minus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            </span>
+                            <span class="fs-3">{{ weather.temperature6hMin }} °C</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                                {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            </span>
+                            <span class="fs-3">{{ weather.precipitation6h }} mm</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{#<div class="col-md-8 d-none d-md-block">#}
-{#    <div class="card card-sm h-100">#}
-{#        <div class="card-body">#}
-{#            <div class="row align-items-center">#}
-{#                <div class="col">#}
-{#                    <h2>Ogrzewanie</h2>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}
+<div class="col-md-8 d-none d-md-block">
+    <div class="card card-sm h-100">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    {{ dump(weather) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
