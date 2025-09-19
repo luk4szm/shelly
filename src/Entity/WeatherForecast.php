@@ -22,7 +22,16 @@ class WeatherForecast
     private ?float $temperature = null;
 
     #[ORM\Column(nullable: true)]
+    private ?float $temperature6hMax = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $temperature6hMin = null;
+
+    #[ORM\Column(nullable: true)]
     private ?float $precipitation = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $precipitation6h = null;
 
     #[ORM\Column]
     private ?float $airPressure = null;
@@ -59,6 +68,15 @@ class WeatherForecast
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $symbolCode = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $symbolCode1h = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $symbolCode6h = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $symbolCode12h = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $sunlightFactor = null;
@@ -102,6 +120,30 @@ class WeatherForecast
         return $this;
     }
 
+    public function getTemperature6hMax(): ?float
+    {
+        return $this->temperature6hMax;
+    }
+
+    public function setTemperature6hMax(?float $temperature6hMax): static
+    {
+        $this->temperature6hMax = $temperature6hMax;
+
+        return $this;
+    }
+
+    public function getTemperature6hMin(): ?float
+    {
+        return $this->temperature6hMin;
+    }
+
+    public function setTemperature6hMin(?float $temperature6hMin): static
+    {
+        $this->temperature6hMin = $temperature6hMin;
+
+        return $this;
+    }
+
     public function getPrecipitation(): ?float
     {
         return $this->precipitation;
@@ -110,6 +152,18 @@ class WeatherForecast
     public function setPrecipitation(?float $precipitation): static
     {
         $this->precipitation = $precipitation;
+
+        return $this;
+    }
+
+    public function getPrecipitation6h(): ?float
+    {
+        return $this->precipitation6h;
+    }
+
+    public function setPrecipitation6h(?float $precipitation6h): static
+    {
+        $this->precipitation6h = $precipitation6h;
 
         return $this;
     }
@@ -254,6 +308,42 @@ class WeatherForecast
     public function setSymbolCode(?string $symbolCode): static
     {
         $this->symbolCode = $symbolCode;
+
+        return $this;
+    }
+
+    public function getSymbolCode1h(): ?string
+    {
+        return $this->symbolCode1h;
+    }
+
+    public function setSymbolCode1h(?string $symbolCode1h): static
+    {
+        $this->symbolCode1h = $symbolCode1h;
+
+        return $this;
+    }
+
+    public function getSymbolCode6h(): ?string
+    {
+        return $this->symbolCode6h;
+    }
+
+    public function setSymbolCode6h(?string $symbolCode6h): static
+    {
+        $this->symbolCode6h = $symbolCode6h;
+
+        return $this;
+    }
+
+    public function getSymbolCode12h(): ?string
+    {
+        return $this->symbolCode12h;
+    }
+
+    public function setSymbolCode12h(?string $symbolCode12h): static
+    {
+        $this->symbolCode12h = $symbolCode12h;
 
         return $this;
     }
