@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        yr_no_location_id: '%yr_no_location_id%'
 
 when@test:
     twig:

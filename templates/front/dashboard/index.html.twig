@@ -1,5 +1,24 @@
 {% extends 'base.html.twig' %}
 
+{% block customCss %}
+    <style>
+       /* CSS */
+       .no-scrollbar {
+          overflow-y: auto; /* przewijanie włączone */
+          -webkit-overflow-scrolling: touch; /* płynne przewijanie na iOS */
+          scrollbar-width: none; /* Firefox: ukryj pasek */
+          -ms-overflow-style: none; /* Stare IE/Edge: ukryj pasek */
+       }
+
+       /* WebKit (Chrome, Safari, Edge Chromium): ukryj pasek */
+       .no-scrollbar::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+       }
+    </style>
+{% endblock %}
+
 {% block pageBody %}
     <div id="weather" class="container-xl">
         <div class="row row-deck row-cards">
@@ -23,6 +42,11 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block modals %}
+    {% include 'front/_modals/wheather_table_modal.html.twig' %}
+    {% include 'front/_modals/wheather_card_modal.html.twig' %}
 {% endblock %}
 
 {% block pagejs %}
