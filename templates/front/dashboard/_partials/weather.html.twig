@@ -83,14 +83,14 @@
                     </div>
                 </div>
                 <div class="row align-items-center justify-content-center mt-3">
-                    <div class="col-md-auto col-12">
+                    <div class="col-auto">
                         <img src="{{ weather_symbol(weather.symbolCode1h) }}" alt="{{ weather.symbolCode1h }}" style="width: 28px; height: 28px;"/>
                         <span class="text-muted">/</span>
                         <img src="{{ weather_symbol(weather.symbolCode6h) }}" alt="{{ weather.symbolCode6h }}" style="width: 28px; height: 28px;"/>
                         <span class="text-muted">/</span>
                         <img src="{{ weather_symbol(weather.symbolCode12h) }}" alt="{{ weather.symbolCode12h }}" style="width: 28px; height: 28px;"/>
                     </div>
-                    <div class="col-md-auto col-12">
+                    <div class="col-auto">
                         <div class="row">
                             <div class="col-auto">
                                 <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
@@ -118,12 +118,12 @@
                 <div class="fs-5 text-center text-muted">Brak aktualnych danych o pogodzie</div>
             {% endif %}
             <div class="row mt-3">
-                <div class="col-md-6 col-12">
+                <div class="col-6">
                     <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherCardModal">
                         Dziś
                     </a>
                 </div>
-                <div class="col-md-6 col-12">
+                <div class="col-6">
                     <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherTableModal">
                         Tydzień
                     </a>
