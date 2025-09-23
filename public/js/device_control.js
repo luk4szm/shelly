@@ -73,7 +73,7 @@ $(document).ready(function () {
             const step = sceneActions[currentActionIndex];
             statusDisplay.append(`<div>${step.text}</div>`);
 
-            // Obsługa specjalna: krok "navigation" – pobierz hash z przycisku i spróbuj uruchomić Google Maps
+            // Obsługa specjalna: krok "navigation" – prosty link do Google Maps z hasha przycisku
             if (step.controller === 'navigation') {
                 const mapHash = (button && typeof button.data === 'function') ? button.data('map-hash') : null;
 
@@ -85,29 +85,16 @@ $(document).ready(function () {
                 }
 
                 const mapsWebUrl = `https://maps.app.goo.gl/${mapHash}?g_st=ac`;
-                const ua = navigator.userAgent || '';
-                const isAndroid = /Android/i.test(ua);
-                const isiOS = /iPhone|iPad|iPod/i.test(ua);
-
-                // Fallback: jeśli aplikacja się nie otworzy, przejdziemy pod universal link po ~1.2s
-                const fallbackTimer = setTimeout(function () {
-                    window.location.href = mapsWebUrl;
-                }, 1200);
 
                 try {
-                    if (isAndroid) {
-                        // Preferuj aplikację Google Maps na Androidzie przez "intent://"
-                        window.location.href = `intent://maps.app.goo.gl/${mapHash}?g_st=ac#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-                    } else if (isiOS) {
-                        // iOS: universal link zwykle otworzy aplikację, jeśli jest zainstalowana
-                        window.location.href = mapsWebUrl;
-                    } else {
-                        // Desktop/inne: otwórz link w tej samej karcie
-                        window.location.href = mapsWebUrl;
-                    }
+                    // Proste przejście — najlepsza kompatybilność na mobile
+                    window.location.href = mapsWebUrl;
+
+                    // Dla spójności (jeśli kiedyś otworzysz w nowej karcie), zachowujemy te linie:
+                    currentActionIndex++;
+                    setTimeout(executeNextAction, sceneStepDelay);
                 } catch (e) {
                     console.error('Błąd podczas otwierania nawigacji:', e);
-                    clearTimeout(fallbackTimer);
                     finalizeScene('Nie udało się uruchomić nawigacji.', false);
                 }
                 return;
