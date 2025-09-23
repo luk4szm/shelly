@@ -11,14 +11,15 @@ use App\Service\Shelly\Light\ShellyLightService;
 use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
 class TvHookSubscriber implements EventSubscriberInterface
 {
     private const TV_ON_CACHE_KEY = 'tv_on';
 
     public function __construct(
-        private readonly ShellyLightService $shellyLightService,
-        private readonly FilesystemAdapter  $cache,
+        private readonly ShellyLightService      $shellyLightService,
+        private readonly NamespacedPoolInterface $cache,
     ) {
     }
 
