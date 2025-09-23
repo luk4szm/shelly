@@ -30,7 +30,7 @@ $(document).ready(function () {
     const apiUrls = {
         'gate': '/supla/gate/open-close',
         'covers': '/cover/open-close',
-        'garage': '/garage/move'
+        'garage': '/garage/move',
     };
 
     const scenes = {
@@ -43,6 +43,10 @@ $(document).ready(function () {
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' }
+        ],
+        'kindergarten-work': [ // Wychodzę z domu
+            { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'navigation', action: 'start', text: 'Uruchamianie nawigacji...' }
         ]
     };
 
@@ -68,6 +72,46 @@ $(document).ready(function () {
 
             const step = sceneActions[currentActionIndex];
             statusDisplay.append(`<div>${step.text}</div>`);
+
+            // Obsługa specjalna: krok "navigation" – pobierz hash z przycisku i spróbuj uruchomić Google Maps
+            if (step.controller === 'navigation') {
+                const mapHash = (button && typeof button.data === 'function') ? button.data('map-hash') : null;
+
+                if (!mapHash) {
+                    const errorMsg = 'Brak "data-map-hash" na przycisku sceny – nie można uruchomić nawigacji.';
+                    console.error(errorMsg);
+                    finalizeScene(errorMsg, false);
+                    return;
+                }
+
+                const mapsWebUrl = `https://maps.app.goo.gl/${mapHash}?g_st=ac`;
+                const ua = navigator.userAgent || '';
+                const isAndroid = /Android/i.test(ua);
+                const isiOS = /iPhone|iPad|iPod/i.test(ua);
+
+                // Fallback: jeśli aplikacja się nie otworzy, przejdziemy pod universal link po ~1.2s
+                const fallbackTimer = setTimeout(function () {
+                    window.location.href = mapsWebUrl;
+                }, 1200);
+
+                try {
+                    if (isAndroid) {
+                        // Preferuj aplikację Google Maps na Androidzie przez "intent://"
+                        window.location.href = `intent://maps.app.goo.gl/${mapHash}?g_st=ac#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+                    } else if (isiOS) {
+                        // iOS: universal link zwykle otworzy aplikację, jeśli jest zainstalowana
+                        window.location.href = mapsWebUrl;
+                    } else {
+                        // Desktop/inne: otwórz link w tej samej karcie
+                        window.location.href = mapsWebUrl;
+                    }
+                } catch (e) {
+                    console.error('Błąd podczas otwierania nawigacji:', e);
+                    clearTimeout(fallbackTimer);
+                    finalizeScene('Nie udało się uruchomić nawigacji.', false);
+                }
+                return;
+            }
 
             const apiUrl = apiUrls[step.controller];
 
