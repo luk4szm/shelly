@@ -19,11 +19,11 @@ class HeatingNoteRepository extends CrudRepository
     public function findForDate(\DateTime $date): array
     {
         return $this->createQueryBuilder('hn')
-            ->where('hn.createdAt >= :from')
-            ->andWhere('hn.createdAt <= :to')
+            ->where('hn.time >= :from')
+            ->andWhere('hn.time <= :to')
             ->setParameter('from', (clone $date)->setTime(0, 0))
             ->setParameter('to', (clone $date)->setTime(23, 59, 59))
-            ->orderBy('hn.createdAt', 'DESC')
+            ->orderBy('hn.time', 'ASC')
             ->getQuery()
             ->getResult();
     }
