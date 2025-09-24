@@ -147,6 +147,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const rawData = await fetchChartData(dateString);
 
+        const notesContainer = document.getElementById('heating_notes_card');
+        const updateHeatingNotes = (data) => {
+            if (!notesContainer) return;
+            try {
+                notesContainer.innerHTML = data.notes;
+            } catch (e) {
+                console.error('Błąd podczas aktualizacji notatek:', e);
+            }
+        };
+
+        updateHeatingNotes(rawData);
+
         if (!rawData || !rawData.currentDay || Object.keys(rawData.currentDay).length === 0) {
             if (chart) {
                 chart.destroy();

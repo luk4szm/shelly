@@ -1,0 +1,20 @@
+<div class="modal fade" id="add_heating_note" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nowa notatka</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {{ form_start(form) }}
+            <div class="modal-body">
+                {{ form_row(form.time) }}
+                {{ form_row(form.note) }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Zapisz notatkę</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>

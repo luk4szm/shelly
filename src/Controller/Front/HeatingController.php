@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Front;
 
+use App\Form\HeatingNoteType;
 use App\Model\DateRange;
+use App\Repository\HeatingNoteRepository;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
@@ -19,10 +21,25 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HeatingController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(Request $request): Response
+    public function index(Request $request, HeatingNoteRepository $noteRepository): Response
     {
+        $form = $this->createForm(HeatingNoteType::class)->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $note = $form->getData();
+            $note->setCreatedBy($this->getUser());
+
+            $noteRepository->save($note);
+
+            $this->addFlash('success', 'Note saved successfully.');
+
+            return $this->redirectToRoute('app_front_heating_index');
+        }
+
         return $this->render('front/heating/index.html.twig', [
-            'date' => $request->get('date'),
+            'date'  => $request->get('date'),
+            'form'  => $form->createView(),
+            'notes' => $noteRepository->findForDate(new \DateTime()),
         ]);
     }
 
@@ -30,6 +47,7 @@ final class HeatingController extends AbstractController
     public function getData(
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
+        HeatingNoteRepository                                           $noteRepository,
         TemperatureGraphHandler                                         $graphHandler,
         #[AutowireIterator('app.shelly.device_status_helper')] iterable $statusHelpers,
         string                                                          $date = '',
@@ -111,6 +129,9 @@ final class HeatingController extends AbstractController
             'currentDay'  => empty($currentDayHooks) ? [] : $graphHandler->prepareGroupedHooks($currentDayHooks),
             'previousDay' => empty($previousDayHooks) ? [] : $graphHandler->prepareGroupedHooks($previousDayHooks),
             'activities'  => $activities,
+            'notes'       => $this->renderView('front/heating/_partials/heating_notes.html.twig', [
+                'notes' => $noteRepository->findForDate($from),
+            ]),
         ]);
     }
 }

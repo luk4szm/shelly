@@ -3,23 +3,27 @@
 {% block pageTitle %}Heating{% endblock %}
 
 {% block pageTitleActions %}
-    <div class="input-group">
-        <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
-            &#8592;
-        </button>
-
-        <input type="date" class="form-control" id="heating_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-03-12" max="{{ "now"|date("Y-m-d") }}">
-
-        <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
-            &#8594;
-        </button>
+    <div class="d-flex">
+        <a href="#" class="btn btn-outline-azure" data-bs-toggle="modal" data-bs-target="#add_heating_note">
+            {% include '_icons/plus-icon.svg.twig' with {'class': 'mx-0'} %}
+            <span class="ms-md-3 d-md-block d-none">dodaj notatkę</span>
+        </a>
+        <div class="input-group ms-3">
+            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
+                &#8592;
+            </button>
+            <input type="date" class="form-control" id="heating_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-03-12" max="{{ "now"|date("Y-m-d") }}">
+            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
+                &#8594;
+            </button>
+        </div>
     </div>
 {% endblock %}
 
 {% block pageBody %}
     <div class="container-xl">
         <div class="row row-deck row-cards">
-            <div class="col-12">
+            <div class="col-md-10 col-12">
                 <div class="card">
                     <div class="card-body" style="min-height: 432px;">
                         <div id="chart-temperature" class="position-relative"></div>
@@ -31,8 +35,24 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-2 col-12">
+                <div class="card h-100" style="max-height: 432px;">
+                    <div class="card-header">
+                        <h3 class="card-title">Notatki użytkownika</h3>
+                    </div>
+                    <div class="card-body card-body-scrollable card-body-scrollable-shadow">
+                        <div id="heating_notes_card" class="divide-y">
+                            {% include 'front/heating/_partials/heating_notes.html.twig' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+{% endblock %}
+
+{% block modals %}
+    {% include 'front/_modals/new_heating_note_modal.html.twig' %}
 {% endblock %}
 
 {% block pagejs %}

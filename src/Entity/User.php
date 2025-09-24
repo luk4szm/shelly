@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -33,6 +35,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?int $phoneNumber = null;
+
+    /**
+     * @var Collection<int, HeatingNote>
+     */
+    #[ORM\OneToMany(targetEntity: HeatingNote::class, mappedBy: 'createdBy', orphanRemoval: true)]
+    private Collection $heatingNotes;
+
+    public function __construct()
+    {
+        $this->heatingNotes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -117,6 +130,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhoneNumber(int $phoneNumber): static
     {
         $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, HeatingNote>
+     */
+    public function getHeatingNotes(): Collection
+    {
+        return $this->heatingNotes;
+    }
+
+    public function addHeatingNote(HeatingNote $heatingNote): static
+    {
+        if (!$this->heatingNotes->contains($heatingNote)) {
+            $this->heatingNotes->add($heatingNote);
+            $heatingNote->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHeatingNote(HeatingNote $heatingNote): static
+    {
+        if ($this->heatingNotes->removeElement($heatingNote)) {
+            // set the owning side to null (unless already changed)
+            if ($heatingNote->getCreatedBy() === $this) {
+                $heatingNote->setCreatedBy(null);
+            }
+        }
 
         return $this;
     }

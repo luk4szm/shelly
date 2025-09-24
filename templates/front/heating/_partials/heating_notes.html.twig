@@ -1,0 +1,12 @@
+{% for note in notes %}
+    <div>
+        <div class="row">
+            <div class="col">
+                <div class="text-secondary">{{ note.createdAt.date|date("d.m.Y H:i") }}</div>
+                <div>{{ note.note }}</div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-muted text-center">Brak notatek dla wybranego dnia.</div>
+{% endfor %}
