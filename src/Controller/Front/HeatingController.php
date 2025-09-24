@@ -57,6 +57,10 @@ final class HeatingController extends AbstractController
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
+            if (!$helper->showOnDashboard()) {
+                continue;
+            }
+
             // Get grouped history so we have consecutive running/standby blocks
             $history = $helper->getHistory(dateRange: $dateRange, grouped: true);
             if ($history === null) {
