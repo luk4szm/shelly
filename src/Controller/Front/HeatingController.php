@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller\Front;
 
+use App\Entity\HeatingNote;
 use App\Form\HeatingNoteType;
 use App\Model\DateRange;
 use App\Repository\HeatingNoteRepository;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
+use App\Utils\HeatingNoteSerializer;
 use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -125,13 +127,20 @@ final class HeatingController extends AbstractController
             }
         }
 
+        $notes = $noteRepository->findForDate($from);
+
         return $this->json([
             'currentDay'  => empty($currentDayHooks) ? [] : $graphHandler->prepareGroupedHooks($currentDayHooks),
             'previousDay' => empty($previousDayHooks) ? [] : $graphHandler->prepareGroupedHooks($previousDayHooks),
             'activities'  => $activities,
-            'notes'       => $this->renderView('front/heating/_partials/heating_notes.html.twig', [
-                'notes' => $noteRepository->findForDate($from),
-            ]),
+            'notes'       => [
+                'data'     => array_map(function (HeatingNote $note) {
+                    return HeatingNoteSerializer::serialize($note);
+                }, $notes),
+                'rendered' => $this->renderView('front/heating/_partials/heating_notes.html.twig', [
+                    'notes' => $notes,
+                ])
+            ],
         ]);
     }
 }

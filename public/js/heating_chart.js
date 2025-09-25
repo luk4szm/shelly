@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const updateHeatingNotes = (data) => {
             if (!notesContainer) return;
             try {
-                notesContainer.innerHTML = data.notes;
+                notesContainer.innerHTML = data.notes.rendered;
             } catch (e) {
                 console.error('Błąd podczas aktualizacji notatek:', e);
             }
@@ -196,6 +196,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const annotations = buildAnnotations(rawData.activities);
 
+        const buildNoteAnnotations = (notes) => {
+            if (!notes || !Array.isArray(notes.data)) return { xaxis: [] };
+
+            const sorted = notes.data
+                .map(n => ({ x: new Date(n.time).getTime(), note: n.note }))
+                .filter(n => !isNaN(n.x))
+                .sort((a, b) => a.x - b.x);
+
+            const GROUP_WINDOW_MS = 5 * 60 * 1000; // 5 minut
+            const groups = [];
+            let current = [];
+
+            for (const n of sorted) {
+                if (current.length === 0) {
+                    current.push(n);
+                } else {
+                    const last = current[current.length - 1];
+                    if (n.x - last.x <= GROUP_WINDOW_MS) {
+                        current.push(n);
+                    } else {
+                        groups.push(current);
+                        current = [n];
+                    }
+                }
+            }
+            if (current.length) groups.push(current);
+
+            const xaxis = groups.map(group => {
+                const x = group[Math.floor(group.length / 2)].x;
+                const textShort = group.length === 1 ? 'i' : `+${group.length}`;
+                return {
+                    x,
+                    strokeDashArray: 0,
+                    borderColor: 'rgba(0,0,0,0.35)',
+                    label: {
+                        text: textShort,
+                        borderColor: 'rgba(0,0,0,0.0)',
+                        style: {
+                            background: 'var(--tblr-yellow, #f6c343)',
+                            color: '#1f1f1f',
+                            fontSize: '11px',
+                            padding: { left: 4, right: 4, top: 1, bottom: 1 }
+                        }
+                    }
+                };
+            });
+
+            return { xaxis };
+        };
+
+        const noteAnnotations = buildNoteAnnotations(rawData?.notes);
+        const mergedAnnotations = {
+            xaxis: [
+                ...(annotations?.xaxis || []),
+                ...(noteAnnotations?.xaxis || [])
+            ]
+        };
+
         const options = {
             chart: {
                 type: "line",
@@ -205,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 toolbar: { show: true, tools: { download: true, selection: true, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true } },
                 animations: { enabled: true },
             },
-            annotations: annotations,
+            annotations: mergedAnnotations,
             stroke: {
                 width: strokeWidths, // ZMIANA: Użycie tablicy grubości linii
                 lineCap: "round",
