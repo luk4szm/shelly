@@ -16,8 +16,11 @@ class HeatingNoteType extends AbstractType
             ->add('time', DateTimeType::class, [
                 'data'   => new \DateTime(),
                 'widget' => 'single_text',
+                'label'  => 'Data',
             ])
-            ->add('note')
+            ->add('note', options: [
+                'label' => 'Treść notatki',
+            ])
         ;
     }
 
