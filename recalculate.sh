@@ -1,7 +1,18 @@
 #!/bin/bash
 
+# Domyślna data startu (jeśli nie podano parametru)
 start_date="2025-02-16"
 end_date=$(date -d "yesterday" +%Y-%m-%d)
+
+# Jeśli został podany parametr, spróbuj go użyć jako daty startowej
+if [[ -n "$1" ]]; then
+  # Sprawdź format/ważność daty przy użyciu date -d
+  if ! date -d "$1" >/dev/null 2>&1; then
+    echo "Błędna data: '$1'. Użyj formatu RRRR-MM-DD, np. 2025-05-30."
+    exit 1
+  fi
+  start_date="$1"
+fi
 
 start_timestamp=$(date -d "$start_date" +%s)
 end_timestamp=$(date -d "$end_date" +%s)
