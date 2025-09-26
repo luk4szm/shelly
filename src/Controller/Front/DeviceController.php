@@ -235,6 +235,10 @@ class DeviceController extends AbstractController
         $date  = new \DateTime($request->get('date'));
         $hooks = $hookRepository->findHooksByDeviceAndDate($device, $date);
 
+        if (empty($hooks)) {
+            return $this->json([]);
+        }
+
         // clone last hook of previous day to chart start
         $dateImmutable          = new \DateTimeImmutable($date->format('Y-m-dT00:00:00'));
         $lastHookOfPreviousDate = $hookRepository->findLastHookOfDay($device, (clone $date)->modify('-1 day'));
