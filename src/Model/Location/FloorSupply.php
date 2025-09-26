@@ -4,6 +4,6 @@ namespace App\Model\Location;
 
 final class FloorSupply extends Location implements LocationInterface
 {
-    public const NAME  = 'zasilanie';
-    public const GROUP = ['heating'];
+    public const NAME  = 'podl-zasilanie';
+    public const GROUP = ['heating-full', 'underfloor-heating'];
 }

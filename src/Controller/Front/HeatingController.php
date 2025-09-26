@@ -57,7 +57,7 @@ final class HeatingController extends AbstractController
         $from      = (new \DateTime($date))->setTime(0, 0);
         $to        = (clone $from)->setTime(23, 59, 59);
         $isToday   = $from->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
-        $locations = $locationFinder->getLocations('heating');
+        $locations = $locationFinder->getLocations('heating-full');
 
         $currentDayHooks = $hookRepository->findLocationTemperatures(
             $from,
