@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.render();
     chart.hideSeries('Liczba włączeń');
 
-    if (deviceName !== 'tv') {
+    if (deviceName !== 'tv' && deviceName !== 'hydrofor') {
         chart.hideSeries('Czas pracy');
     } else {
         chart.hideSeries('Zużyta energia');
