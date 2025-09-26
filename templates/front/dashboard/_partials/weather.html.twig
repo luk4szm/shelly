@@ -118,12 +118,17 @@
                 <div class="fs-5 text-center text-muted">Brak aktualnych danych o pogodzie</div>
             {% endif %}
             <div class="row mt-3">
-                <div class="col-6">
+                <div class="col">
                     <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherCardModal">
                         Dziś
                     </a>
                 </div>
-                <div class="col-6">
+                <div class="col-auto">
+                    <a href="#" class="btn btn-icon btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherMeteogramModal">
+                        {{ include('_icons/chart-histogram-icon.svg.twig') }}
+                    </a>
+                </div>
+                <div class="col">
                     <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherTableModal">
                         Tydzień
                     </a>
