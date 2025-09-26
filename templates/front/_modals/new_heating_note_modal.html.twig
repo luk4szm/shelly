@@ -6,12 +6,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             {{ form_start(form) }}
-            <div class="modal-body">
+            <div class="modal-body pb-0">
                 {{ form_row(form.time) }}
                 {{ form_row(form.note) }}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Zamknij</button>
                 <button type="submit" class="btn btn-primary">Zapisz notatkę</button>
             </div>
             {{ form_end(form) }}

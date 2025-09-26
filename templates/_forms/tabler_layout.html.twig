@@ -1,0 +1,117 @@
+{% use "form_div_layout.html.twig" %}
+
+{% extends 'bootstrap_5_layout.html.twig' %}
+
+{%- block form_row -%}
+    {%- set row_class = row_attr.class|default('') -%}
+    {% if 'form-check' in row_class or 'form-switch' in row_class %}
+        {{ parent() }}
+    {% else %}
+        <div class="mb-3 {{ row_class }}">
+            {{- form_label(form) -}}
+            {{- form_widget(form) -}}
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+        </div>
+    {% endif %}
+{%- endblock form_row -%}
+
+{%- block form_label -%}
+    {% if label is not same as(false) -%}
+        {%- set label_class = label_attr.class|default('') -%}
+        {%- if 'form-check-label' not in label_class -%}
+            {% set label_attr = label_attr|merge({'class': (label_class ~ ' form-label')|trim}) %}
+        {%- endif -%}
+        {{- parent() -}}
+    {%- endif -%}
+{%- endblock form_label -%}
+
+{%- block form_widget_simple -%}
+    {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' form-control' ~ (errors|length > 0 ? ' is-invalid' : ''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block url_widget -%}
+    <div class="input-group">
+        <span class="input-group-text">URL</span>
+        {{ block('form_widget_simple') }}
+    </div>
+{%- endblock url_widget -%}
+
+{%- block textarea_widget -%}
+    {% set attr = attr|merge({
+        'class': (attr.class|default('') ~ ' form-control' ~ (errors|length > 0 ? ' is-invalid' : ''))|trim,
+        'rows': attr.rows|default(3)
+    }) %}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}
+
+{%- block choice_widget -%}
+    {%- set class = 'form-select' ~ (multiple ? ' tom-select-multiple' : ' tom-select-single') -%}
+    {%- set attr = attr|merge({'class': (attr.class|default('') ~ ' ' ~ class ~ (errors|length > 0 ? ' is-invalid' : ''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget -%}
+
+{%- block tabler_card_choice_widget -%}
+    <div {{ block('widget_container_attributes') }} class="form-selectgroup-boxes row mb-3">
+        {%- for child in form %}
+            {{- form_widget(child, {
+                parent_label_class: label_attr.class|default(''),
+                translation_domain: choice_translation_domain,
+            }) -}}
+        {% endfor -%}
+    </div>
+{%- endblock tabler_card_choice_widget -%}
+
+{%- block radio_widget -%}
+    {% if 'form-selectgroup-input' in attr.class|default('') %}
+        <div class="col">
+            <label class="form-selectgroup-item">
+                <input {{ block('widget_attributes') }} type="radio"
+                        {% if value is defined %} value="{{ value }}"{% endif %}
+                        {% if checked %} checked="checked"{% endif %}
+                />
+                <div class="form-selectgroup-label d-flex align-items-center p-3">
+                    <span class="me-3">
+                        <span class="form-selectgroup-check"></span>
+                    </span>
+                    <span class="form-selectgroup-label-content">
+                        <span class="form-selectgroup-title strong mb-1">{{ label|trans({}, translation_domain) }}</span>
+                        <span class="d-block text-secondary">{{ attr['data-description']|default('') }}</span>
+                    </span>
+                </div>
+            </label>
+        </div>
+    {% else %}
+        {{- parent() -}}
+    {% endif %}
+{%- endblock radio_widget -%}
+
+{%- block tabler_switch_widget -%}
+    {%- set attr = attr|merge({
+        'class': (attr.class|default('') ~ ' form-check-input')|trim,
+        'role': 'switch'
+    }) -%}
+    <label class="form-check form-switch mb-1">
+        <input type="checkbox" {{ block('widget_attributes') }}{% if value is not empty %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %}>
+        <span class="form-check-label">{{ label|trans({}, translation_domain) }}</span>
+    </label>
+{%- endblock tabler_switch_widget -%}
+
+{%- block tabler_switch_row -%}
+    <div class="mb-3">
+        {{- form_widget(form) -}}
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock tabler_switch_row -%}
+
+{%- block form_errors -%}
+    {% if errors|length > 0 %}
+        <ul class="form-errors list-unstyled">
+            {% for error in errors %}
+                <li>{{ error.message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{%- endblock form_errors -%}
