@@ -1,150 +1,137 @@
-<div class="col-md-4 col-12 h-100">
-    <div class="card card-sm">
-        <div class="card-body">
-            {% if weather is not null %}
-                <div class="row align-items-center">
-                    <div class="col text-center">
-                        <img src="{{ weather_symbol(weather.symbolCode) }}" alt="{{ weather.symbolCode }}" style="width: 80px; height: 80px;"/>
-                    </div>
-                    <div class="col">
-                        <div class="mb-0 text-nowrap">
-                            {% set temperatureExtraClass = weather.temperature >= 30
-                                ? 'text-danger' : (
-                                    weather.temperature >= 25 ? 'text-danger-emphasis' : (
-                                        weather.temperature <= 0 ? 'text-info-emphasis' : (
-                                            weather.temperature <= -5 ? 'text-info' : ''
-                                        )
+<div class="card card-sm">
+    <div class="card-body">
+        {% if weather is not null %}
+            <div class="row align-items-center">
+                <div class="col text-center">
+                    <img src="{{ weather_symbol(weather.symbolCode) }}" alt="{{ weather.symbolCode }}" style="width: 80px; height: 80px;"/>
+                </div>
+                <div class="col">
+                    <div class="mb-0 text-nowrap">
+                        {% set temperatureExtraClass = weather.temperature >= 30
+                            ? 'text-danger' : (
+                                weather.temperature >= 25 ? 'text-danger-emphasis' : (
+                                    weather.temperature <= 0 ? 'text-info-emphasis' : (
+                                        weather.temperature <= -5 ? 'text-info' : ''
                                     )
                                 )
-                            %}
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/temperature-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            <span class="fs-3 {{ temperatureExtraClass }}">{{ weather.temperature }} °C</span>
-                        </div>
-                        <div class="mb-0 text-nowrap">
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/droplet-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            <span class="fs-3">{{ weather.humidity }} %</span>
-                        </div>
-                        <div class="mb-0 text-nowrap">
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/solar-panel-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            <span class="fs-3">{{ weather.sunlightFactor }} %</span>
-                        </div>
-                        <div class="mb-0 text-nowrap">
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/sunrise-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            <span class="fs-3">{{ sunrise_hour() }}</span>
-                        </div>
+                            )
+                        %}
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/temperature-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3 {{ temperatureExtraClass }}">{{ weather.temperature }} °C</span>
                     </div>
-                    <div class="col">
-                        <div class="mb-0 text-nowrap">
-                            {% set airPressureExtraClass = weather.airPressure >= 1030
-                                ? 'text-danger' : (
-                                    weather.airPressure >= 1020 ? 'text-danger-emphasis' : (
-                                        weather.airPressure <= 1000 ? 'text-info-emphasis' : (
-                                            weather.airPressure <= 990 ? 'text-info' : ''
-                                        )
+                    <div class="mb-0 text-nowrap">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/droplet-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.humidity }} %</span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/solar-panel-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ weather.sunlightFactor }} %</span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/sunrise-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ sunrise_hour() }}</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="mb-0 text-nowrap">
+                        {% set airPressureExtraClass = weather.airPressure >= 1030
+                            ? 'text-danger' : (
+                                weather.airPressure >= 1020 ? 'text-danger-emphasis' : (
+                                    weather.airPressure <= 1000 ? 'text-info-emphasis' : (
+                                        weather.airPressure <= 990 ? 'text-info' : ''
                                     )
                                 )
-                            %}
+                            )
+                        %}
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3 {{ airPressureExtraClass }}">{{ weather.airPressure|number_format(0, "", "") }} kPa</span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
+                        {% set precipitationExtraClass = weather.precipitation > 0 ? 'text-azure' : '' %}
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3 {{ precipitationExtraClass }}">{{ weather.precipitation }} mm</span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/wind-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        {% set windExtraClass = weather.windSpeed >= 14 ? 'text-danger' : (weather.windSpeed >= 8 ? 'text-danger-emphasis' : '') %}
+                        <span class="fs-3 {{ windExtraClass }}">{{ (weather.windSpeed * 3.6)|number_format(0) }} km/h</span>
+                        <span class="wind-arrow__arrow" style="display:inline-block; transform: rotate({{ weather.windDirection }}deg); transform-origin: center;">
+                            {{ include('_icons/arrow-up-icon.svg.twig', { size: 20 }) }}
+                        </span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/sunset-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3">{{ sunset_hour() }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row align-items-center justify-content-center mt-3">
+                <div class="col-auto">
+                    <img src="{{ weather_symbol(weather.symbolCode1h) }}" alt="{{ weather.symbolCode1h }}" style="width: 28px; height: 28px;"/>
+                    <span class="text-muted">/</span>
+                    <img src="{{ weather_symbol(weather.symbolCode6h) }}" alt="{{ weather.symbolCode6h }}" style="width: 28px; height: 28px;"/>
+                    <span class="text-muted">/</span>
+                    <img src="{{ weather_symbol(weather.symbolCode12h) }}" alt="{{ weather.symbolCode12h }}" style="width: 28px; height: 28px;"/>
+                </div>
+                <div class="col-auto">
+                    <div class="row">
+                        <div class="col-auto">
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                                {{ include('_icons/temperature-plus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                             </span>
-                            <span class="fs-3 {{ airPressureExtraClass }}">{{ weather.airPressure|number_format(0, "", "") }} kPa</span>
+                            <span class="fs-3">{{ weather.temperature6hMax }} °C</span>
                         </div>
-                        <div class="mb-0 text-nowrap">
-                            {% set precipitationExtraClass = weather.precipitation > 0 ? 'text-azure' : '' %}
+                        <div class="col-auto">
+                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                                {{ include('_icons/temperature-minus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            </span>
+                            <span class="fs-3">{{ weather.temperature6hMin }} °C</span>
+                        </div>
+                        <div class="col-auto">
+                            {% set precipitation6hExtraClass = weather.precipitation6h > 0 ? 'text-azure' : '' %}
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                                 {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                             </span>
-                            <span class="fs-3 {{ precipitationExtraClass }}">{{ weather.precipitation }} mm</span>
-                        </div>
-                        <div class="mb-0 text-nowrap">
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/wind-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            {% set windExtraClass = weather.windSpeed >= 14 ? 'text-danger' : (weather.windSpeed >= 8 ? 'text-danger-emphasis' : '') %}
-                            <span class="fs-3 {{ windExtraClass }}">{{ (weather.windSpeed * 3.6)|number_format(0) }} km/h</span>
-                            <span class="wind-arrow__arrow" style="display:inline-block; transform: rotate({{ weather.windDirection }}deg); transform-origin: center;">
-                                {{ include('_icons/arrow-up-icon.svg.twig', { size: 20 }) }}
-                            </span>
-                        </div>
-                        <div class="mb-0 text-nowrap">
-                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/sunset-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                            </span>
-                            <span class="fs-3">{{ sunset_hour() }}</span>
+                            <span class="fs-3 {{ precipitation6hExtraClass }}">{{ weather.precipitation6h }} mm</span>
                         </div>
                     </div>
                 </div>
-                <div class="row align-items-center justify-content-center mt-3">
-                    <div class="col-auto">
-                        <img src="{{ weather_symbol(weather.symbolCode1h) }}" alt="{{ weather.symbolCode1h }}" style="width: 28px; height: 28px;"/>
-                        <span class="text-muted">/</span>
-                        <img src="{{ weather_symbol(weather.symbolCode6h) }}" alt="{{ weather.symbolCode6h }}" style="width: 28px; height: 28px;"/>
-                        <span class="text-muted">/</span>
-                        <img src="{{ weather_symbol(weather.symbolCode12h) }}" alt="{{ weather.symbolCode12h }}" style="width: 28px; height: 28px;"/>
-                    </div>
-                    <div class="col-auto">
-                        <div class="row">
-                            <div class="col-auto">
-                                <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                    {{ include('_icons/temperature-plus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                                </span>
-                                <span class="fs-3">{{ weather.temperature6hMax }} °C</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                    {{ include('_icons/temperature-minus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                                </span>
-                                <span class="fs-3">{{ weather.temperature6hMin }} °C</span>
-                            </div>
-                            <div class="col-auto">
-                                {% set precipitation6hExtraClass = weather.precipitation6h > 0 ? 'text-azure' : '' %}
-                                <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                    {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                                </span>
-                                <span class="fs-3 {{ precipitation6hExtraClass }}">{{ weather.precipitation6h }} mm</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                <div class="fs-5 text-center text-muted">Brak aktualnych danych o pogodzie</div>
-            {% endif %}
-            <div class="row mt-3">
-                <div class="col">
-                    <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherCardModal">
-                        Dziś
-                    </a>
-                </div>
-                <div class="col-auto">
-                    <a href="#" class="btn btn-icon btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherMeteogramModal">
-                        {{ include('_icons/chart-histogram-icon.svg.twig') }}
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherTableModal">
-                        Tydzień
-                    </a>
-                </div>
+            </div>
+        {% else %}
+            <div class="fs-5 text-center text-muted">Brak aktualnych danych o pogodzie</div>
+        {% endif %}
+        <div class="row mt-3">
+            <div class="col">
+                <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherCardModal">
+                    Dziś
+                </a>
+            </div>
+            <div class="col-auto">
+                <a href="#" class="btn btn-icon btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherMeteogramModal">
+                    {{ include('_icons/chart-histogram-icon.svg.twig') }}
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="btn btn-6 btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#weatherTableModal">
+                    Tydzień
+                </a>
             </div>
         </div>
     </div>
 </div>
-{#<div class="col-md-8 d-none d-md-block">#}
-{#    <div class="card card-sm h-100">#}
-{#        <div class="card-body">#}
-{#            <div class="row align-items-center">#}
-{#                <div class="col">#}
-{#                    {{ dump(weather) }}#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}

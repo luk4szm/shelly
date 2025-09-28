@@ -6,6 +6,7 @@ use App\Entity\DeviceDailyStats;
 use App\Repository\HookRepository;
 use App\Repository\WeatherForecastRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
+use App\Service\Device\HeatingPumpService;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ final class DashboardController extends AbstractController
         #[AutowireIterator('app.shelly.daily_stats')] iterable          $dailyStatsCalculators,
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
+        HeatingPumpService                                              $heatingPumpService,
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
@@ -58,14 +60,18 @@ final class DashboardController extends AbstractController
         }
 
         return $this->render('front/dashboard/index.html.twig', [
-            'buffer'  => [
+            'buffer'      => [
                 'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
                 'temperature_05m' => $hookRepository->findActualTempForLocation('bufor-solary'),
                 'pressure'        => $hookRepository->findActualPressureForLocation('co'),
             ],
-            'devices' => $devices ?? [],
-            'rooms'   => $rooms ?? [],
-            'weather' => $weatherRepository->findActualForecast(),
+            'heatingPump' => [
+                'supply' => $heatingPumpService->getActualState('pompa-zasilanie'),
+                'return' => $heatingPumpService->getActualState('pompa-powrot'),
+            ],
+            'devices'     => $devices ?? [],
+            'rooms'       => $rooms ?? [],
+            'weather'     => $weatherRepository->findActualForecast(),
         ]);
     }
 }

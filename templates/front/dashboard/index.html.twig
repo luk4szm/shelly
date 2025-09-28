@@ -20,9 +20,15 @@
 {% endblock %}
 
 {% block pageBody %}
-    <div id="weather" class="container-xl">
-        <div class="row row-deck row-cards">
-            {% include 'front/dashboard/_partials/weather.html.twig' %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards align-items-stretch">
+            <div class="col-md-4 col-12 d-inline">
+                {% include 'front/dashboard/_partials/weather.html.twig' %}
+                {% include 'front/dashboard/_partials/heating_controllers.html.twig' %}
+            </div>
+            <div class="col-md-8 col-12 d-none d-md-flex">
+                {% include 'front/dashboard/_partials/heating_chart.html.twig' %}
+            </div>
         </div>
     </div>
     <div id="devices_controllers" class="container-xl mt-3">

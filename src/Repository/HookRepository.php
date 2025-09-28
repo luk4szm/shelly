@@ -79,6 +79,32 @@ class HookRepository extends CrudRepository
             ->getOneOrNullResult();
     }
 
+    public function findLastDeviceState(string $device): ?Hook
+    {
+        return $this->createQueryBuilder('hook')
+            ->andWhere('hook.device = :device')
+            ->andWhere('hook.property = :property')
+            ->setParameter('device', $device)
+            ->setParameter('property', 'state')
+            ->orderBy('hook.id', order: 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findLastDevicePowerHook(string $device): ?Hook
+    {
+        return $this->createQueryBuilder('hook')
+            ->andWhere('hook.device = :device')
+            ->andWhere('hook.property = :property')
+            ->setParameter('device', $device)
+            ->setParameter('property', 'power')
+            ->orderBy('hook.id', order: 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findActualTempForLocation(string $location): ?Hook
     {
         return $this->createQueryBuilder('hook')
