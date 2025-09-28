@@ -245,17 +245,24 @@ class HookRepository extends CrudRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-            SELECT DATE(created_at) AS date, ROUND(MAX(VALUE), 1) AS max,  ROUND(MIN(VALUE), 1) AS min, ROUND(AVG(VALUE), 1) AS avg
+            SELECT
+                DATE(created_at) AS date,
+                ROUND(MAX(CAST(value AS DECIMAL(10,3))), 1) AS max,
+                ROUND(MIN(CAST(value AS DECIMAL(10,3))), 1) AS min,
+                ROUND(AVG(CAST(value AS DECIMAL(10,3))), 1) AS avg
             FROM hook
-            WHERE device = :device AND property = :property AND created_at >= :from AND created_at <= :to
+            WHERE device = :device
+              AND property = :property
+              AND created_at >= :from
+              AND created_at <= :to
             GROUP BY date
         ';
 
         $resultSet = $conn->executeQuery($sql, [
             'device'   => $device,
             'property' => $property,
-            'from'     => $from->format("Y-m-d"),
-            'to'       => $to->format("Y-m-d"),
+            'from'     => $from->format('Y-m-d 00:00:00'),
+            'to'       => $to->format('Y-m-d 23:59:59'),
         ]);
 
         // returns an array of arrays (i.e. a raw data set)
