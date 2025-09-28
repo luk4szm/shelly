@@ -176,9 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const buildAnnotations = (activities) => {
             if (!activities) return { xaxis: [] };
             const deviceColors = {
-                'piec': 'rgba(220, 53, 69, 0.2)',      // red-ish
+                'piec': 'rgba(220, 53, 69, 0.45)',      // red-ish
                 'kominek': 'rgba(253, 126, 20, 0.1)',  // orange
-                'solary': 'rgba(25, 135, 84, 0.2)',    // green
+                'solary': 'rgba(25, 135, 84, 0.4)',    // green
             };
             const xaxis = [];
             Object.entries(activities).forEach(([device, intervals]) => {
