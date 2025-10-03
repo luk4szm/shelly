@@ -1,29 +1,42 @@
 <div class="card card-sm mt-2">
     <div class="card-body py-2">
-        <div class="row align-items-center my-2">
-            <div class="col-auto">
-                <span class="{{ heatingPump.supply.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
+        <div class="row">
+            <div class="col-6">
+                <div class="row align-items-center my-2">
+                    <div class="col-auto">
+                        <span class="{{ heatingPump.supply.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
+                    </div>
+                    <div class="col">
+                        <div class="fw-bolder fs-3">{{ heatingPump.supply.power }} W</div>
+                        <div class="text-secondary text-capitalize fw-bold">
+                            <a href="{{ path('app_front_device_daily', {'device': 'podlogowka-zasilanie'}) }}" class="text-secondary">
+                                Zasilanie
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col">
-                <div class="fw-bolder fs-3">{{heatingPump.supply.power }} W</div>
-                <div class="text-secondary text-capitalize fw-bold">
-                    <a href="{{ path('app_front_device_daily', {'device': 'podlogowka-zasilanie'}) }}" class="text-secondary">
-                        Pompa - zasilanie
-                    </a>
+            <div class="col-6">
+                <div class="row align-items-center my-2">
+                    <div class="col text-end">
+                        <div class="fw-bolder fs-3">{{heatingPump.return.power }} W</div>
+                        <div class="text-secondary text-capitalize fw-bold">
+                            <a href="{{ path('app_front_device_daily', {'device': 'podlogowka-powrot'}) }}" class="text-secondary">
+                                Powrót
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="{{ heatingPump.return.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row align-items-center my-2">
-            <div class="col-auto">
-                <span class="{{ heatingPump.return.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
-            </div>
-            <div class="col">
-                <div class="fw-bolder fs-3">{{heatingPump.return.power }} W</div>
-                <div class="text-secondary text-capitalize fw-bold">
-                    <a href="{{ path('app_front_device_daily', {'device': 'podlogowka-powrot'}) }}" class="text-secondary">
-                        Pompa - powrót
-                    </a>
-                </div>
+        <div class="row">
+            <div class="col-12 mt-2">
+                <button type="button" class="btn btn-6 btn-azure w-100" data-bs-toggle="modal" data-bs-target="#heatingControllerModal">
+                    <span>Sterowanie</span>
+                </button>
             </div>
         </div>
     </div>
