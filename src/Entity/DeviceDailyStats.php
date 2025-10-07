@@ -50,11 +50,11 @@ class DeviceDailyStats
     public function __construct(
         string             $device,
         DateTimeInterface  $date,
-        ?float             $energy = null,
-        ?int               $inclusions = null,
-        ?int               $longestRunTime = null,
-        ?int               $longestPauseTime = null,
-        ?int               $totalActiveTime = null,
+        ?float             $energy = 0,
+        ?int               $inclusions = 0,
+        ?int               $longestRunTime = 0,
+        ?int               $longestPauseTime = 0,
+        ?int               $totalActiveTime = 0,
         ?DateTimeInterface $firstSeenAt = null,
         ?DateTimeInterface $lastSeenAt = null
     ) {
