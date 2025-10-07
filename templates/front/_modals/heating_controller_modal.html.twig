@@ -12,14 +12,25 @@
                         Możesz ustawić czas włączenia i wyłączenia ogrzewania. Jeśli pozostawisz pola puste włączenie nastąpi automatycznie
                     </div>
                     <div class="row my-5 justify-content-center">
-                        <div class="col-md-5 col-12">
-                            <label class="form-label" for="heating_start">Włączenie</label>
-                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_start" name="heating_start_on">
-                        </div>
-                        <div class="col-md-5 col-12">
-                            <label class="form-label" for="heating_end">Wyłączenie</label>
-                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_end" name="heating_end_on">
-                        </div>
+                        {% if isHeatingActive %}
+                            <div class="col-md-5 col-12">
+                                <label class="form-label" for="heating_send">Wyłączenie</label>
+                                <input type="datetime-local" class="form-control mb-2" id="heating_end" name="heating_end_on" min="{{ "now"|date('Y-m-d H:i') }}">
+                            </div>
+                            <div class="col-md-5 col-12">
+                                <label class="form-label" for="heating_start">Ponowne włączenie</label>
+                                <input type="datetime-local" class="form-control mb-2" id="heating_start" name="heating_start_on">
+                            </div>
+                        {% else %}
+                            <div class="col-md-5 col-12">
+                                <label class="form-label" for="heating_start">Włączenie</label>
+                                <input type="datetime-local" class="form-control mb-2" id="heating_start" name="heating_start_on" min="{{ "now"|date('Y-m-d H:i') }}">
+                            </div>
+                            <div class="col-md-5 col-12">
+                                <label class="form-label" for="heating_end">Wyłączenie</label>
+                                <input type="datetime-local" class="form-control mb-2" id="heating_end" name="heating_end_on">
+                            </div>
+                        {% endif %}
                     </div>
                     <button type="submit"
                             class="btn btn-success btn-4 w-75 mb-3"
