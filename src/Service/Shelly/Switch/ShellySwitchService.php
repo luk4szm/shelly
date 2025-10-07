@@ -11,6 +11,11 @@ readonly class ShellySwitchService extends ShellyDeviceService
         return $this->curlRequest->switch($deviceId, $channel, $action);
     }
 
+    public function switchGroup(array $deviceIds, string $action): array
+    {
+        return $this->curlRequest->switchGroup($deviceIds, $action);
+    }
+
     public function getStatus(string $deviceId): array
     {
         return $this->curlRequest->getStatus($deviceId);

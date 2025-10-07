@@ -6,27 +6,31 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <form method="post" action="" class="text-center">
+                <form method="post" action="{{ path('app_device_heating_pump_index') }}" class="text-center">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('heating_pump_controller') }}" />
                     <div class="mb-4">
                         Możesz ustawić czas włączenia i wyłączenia ogrzewania. Jeśli pozostawisz pola puste włączenie nastąpi automatycznie
                     </div>
                     <div class="row my-5 justify-content-center">
                         <div class="col-md-5 col-12">
                             <label class="form-label" for="heating_start">Włączenie</label>
-                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_start">
+                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_start" name="heating_start_on">
                         </div>
                         <div class="col-md-5 col-12">
                             <label class="form-label" for="heating_end">Wyłączenie</label>
-                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_end">
+                            <input type="datetime-local" class="form-control mb-2" step="300" id="heating_end" name="heating_end_on">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success btn-4 w-75 mb-3">
-                        Ustaw włączenie
+                    <button type="submit"
+                            class="btn btn-success btn-4 w-75 mb-3"
+                            name="heating_action"
+                            value="{{ isHeatingActive ? 'turn-off' : 'turn-on' }}">
+                        {{ isHeatingActive ? 'Wyłącz ogrzewanie natychmiast' : 'Włącz ogrzewanie natychmiast' }}
                     </button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Zamknij okno</button>
+                <button type="button" class="btn" data-bs-dismiss="modal">Zamknij okno</button>
             </div>
         </div>
     </div>

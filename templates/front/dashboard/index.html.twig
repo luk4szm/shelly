@@ -51,7 +51,7 @@
 {% endblock %}
 
 {% block modals %}
-    {% include 'front/_modals/heating_controller_modal.html.twig' %}
+    {% include 'front/_modals/heating_controller_modal.html.twig' with {'isHeatingActive': heatingPump.supply.active and heatingPump.return.active} %}
     {% include 'front/_modals/wheather_table_modal.html.twig' %}
     {% include 'front/_modals/wheather_meteogram_modal.html.twig' %}
     {% include 'front/_modals/wheather_card_modal.html.twig' %}

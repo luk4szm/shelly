@@ -11,6 +11,7 @@ class ShellyCloudCurlRequest extends Curl
 
     /**
      * @param string             $deviceId
+     * @param int                $channel
      * @param string{"on"|"off"} $action
      * @return array
      */
@@ -24,6 +25,30 @@ class ShellyCloudCurlRequest extends Curl
                 "channel" => $channel,
                 "on"      => $action === 'on',
 //                "toggle_after": 5; // After how many seconds, the state should be set to opposite the value of "on"
+            ]
+        );
+    }
+
+    /**
+     * @@deprecated  something is wrong with this request. The verse is correct, but the device does not turn on.
+     * Use individual requests instead of the following
+     *
+     * @see https://shelly-api-docs.shelly.cloud/cloud-control-api/communication-v2#control-device-groups
+     * @param array  $deviceIds List of <ID>_<CHANNEL> (channel defaults to 0 if not included)
+     * @param string $action
+     * @return array
+     */
+    public function switchGroup(array $deviceIds, string $action): array
+    {
+        return $this->request(
+            self::METHOD,
+            sprintf("%s/set/groups?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
+            json: [
+                "ids"     => $deviceIds,
+                "command" => [
+                    "on" => $action === 'on',
+//                    "toggle_after" => 5; // After how many seconds, the state should be set to opposite the value of "on"
+                ],
             ]
         );
     }
