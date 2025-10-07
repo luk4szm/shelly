@@ -35,11 +35,11 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
     {
         $this->getDailyHooks($date);
 
-        if (empty($this->hooks)) {
-            throw new \RuntimeException(sprintf('No data to process for device %s in %s', $this->getDeviceName(), $date->format('Y-m-d')));
-        }
-
         $dailyStats = new DeviceDailyStats($this->getDeviceName(), $date);
+
+        if (empty($this->hooks)) {
+           return $dailyStats;
+        }
 
         $activeTime       = 0; // seconds
         $runTime          = 0; // seconds
