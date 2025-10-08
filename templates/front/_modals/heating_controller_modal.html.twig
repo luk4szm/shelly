@@ -11,6 +11,18 @@
                     <div class="mb-4">
                         Możesz ustawić czas włączenia i wyłączenia ogrzewania. Jeśli pozostawisz pola puste włączenie nastąpi automatycznie
                     </div>
+                    {% if scheduledProcesses.heatingTurnOn %}
+                        <div class="alert alert-warning alert-dismissible alert-solid alert-label-icon fade show" role="alert">
+                            <i class="ri-check-fill label-icon"></i>
+                            <strong>Zaplanowane włączenie ogrzewania!</strong> [{{ scheduledProcesses.heatingTurnOn.scheduledAt|date("d.m.Y H:i") }}]
+                        </div>
+                    {% endif %}
+                    {% if scheduledProcesses.heatingTurnOff %}
+                        <div class="alert alert-warning alert-dismissible alert-solid alert-label-icon fade show justify-content-center" role="alert">
+                            <i class="ri-check-fill label-icon"></i>
+                            <strong>Zaplanowane wyłączenie ogrzewania!</strong> [{{ scheduledProcesses.heatingTurnOff.scheduledAt|date("d.m.Y H:i") }}]
+                        </div>
+                    {% endif %}
                     <div class="row my-5 justify-content-center">
                         {% if isHeatingActive %}
                             <div class="col-md-5 col-12">

@@ -4,11 +4,14 @@ namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\HookRepository;
+use App\Repository\Process\ScheduledProcessRepository;
 use App\Repository\WeatherForecastRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\Device\HeatingPumpService;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
+use App\Service\Processable\TurnOffHeatingProcess;
+use App\Service\Processable\TurnOnHeatingProcess;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +26,7 @@ final class DashboardController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
         HeatingPumpService                                              $heatingPumpService,
+        ScheduledProcessRepository                                      $scheduledProcessRepository,
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
@@ -68,6 +72,10 @@ final class DashboardController extends AbstractController
             'heatingPump' => [
                 'supply' => $heatingPumpService->getActualState('pompa-zasilanie'),
                 'return' => $heatingPumpService->getActualState('pompa-powrot'),
+            ],
+            'scheduledProcesses' => [
+                'heatingTurnOn'  => $scheduledProcessRepository->findNextProcessToExecute(TurnOnHeatingProcess::NAME),
+                'heatingTurnOff' => $scheduledProcessRepository->findNextProcessToExecute(TurnOffHeatingProcess::NAME),
             ],
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],

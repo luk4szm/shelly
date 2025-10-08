@@ -25,4 +25,18 @@ class ScheduledProcessRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findNextProcessToExecute(string $name): ?ScheduledProcess
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.scheduledAt > :now')
+            ->andWhere('p.executedAt IS NULL')
+            ->setParameter('now', new \DateTime())
+            ->andWhere('p.name = :name')
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->orderBy('p.scheduledAt', 'ASC')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
