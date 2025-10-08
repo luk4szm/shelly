@@ -22,7 +22,6 @@
     }
 
     function parseLocalDateTime(value) {
-        // value w formacie "YYYY-MM-DDTHH:MM" (datetime-local)
         if (!value) return null;
         var parts = value.split('T');
         if (parts.length !== 2) return null;
@@ -30,7 +29,7 @@
         var time = parts[1].split(':');
         if (date.length !== 3 || time.length < 2) return null;
         var year = parseInt(date[0], 10);
-        var month = parseInt(date[1], 10) - 1; // 0-based
+        var month = parseInt(date[1], 10) - 1;
         var day = parseInt(date[2], 10);
         var hour = parseInt(time[0], 10);
         var minute = parseInt(time[1], 10);
@@ -39,7 +38,6 @@
     }
 
     function toLocalDateTimeValue(d) {
-        // Zwraca "YYYY-MM-DDTHH:MM" w lokalnej strefie
         var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
         var y = d.getFullYear();
         var m = pad(d.getMonth() + 1);
@@ -49,16 +47,7 @@
         return y + '-' + m + '-' + day + 'T' + h + ':' + min;
     }
 
-    function clampSecondToMin(secondEl, minStr) {
-        if (!secondEl) return;
-        secondEl.min = minStr || '';
-        if (!secondEl.value) return;
-        if (minStr && secondEl.value < minStr) {
-            secondEl.value = minStr;
-        }
-    }
-
-    function inputsOrder(modalRoot) {
+    function getInputsOrder(modalRoot) {
         var inputs = qsa('input#heating_start, input#heating_end', modalRoot);
         if (inputs.length < 2) {
             return { first: inputs[0] || null, second: null };
@@ -76,6 +65,7 @@
 
         var startInput = qs('#heating_start', modalRoot);
         var endInput = qs('#heating_end', modalRoot);
+
         var inputs = [startInput, endInput];
 
         function applyButtonState() {
@@ -89,8 +79,32 @@
             }
         }
 
+        function updateSecondMinOnly(first, second) {
+            var firstDate = parseLocalDateTime(first.value);
+            if (!firstDate) {
+                second.min = '';
+                return null;
+            }
+            firstDate.setMinutes(firstDate.getMinutes() + 1);
+            var minStr = toLocalDateTimeValue(firstDate);
+            second.min = minStr;
+            return { minDate: firstDate, minStr: minStr };
+        }
+
+        function maybeClampSecondValue(second, minInfo) {
+            if (!minInfo) return;
+            if (!second.value) return;
+            var secondDate = parseLocalDateTime(second.value);
+            if (!secondDate) return;
+
+            if (secondDate.getTime() < minInfo.minDate.getTime()) {
+                // korekta TYLKO na change/blur
+                second.value = minInfo.minStr;
+            }
+        }
+
         function applyDisablingAndMinRule() {
-            var order = inputsOrder(modalRoot);
+            var order = getInputsOrder(modalRoot);
             var first = order.first;
             var second = order.second;
             if (!first || !second) return;
@@ -99,16 +113,9 @@
             second.disabled = !firstHasValue;
 
             if (firstHasValue) {
-                var firstDate = parseLocalDateTime(first.value);
-                if (firstDate) {
-                    // +1 minuta
-                    firstDate.setMinutes(firstDate.getMinutes() + 1);
-                    var minForSecond = toLocalDateTimeValue(firstDate);
-                    clampSecondToMin(second, minForSecond);
-                }
+                updateSecondMinOnly(first, second);
             } else {
-                // Gdy pierwszy jest pusty, czyścimy ograniczenie min i blokujemy drugi
-                clampSecondToMin(second, '');
+                second.min = '';
             }
         }
 
@@ -117,12 +124,56 @@
             applyDisablingAndMinRule();
         }
 
+        // Listeners:
+        // 1) Pierwsze pole – pełna reakcja (min + blokada + ewentualna korekta drugiego na change/blur)
+        if (startInput) {
+            ['input', 'change'].forEach(function (evt) {
+                startInput.addEventListener(evt, function () {
+                    // aktualizuj min i stan przycisku/disabled
+                    applyButtonState();
+                    var order = getInputsOrder(modalRoot);
+                    if (!order.first || !order.second) return;
+                    var minInfo = updateSecondMinOnly(order.first, order.second);
+
+                    // na "input" NIE korygujemy wartości drugiego, aby nie kasować wpisywania
+                    if (evt === 'change') {
+                        maybeClampSecondValue(order.second, minInfo);
+                    }
+
+                    // zaktualizuj disabled po zmianie
+                    order.second.disabled = !(order.first.value && order.first.value.trim().length > 0);
+                }, { passive: true });
+            });
+        }
+
+        // 2) Drugie pole – nie wymuszamy wartości podczas pisania
+        if (endInput) {
+            // Podczas wpisywania – tylko aktualizacja stanu przycisku
+            ['input', 'keyup'].forEach(function (evt) {
+                endInput.addEventListener(evt, function () {
+                    applyButtonState();
+                    // brak klampowania tutaj
+                }, { passive: true });
+            });
+
+            // Na change/blur – jeśli poniżej min, podnieś do min
+            ['change', 'blur'].forEach(function (evt) {
+                endInput.addEventListener(evt, function () {
+                    var order = getInputsOrder(modalRoot);
+                    if (!order.first || !order.second) return;
+                    var minInfo = updateSecondMinOnly(order.first, order.second);
+                    maybeClampSecondValue(order.second, minInfo);
+                    applyButtonState();
+                }, { passive: true });
+            });
+        }
+
+        // 3) Ogólne – na wypadek czyszczenia pól, „search” bywa emitowane
         inputs.forEach(function (el) {
             if (!el) return;
-            ['input', 'change', 'keyup', 'blur'].forEach(function (evt) {
-                el.addEventListener(evt, applyAll, { passive: true });
-            });
-            el.addEventListener('search', applyAll, { passive: true });
+            el.addEventListener('search', function () {
+                applyAll();
+            }, { passive: true });
         });
 
         // Inicjalna synchronizacja
