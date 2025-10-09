@@ -18,7 +18,7 @@ class TurnOffHeatingProcess extends AbstractProcess implements AbstractProcessab
 
     public function process(Process $process): void
     {
-        $this->pumpsService->turnOn();
+        $this->pumpsService->turnOff();
 
         /** @var ScheduledProcess $process */
         $process->setExecutedAt(new \DateTimeImmutable());
