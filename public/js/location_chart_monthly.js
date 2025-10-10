@@ -1,29 +1,18 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const chartElement = document.getElementById('location-chart');
-    const datePicker = document.getElementById('location_date');
-    const locationSlug = chartElement ? chartElement.dataset.locationSlug : null;
-    const chartType = chartElement ? chartElement.dataset.chartType : 'monthly';
+/**
+ * @file Skrypt do obsługi dynamicznego wykresu temperatury dla lokalizacji
+ * @author Gemini Refactor
+ * @version 2.1.0
+ */
 
-    // Przyciski nawigacji daty
-    const prevMonthBtn = document.getElementById('prev-month-btn');
-    const nextMonthBtn = document.getElementById('next-month-btn');
+// === MODUŁY POMOCNICZE ===
 
-    let chart = null;
-
-    /**
-     * Asynchroniczna funkcja do pobierania danych (temperatury i wilgotności) z backendu.
-     * @param {string} dateString - Data w formacie YYYY-MM.
-     * @param {string} slug - Identyfikator lokalizacji.
-     * @returns {Promise<Object|null>} - Obiekt z danymi lub null w przypadku błędu.
-     */
-    const fetchChartData = async (dateString, slug) => {
-        // Endpoint zwraca dane dla temperatury i wilgotności dla danej lokalizacji i daty
-        const url = `/location/${slug}/get-data?type=${chartType}&date=${dateString}`;
-
-        if (chartElement) {
-            chartElement.innerHTML = '<div class="text-center p-5">Ładowanie danych...</div>';
-        }
-
+/**
+ * @namespace apiService
+ * @description Odpowiada za komunikację z API w celu pobrania danych.
+ */
+const apiService = {
+    async fetchData(slug, date, type) {
+        const url = `/location/${slug}/get-data?type=${type}&date=${date}`;
         try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -31,445 +20,372 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return await response.json();
         } catch (error) {
-            console.error(`Nie udało się pobrać danych dla lokalizacji "${slug}" i daty ${dateString}:`, error);
-            if (chartElement) {
-                chartElement.innerHTML = `<div class="text-center p-5 text-danger">Wystąpił błąd podczas ładowania danych.</div>`;
-            }
+            console.error(`Nie udało się pobrać danych dla lokalizacji "${slug}" i daty ${date}:`, error);
             return null;
         }
-    };
+    }
+};
 
-    /**
-     * Przekształca surowe dane na format wymagany przez ApexCharts dla wykresu rangeBar.
-     * @param {Object} rawData - Surowe dane z backendu (np. { "temperature": [...], "humidity": [...] }).
-     * @returns {{series: Array<Object>}} - Obiekt z seriami danych.
-     */
-    const transformDataForChart = (rawData) => {
-        const prettyName = (key) => {
-            const map = {
-                temperature: 'Temperatura',
-                humidity: 'Wilgotność',
-                pressure: 'Ciśnienie',
-            };
-            if (map[key]) return map[key];
-            // Fallback: humanizuj klucz
-            return key
-                .replace(/_/g, ' ')
-                .replace(/\btemp(erature)?\b/i, 'Temperatura')
-                .replace(/\bhumidity\b/i, 'Wilgotność')
-                .replace(/\bpressure\b/i, 'Ciśnienie');
-        };
+/**
+ * @namespace dataProcessor
+ * @description Przetwarza surowe dane z API, filtrując tylko dane o temperaturze.
+ */
+const dataProcessor = {
+    SERIES_TYPES: {
+        TEMPERATURE: 'temperature',
+        HUMIDITY: 'humidity', // Pozostawione do identyfikacji i odfiltrowania
+        PRESSURE: 'pressure',
+        GENERIC: 'generic',
+    },
 
-        const detectType = (key) => {
-            const k = key.toLowerCase();
-            if (k.includes('temp')) return 'temperature';
-            if (k.includes('humid')) return 'humidity';
-            if (k.includes('press')) return 'pressure';
-            return 'generic';
-        };
+    SERIES_NAMES: {
+        temperature: 'Temperatura',
+        pressure: 'Ciśnienie',
+    },
 
+    _detectType(key) {
+        const k = key.toLowerCase();
+        if (k.includes('temp')) return this.SERIES_TYPES.TEMPERATURE;
+        if (k.includes('humid')) return this.SERIES_TYPES.HUMIDITY;
+        if (k.includes('press')) return this.SERIES_TYPES.PRESSURE;
+        return this.SERIES_TYPES.GENERIC;
+    },
+
+    _getPrettyName(key) {
+        return this.SERIES_NAMES[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    },
+
+    process(rawData) {
         const chartSeries = [];
         const seriesTypes = [];
-        let tempAvgPoints = [];
 
         for (const key of Object.keys(rawData)) {
-            const dataPoints = rawData[key] || [];
-            const t = detectType(key);
-            const seriesData = dataPoints.map(point => ({
-                x: point.date, // 'YYYY-MM-DD'
-                y: [parseFloat(point.min), parseFloat(point.max)] // KONWERSJA NA LICZBY
-            }));
+            const type = this._detectType(key);
 
-            // Jeśli to seria temperatury i punkty mają 'avg', zbuduj serię liniową dla średniej
-            if (t === 'temperature') {
-                const avgCandidates = dataPoints
-                    .filter(p => typeof p.avg !== 'undefined' && p.avg !== null && !isNaN(parseFloat(p.avg)))
-                    .map(p => ({ x: p.date, y: parseFloat(p.avg) })); // KONWERSJA NA LICZBY
-                if (avgCandidates.length > 0) {
-                    tempAvgPoints = avgCandidates;
-                }
+            // IGNOROWANIE SERII INNYCH NIŻ TEMPERATURA
+            if (type !== this.SERIES_TYPES.TEMPERATURE) {
+                continue; // Pomiń tę serię danych
             }
 
-            chartSeries.push({
-                name: prettyName(key),
-                data: seriesData
-            });
-            seriesTypes.push(t);
-        }
+            const dataPoints = rawData[key] || [];
+            if (dataPoints.length === 0) continue;
 
-        // Dodaj linię średniej temperatury jako osobną serię (przerywana)
-        if (tempAvgPoints.length > 0) {
+            // Dane tylko dla zakresów min/max
+            const seriesData = dataPoints.map(p => ({
+                x: p.date,
+                y: [parseFloat(p.min), parseFloat(p.max)],
+            }));
+
             chartSeries.push({
-                name: 'Temperatura (średnia)',
-                data: tempAvgPoints,
-                type: 'line',
-                _isAvg: true, // niestandardowa flaga do stylowania (zignorowana przez ApexCharts)
+                name: this._getPrettyName(key),
+                data: seriesData,
+                type: 'rangeBar'
             });
-            seriesTypes.push('temperature'); // mapuj na oś temperatury
+            seriesTypes.push(type);
         }
 
         return { series: chartSeries, types: seriesTypes };
-    };
+    }
+};
+
+/**
+ * @namespace chartConfigBuilder
+ * @description Tworzy kompletną konfigurację dla instancji ApexCharts.
+ */
+const chartConfigBuilder = {
+    PALETTE: [
+        "var(--tblr-red)", "var(--tblr-blue)", "var(--tblr-green)",
+        "var(--tblr-orange)", "var(--tblr-cyan)", "var(--tblr-indigo)"
+    ],
+
+    _unitFormatter(val, type) {
+        if (val === null || typeof val === 'undefined') return '';
+        const numVal = Number(val);
+        if (isNaN(numVal)) return String(val);
+
+        switch (type) {
+            case dataProcessor.SERIES_TYPES.TEMPERATURE: return `${numVal.toFixed(1)}°C`;
+            case dataProcessor.SERIES_TYPES.PRESSURE:    return `${numVal.toFixed(2)} bar`;
+            default:                                     return numVal.toString();
+        }
+    },
 
     /**
-     * Główna funkcja, która pobiera dane i renderuje lub aktualizuje wykres.
-     * @param {string} dateString - Data w formacie YYYY-MM.
-     * @param {string} slug - Identyfikator lokalizacji.
+     * @private
+     * @description Znajduje minimalną i maksymalną wartość dla danego typu serii.
      */
-    const loadAndRenderChart = async (dateString, slug) => {
-        if (!dateString || !slug) {
-            console.error("Nie podano daty lub lokalizacji do załadowania wykresu.");
-            return;
-        }
+    _findMinMax(series, types, targetType) {
+        let globalMin = Infinity;
+        let globalMax = -Infinity;
 
-        const rawData = await fetchChartData(dateString, slug);
-
-        if (!rawData || Object.keys(rawData).length === 0 || Object.values(rawData).every(arr => arr.length === 0)) {
-            if (chart) {
-                chart.destroy();
-                chart = null;
+        series.forEach((s, index) => {
+            if (types[index] === targetType) {
+                s.data.forEach(p => {
+                    if (Array.isArray(p.y) && p.y.length === 2) {
+                        const min = p.y[0];
+                        const max = p.y[1];
+                        if (min < globalMin) globalMin = min;
+                        if (max > globalMax) globalMax = max;
+                    }
+                });
             }
-            chartElement.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia dla wybranego miesiąca.</div>';
-            return;
+        });
+
+        // Jeśli nie znaleziono danych, zwracamy null
+        if (globalMin === Infinity || globalMax === -Infinity) {
+            return { min: null, max: null };
         }
 
-        const chartData = transformDataForChart(rawData);
+        // Dodanie bufora 1 stopnia
+        return {
+            min: Math.floor(globalMin - 1), // Zaokrąglenie w dół dla bezpiecznego marginesu
+            max: Math.ceil(globalMax + 1)  // Zaokrąglenie w górę dla bezpiecznego marginesu
+        };
+    },
 
-        // Przygotuj dynamiczne ustawienia dla serii
-        const seriesCount = chartData.series.length;
-        const types = chartData.types || [];
+    _buildYAxes(processedData) {
+        const { series, types } = processedData;
+        const yAxesConfig = [];
+        const assignedTypes = new Set();
 
-        // Wyznacz globalny zakres dla wszystkich serii temperatury (ujednolicona skala Y)
-        let tempAllValues = [];
-        let humidityAllValues = [];
-        chartData.series.forEach((s, idx) => {
-            const t = types[idx];
-            (s.data || []).forEach(point => {
-                if (point && Array.isArray(point.y)) {
-                    const vmin = point.y[0];
-                    const vmax = point.y[1];
-                    if (typeof vmin === 'number' && !isNaN(vmin)) {
-                        if (t === 'temperature') tempAllValues.push(vmin);
-                        if (t === 'humidity') humidityAllValues.push(vmin);
+        // Obliczanie zakresu dla temperatury
+        const tempRange = this._findMinMax(series, types, dataProcessor.SERIES_TYPES.TEMPERATURE);
+
+        const typeToAxisMap = {
+            // Dodano min/max do konfiguracji osi Y dla temperatury
+            [dataProcessor.SERIES_TYPES.TEMPERATURE]: {
+                title: { text: 'Temperatura' },
+                min: tempRange.min,
+                max: tempRange.max,
+            },
+            [dataProcessor.SERIES_TYPES.PRESSURE]:    { title: { text: 'Ciśnienie' }, opposite: true },
+        };
+
+        types.forEach((type, index) => {
+            if (assignedTypes.has(type) || !typeToAxisMap[type]) return;
+
+            const seriesNamesForType = series
+                .filter((_, i) => types[i] === type)
+                .map(s => s.name);
+
+            yAxesConfig.push({
+                ...typeToAxisMap[type],
+                seriesName: seriesNamesForType,
+                labels: { formatter: (val) => this._unitFormatter(val, type) },
+            });
+            assignedTypes.add(type);
+        });
+
+        return yAxesConfig.length > 0 ? yAxesConfig : [{}];
+    },
+
+    _buildTooltip(processedData) {
+        return {
+            theme: "dark",
+            x: { format: 'dd MMM yyyy' },
+            y: {
+                formatter: (val, opts) => {
+                    if (!opts || typeof opts.seriesIndex === 'undefined') {
+                        return this._unitFormatter(val, 'generic');
                     }
-                    if (typeof vmax === 'number' && !isNaN(vmax)) {
-                        if (t === 'temperature') tempAllValues.push(vmax);
-                        if (t === 'humidity') humidityAllValues.push(vmax);
+
+                    const { seriesIndex, dataPointIndex, w } = opts;
+                    const type = processedData.types[seriesIndex];
+                    const dataPoint = w.config.series[seriesIndex].data[dataPointIndex];
+
+                    if (dataPoint && Array.isArray(dataPoint.y)) {
+                        const min = this._unitFormatter(dataPoint.y[0], type);
+                        const max = this._unitFormatter(dataPoint.y[1], type);
+                        return `${min} &mdash; ${max}`;
                     }
-                    if (typeof vmax === 'string' && !isNaN(vmax)) {
-                        if (t === 'temperature') tempAllValues.push(parseInt(vmax));
-                        if (t === 'humidity') humidityAllValues.push(parseInt(vmax));
-                    }
+                    return this._unitFormatter(val, type);
                 }
-            });
-        });
-
-        const hasTemps = tempAllValues.length > 0;
-        const tempMinRaw = hasTemps ? Math.min(...tempAllValues) : null;
-        const tempMaxRaw = hasTemps ? Math.max(...tempAllValues) : null;
-        // Dodaj niewielki bufor do zakresu
-        const tempMinUnified = hasTemps ? Math.floor(tempMinRaw - 2) : 0;
-        const tempMaxUnified = hasTemps ? Math.ceil(tempMaxRaw + 2) : 40;
-
-        // Wyznacz globalny zakres dla wilgotności (stabilna skala dla wąskich zakresów)
-        const hasHum = humidityAllValues.length > 0;
-        let humMin = hasHum ? Math.min(...humidityAllValues) : 0;
-        let humMax = hasHum ? Math.max(...humidityAllValues) : 100;
-        // Zabezpieczenie przed zbyt małą rozpiętością: min. 2 pp
-        if (hasHum && humMax - humMin < 2) {
-            const mid = (humMax + humMin) / 2;
-            humMin = mid - 1;
-            humMax = mid + 1;
-        }
-        // Dodaj niewielki bufor i ogranicz do [0, 100]
-        if (hasHum) {
-            humMin = Math.max(0, Math.floor(humMin - 2));
-            humMax = Math.min(100, Math.ceil(humMax + 2));
-        }
-
-        const palette = [
-            "var(--tblr-red)",
-            "var(--tblr-blue)",
-            "var(--tblr-green)",
-            "var(--tblr-orange)",
-            "var(--tblr-cyan)",
-            "var(--tblr-indigo)",
-            "var(--tblr-teal)",
-            "var(--tblr-yellow)",
-            "var(--tblr-pink)",
-            "var(--tblr-purple)",
-        ];
-
-        const colors = Array.from({ length: seriesCount }, (_, i) => palette[i % palette.length]);
-
-        const unitFormat = (val, type) => {
-            if (val === null || typeof val === 'undefined' || isNaN(val)) return '';
-            switch (type) {
-                case 'temperature':
-                    return `${val.toFixed(1)}°C`;
-                case 'humidity':
-                    return `${val.toFixed(0)}%`;
-                case 'pressure':
-                    return `${val.toFixed(2)} bar`;
-                default:
-                    return String(val);
             }
         };
+    },
 
-        const axisForType = (type) => {
-            if (type === 'temperature') {
-                return {
-                    title: { text: 'Temperatura' },
-                    labels: { formatter: (value) => unitFormat(value, 'temperature') },
-                    max: tempMaxUnified,
-                    min: tempMinUnified,
-                };
-            }
-            if (type === 'humidity') {
-                return {
-                    title: { text: 'Wilgotność' },
-                    opposite: true,
-                    max: hasHum ? humMax : 100,
-                    min: hasHum ? humMin : 0,
-                    labels: { formatter: (value) => unitFormat(value, 'humidity') },
-                };
-            }
-            if (type === 'pressure') {
-                return {
-                    title: { text: 'Ciśnienie [bar]' },
-                    opposite: true,
-                    max: 3,
-                    min: 0,
-                    labels: { formatter: (value) => unitFormat(value, 'pressure') },
-                };
-            }
-            return {
-                labels: { formatter: (value) => unitFormat(value, 'generic') },
-            };
-        };
+    build(processedData) {
+        const seriesCount = processedData.series.length;
 
-        // Deduplicate temperature axis: one shared temp axis mapped to all temperature series
-        // Build yaxis configuration with proper series mapping
-        let yaxes = [];
-
-        const tempIndices = [];
-        const humidityIndices = [];
-        const pressureIndices = [];
-        const genericIndices = [];
-
-        chartData.series.forEach((s, i) => {
-            const t = types[i];
-            if (t === 'temperature') tempIndices.push(i);
-            else if (t === 'humidity') humidityIndices.push(i);
-            else if (t === 'pressure') pressureIndices.push(i);
-            else genericIndices.push(i);
-        });
-
-        // Temperatura: wspólna oś dla wszystkich serii temperatury
-        if (tempIndices.length > 0) {
-            yaxes.push({
-                ...axisForType('temperature'),
-                seriesName: tempIndices.map(i => chartData.series[i].name)
-            });
-        }
-
-        // Wilgotność: wspólna oś dla wszystkich serii wilgotności
-        if (humidityIndices.length > 0) {
-            yaxes.push({
-                ...axisForType('humidity'),
-                seriesName: humidityIndices.map(i => chartData.series[i].name)
-            });
-        }
-
-        // Ciśnienie: wspólna oś dla wszystkich serii ciśnienia
-        if (pressureIndices.length > 0) {
-            yaxes.push({
-                ...axisForType('pressure'),
-                seriesName: pressureIndices.map(i => chartData.series[i].name)
-            });
-        }
-
-        // Generic: każda seria dostaje własną oś
-        genericIndices.forEach((idx) => {
-            yaxes.push({
-                ...axisForType('generic'),
-                seriesName: chartData.series[idx].name
-            });
-        });
-
-        // Fallback: if for some reason no axes were added, keep a default generic axis
-        if (yaxes.length === 0) {
-            yaxes = [{ labels: { formatter: (v) => unitFormat(v, 'generic') } }];
-        }
-
-        // Upewnij się, że wszystkie serie mają zdefiniowany typ
-        const seriesWithTypes = chartData.series.map((s, idx) => {
-            return {
-                ...s,
-                type: s.type || 'rangeBar' // domyślnie rangeBar
-            };
-        });
-
-        const options = {
+        return {
+            series: processedData.series,
             chart: {
                 type: "rangeBar",
                 fontFamily: "inherit",
                 height: 400,
-                parentHeightOffset: 0,
                 toolbar: { show: false },
                 animations: { enabled: true },
             },
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '80%',
-                }
-            },
-            series: seriesWithTypes,
+            plotOptions: { bar: { horizontal: false, columnWidth: '80%' } },
+            dataLabels: { enabled: false },
+            colors: processedData.series.map((_, i) => this.PALETTE[i % this.PALETTE.length]),
             stroke: {
-                // 0 dla słupków (rangeBar), 2 dla linii
-                width: seriesWithTypes.map(s => (s.type === 'line' ? 2 : 0)),
-                // przerywana linia tylko dla serii średniej
-                dashArray: seriesWithTypes.map(s => (s._isAvg ? 6 : 0)),
+                // Uproszczono: tylko 0 dla rangeBar, brak logiki dla linii
+                width: 0,
+                dashArray: 0,
                 curve: 'straight',
             },
-            markers: {
-                size: 0,
-                hover: { size: 0 },
-                strokeWidth: 0
-            },
-            tooltip: {
-                theme: "dark",
-                x: { format: 'dd MMM yyyy' },
-                y: {
-                    formatter: function(val, opts) {
-                        // Zabezpieczenie przed undefined
-                        if (!opts || !opts.w || !opts.w.config) {
-                            return unitFormat(val, 'generic');
-                        }
-
-                        const idx = opts.seriesIndex ?? 0;
-                        const type = types[idx] || 'generic';
-                        const series = opts.w.config.series[idx];
-
-                        // Zabezpieczenie przed undefined dataPointIndex
-                        if (typeof opts.dataPointIndex === 'undefined' || !series || !series.data) {
-                            return unitFormat(val, type);
-                        }
-
-                        const dataPoint = series.data[opts.dataPointIndex];
-
-                        // Dla rangeBar (słupków z zakresem) - wyświetl min-max
-                        if (dataPoint && Array.isArray(dataPoint.y)) {
-                            const min = unitFormat(dataPoint.y[0], type);
-                            const max = unitFormat(dataPoint.y[1], type);
-                            return `${min} &mdash; ${max}`;
-                        }
-
-                        // Fallback (np. dla linii średniej)
-                        return unitFormat(val, type);
-                    }
-                }
-            },
-            grid: {
-                padding: { top: -20, right: 0, left: -4, bottom: -4 },
-                strokeDashArray: 4,
-                xaxis: { lines: { show: true } }
-            },
-            dataLabels: { enabled: false },
             xaxis: {
                 type: 'datetime',
-                labels: {
-                    padding: 0,
-                    format: 'dd',
-                    datetimeUTC: false,
-                },
-                tooltip: { enabled: false },
+                labels: { format: 'dd', datetimeUTC: false },
+                tooltip: { enabled: false }
             },
-            yaxis: yaxes,
-            colors: colors,
+            yaxis: this._buildYAxes(processedData), // Tutaj przekazywana jest nowa konfiguracja
+            tooltip: this._buildTooltip(processedData),
+            grid: {
+                padding: { top: -20, right: 0, left: -4, bottom: -4 },
+                strokeDashArray: 4
+            },
             legend: {
                 show: seriesCount > 1,
                 position: 'bottom',
                 horizontalAlign: 'center'
             },
         };
+    }
+};
 
-        chartElement.innerHTML = "";
 
-        if (chart === null) {
-            chart = new ApexCharts(chartElement, options);
-            chart.render();
-        } else {
-            chart.updateOptions(options);
+/**
+ * @class LocationChartManager
+ * @description Główna klasa zarządzająca logiką wykresu na stronie.
+ */
+class LocationChartManager {
+    constructor(options) {
+        this.elements = {
+            chart: document.getElementById(options.chartId),
+            datePicker: document.getElementById(options.datePickerId),
+            prevBtn: document.getElementById(options.prevBtnId),
+            nextBtn: document.getElementById(options.nextBtnId),
+        };
+
+        if (!this.elements.chart) {
+            console.error(`Nie znaleziono kontenera wykresu: #${options.chartId}`);
+            return;
         }
-    };
 
-    /**
-     * Aktualizuje stan przycisku "następny miesiąc".
-     */
-    const updateNextButtonState = () => {
+        this.locationSlug = this.elements.chart.dataset.locationSlug;
+        this.chartType = this.elements.chart.dataset.chartType || 'monthly';
+        this.chart = null;
+
+        this.validateElements();
+    }
+
+    validateElements() {
+        if (!this.locationSlug) {
+            this.showError("Brak `data-location-slug` na kontenerze wykresu.");
+            throw new Error("Błąd konfiguracji: Brak `data-location-slug`.");
+        }
+        if (!this.elements.datePicker) {
+            this.showError("Brak elementu do wyboru daty.");
+            throw new Error("Błąd konfiguracji: Brak `datePicker`.");
+        }
+    }
+
+    init() {
+        this.elements.datePicker.addEventListener('change', this.handleDateChange.bind(this));
+        if (this.elements.prevBtn) {
+            this.elements.prevBtn.addEventListener('click', () => this.changeMonth(-1));
+        }
+        if (this.elements.nextBtn) {
+            this.elements.nextBtn.addEventListener('click', () => this.changeMonth(1));
+        }
+
+        this.updateNextButtonState();
+        this.loadChart();
+    }
+
+    handleDateChange() {
+        this.updateUrl();
+        this.updateNextButtonState();
+        this.loadChart();
+    }
+
+    changeMonth(monthOffset) {
+        const currentDate = new Date(this.elements.datePicker.value + '-01T12:00:00Z');
+        currentDate.setUTCMonth(currentDate.getUTCMonth() + monthOffset);
+        this.elements.datePicker.value = currentDate.toISOString().slice(0, 7);
+        this.elements.datePicker.dispatchEvent(new Event('change'));
+    }
+
+    updateNextButtonState() {
+        if (!this.elements.nextBtn) return;
         const today = new Date();
-        const currentDate = new Date(datePicker.value + '-01'); // Użyj pierwszego dnia miesiąca do porównania
+        const pickerDate = new Date(this.elements.datePicker.value + '-01');
+        const isFuture = pickerDate.getFullYear() > today.getFullYear() ||
+            (pickerDate.getFullYear() === today.getFullYear() && pickerDate.getMonth() >= today.getMonth());
+        this.elements.nextBtn.disabled = isFuture;
+    }
 
-        const isSameOrFutureMonth = currentDate.getFullYear() > today.getFullYear() ||
-            (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() >= today.getMonth());
+    updateUrl() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', this.elements.datePicker.value);
+        window.history.pushState({ path: url.href }, '', url.href);
+    }
 
-        if (nextMonthBtn) {
-            nextMonthBtn.disabled = isSameOrFutureMonth;
-        }
-    };
+    showLoading() {
+        this.elements.chart.innerHTML = '<div class="text-center p-5">Ładowanie danych...</div>';
+    }
 
-    /**
-     * Zmienia datę w polu datePicker i odświeża wykres.
-     * @param {number} months - Liczba miesięcy do dodania/odjęcia.
-     */
-    const changeMonth = (months) => {
-        const currentDate = new Date(datePicker.value + '-01');
-        currentDate.setMonth(currentDate.getMonth() + months);
+    showNoData() {
+        this.elements.chart.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia.</div>';
+    }
 
-        const year = currentDate.getFullYear();
-        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-        datePicker.value = `${year}-${month}`;
+    showError(message = "Wystąpił błąd podczas ładowania danych.") {
+        this.elements.chart.innerHTML = `<div class="text-center p-5 text-danger">${message}</div>`;
+    }
 
-        // Ręczne wywołanie zdarzenia 'change', aby zaktualizować wykres
-        datePicker.dispatchEvent(new Event('change', { 'bubbles': true }));
-    };
+    async loadChart() {
+        this.showLoading();
 
-    // --- INICJALIZACJA ---
-    if (window.ApexCharts && datePicker && chartElement && locationSlug) {
-        // Nasłuchuj na zmiany w polu daty
-        datePicker.addEventListener('change', (event) => {
-            const newDate = event.target.value;
+        const rawData = await apiService.fetchData(
+            this.locationSlug,
+            this.elements.datePicker.value,
+            this.chartType
+        );
 
-            // Aktualizuj URL bez przeładowywania strony
-            const url = new URL(window.location.href);
-            url.searchParams.set('date', newDate);
-            window.history.pushState({path: url.href}, '', url.href);
-
-            updateNextButtonState();
-            loadAndRenderChart(newDate, locationSlug);
-        });
-
-        // Nasłuchiwanie na przyciski nawigacji
-        if (prevMonthBtn && nextMonthBtn) {
-            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
-            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+        if (!rawData || Object.keys(rawData).length === 0) {
+            if (this.chart) { this.chart.destroy(); this.chart = null; }
+            this.showNoData();
+            return;
         }
 
-        // Inicjalizacja stanu przycisku i załadowanie wykresu
-        updateNextButtonState();
-        loadAndRenderChart(datePicker.value, locationSlug);
+        const processedData = dataProcessor.process(rawData);
 
-    } else {
-        let errorMsg = "Nie można zainicjować wykresu. ";
-        if (!window.ApexCharts) errorMsg += "Brakuje biblioteki ApexCharts. ";
-        if (!chartElement) errorMsg += "Brakuje elementu #location-chart. ";
-        if (!locationSlug) errorMsg += "Brakuje atrybutu data-location-slug. ";
-        if (!datePicker) errorMsg += "Brakuje elementu #location_date. ";
-        console.error(errorMsg);
-        if(chartElement) {
-            chartElement.innerHTML = `<div class="text-center p-5 text-danger">Błąd konfiguracji strony. Skontaktuj się z administratorem.</div>`;
+        // Dodatkowy warunek sprawdzający, czy po odfiltrowaniu zostały jakieś dane
+        if (processedData.series.length === 0) {
+            if (this.chart) { this.chart.destroy(); this.chart = null; }
+            this.showNoData();
+            return;
+        }
+
+        const chartOptions = chartConfigBuilder.build(processedData);
+
+        this.elements.chart.innerHTML = '';
+
+        if (!this.chart) {
+            this.chart = new ApexCharts(this.elements.chart, chartOptions);
+            this.chart.render();
+        } else {
+            this.chart.updateOptions(chartOptions);
+        }
+    }
+}
+
+
+// --- INICJALIZACJA ---
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.ApexCharts && document.getElementById('location-chart')) {
+        try {
+            const chartManager = new LocationChartManager({
+                chartId: 'location-chart',
+                datePickerId: 'location_date',
+                prevBtnId: 'prev-month-btn',
+                nextBtnId: 'next-month-btn'
+            });
+            chartManager.init();
+        } catch (error) {
+            console.error("Inicjalizacja menedżera wykresu nie powiodła się:", error);
         }
     }
 });
