@@ -99,16 +99,31 @@
                 x: { format: 'dd MMM yyyy' },
                 y: {
                     formatter: function(val, opts) {
-                        const idx = opts?.seriesIndex ?? 0;
+                        // Zabezpieczenie przed undefined
+                        if (!opts || !opts.w || !opts.w.config) {
+                            return unitFormat(val, 'generic');
+                        }
+
+                        const idx = opts.seriesIndex ?? 0;
                         const type = types[idx] || 'generic';
                         const series = opts.w.config.series[idx];
+
+                        // Zabezpieczenie przed undefined dataPointIndex
+                        if (typeof opts.dataPointIndex === 'undefined' || !series || !series.data) {
+                            return unitFormat(val, type);
+                        }
+
                         const dataPoint = series.data[opts.dataPointIndex];
+
+                        // Dla rangeBar (słupków z zakresem) - wyświetl min-max
                         if (dataPoint && Array.isArray(dataPoint.y)) {
                             const min = unitFormat(dataPoint.y[0], type);
                             const max = unitFormat(dataPoint.y[1], type);
                             return `${min} &mdash; ${max}`;
                         }
-                        return unitFormat(val, type); // Fallback (np. dla linii średniej)
+
+                        // Fallback (np. dla linii średniej)
+                        return unitFormat(val, type);
                     }
                 }
             },

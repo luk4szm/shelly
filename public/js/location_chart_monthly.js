@@ -77,14 +77,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const t = detectType(key);
             const seriesData = dataPoints.map(point => ({
                 x: point.date, // 'YYYY-MM-DD'
-                y: [point.min, point.max]
+                y: [parseFloat(point.min), parseFloat(point.max)] // KONWERSJA NA LICZBY
             }));
 
             // Jeśli to seria temperatury i punkty mają 'avg', zbuduj serię liniową dla średniej
             if (t === 'temperature') {
                 const avgCandidates = dataPoints
-                    .filter(p => typeof p.avg === 'number' && !isNaN(p.avg))
-                    .map(p => ({ x: p.date, y: p.avg }));
+                    .filter(p => typeof p.avg !== 'undefined' && p.avg !== null && !isNaN(parseFloat(p.avg)))
+                    .map(p => ({ x: p.date, y: parseFloat(p.avg) })); // KONWERSJA NA LICZBY
                 if (avgCandidates.length > 0) {
                     tempAvgPoints = avgCandidates;
                 }
@@ -156,9 +156,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (t === 'temperature') tempAllValues.push(vmax);
                         if (t === 'humidity') humidityAllValues.push(vmax);
                     }
+                    if (typeof vmax === 'string' && !isNaN(vmax)) {
+                        if (t === 'temperature') tempAllValues.push(parseInt(vmax));
+                        if (t === 'humidity') humidityAllValues.push(parseInt(vmax));
+                    }
                 }
             });
         });
+
         const hasTemps = tempAllValues.length > 0;
         const tempMinRaw = hasTemps ? Math.min(...tempAllValues) : null;
         const tempMaxRaw = hasTemps ? Math.max(...tempAllValues) : null;
@@ -244,40 +249,66 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         // Deduplicate temperature axis: one shared temp axis mapped to all temperature series
-        // Build seriesName arrays to explicitly map each axis to its series
+        // Build yaxis configuration with proper series mapping
         let yaxes = [];
 
-        const tempSeriesNames = chartData.series
-            .map((s, i) => (types[i] === 'temperature' ? s.name : null))
-            .filter(Boolean);
-        const humiditySeriesNames = chartData.series
-            .map((s, i) => (types[i] === 'humidity' ? s.name : null))
-            .filter(Boolean);
-        const pressureSeriesNames = chartData.series
-            .map((s, i) => (types[i] === 'pressure' ? s.name : null))
-            .filter(Boolean);
-        const genericSeriesNames = chartData.series
-            .map((s, i) => (types[i] === 'generic' ? s.name : null))
-            .filter(Boolean);
+        const tempIndices = [];
+        const humidityIndices = [];
+        const pressureIndices = [];
+        const genericIndices = [];
 
-        if (tempSeriesNames.length > 0) {
-            yaxes.push({ ...axisForType('temperature'), seriesName: tempSeriesNames });
+        chartData.series.forEach((s, i) => {
+            const t = types[i];
+            if (t === 'temperature') tempIndices.push(i);
+            else if (t === 'humidity') humidityIndices.push(i);
+            else if (t === 'pressure') pressureIndices.push(i);
+            else genericIndices.push(i);
+        });
+
+        // Temperatura: wspólna oś dla wszystkich serii temperatury
+        if (tempIndices.length > 0) {
+            yaxes.push({
+                ...axisForType('temperature'),
+                seriesName: tempIndices.map(i => chartData.series[i].name)
+            });
         }
-        if (humiditySeriesNames.length > 0) {
-            yaxes.push({ ...axisForType('humidity'), seriesName: humiditySeriesNames });
+
+        // Wilgotność: wspólna oś dla wszystkich serii wilgotności
+        if (humidityIndices.length > 0) {
+            yaxes.push({
+                ...axisForType('humidity'),
+                seriesName: humidityIndices.map(i => chartData.series[i].name)
+            });
         }
-        if (pressureSeriesNames.length > 0) {
-            yaxes.push({ ...axisForType('pressure'), seriesName: pressureSeriesNames });
+
+        // Ciśnienie: wspólna oś dla wszystkich serii ciśnienia
+        if (pressureIndices.length > 0) {
+            yaxes.push({
+                ...axisForType('pressure'),
+                seriesName: pressureIndices.map(i => chartData.series[i].name)
+            });
         }
-        // Any generic series: give each its own axis
-        genericSeriesNames.forEach((name) => {
-            yaxes.push({ ...axisForType('generic'), seriesName: [name] });
+
+        // Generic: każda seria dostaje własną oś
+        genericIndices.forEach((idx) => {
+            yaxes.push({
+                ...axisForType('generic'),
+                seriesName: chartData.series[idx].name
+            });
         });
 
         // Fallback: if for some reason no axes were added, keep a default generic axis
         if (yaxes.length === 0) {
             yaxes = [{ labels: { formatter: (v) => unitFormat(v, 'generic') } }];
         }
+
+        // Upewnij się, że wszystkie serie mają zdefiniowany typ
+        const seriesWithTypes = chartData.series.map((s, idx) => {
+            return {
+                ...s,
+                type: s.type || 'rangeBar' // domyślnie rangeBar
+            };
+        });
 
         const options = {
             chart: {
@@ -294,12 +325,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     columnWidth: '80%',
                 }
             },
-            series: chartData.series,
+            series: seriesWithTypes,
             stroke: {
                 // 0 dla słupków (rangeBar), 2 dla linii
-                width: chartData.series.map(s => (s.type === 'line' ? 2 : 0)),
+                width: seriesWithTypes.map(s => (s.type === 'line' ? 2 : 0)),
                 // przerywana linia tylko dla serii średniej
-                dashArray: chartData.series.map(s => (s._isAvg ? 6 : 0)),
+                dashArray: seriesWithTypes.map(s => (s._isAvg ? 6 : 0)),
                 curve: 'straight',
             },
             markers: {
@@ -312,16 +343,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 x: { format: 'dd MMM yyyy' },
                 y: {
                     formatter: function(val, opts) {
-                        const idx = opts?.seriesIndex ?? 0;
+                        // Zabezpieczenie przed undefined
+                        if (!opts || !opts.w || !opts.w.config) {
+                            return unitFormat(val, 'generic');
+                        }
+
+                        const idx = opts.seriesIndex ?? 0;
                         const type = types[idx] || 'generic';
                         const series = opts.w.config.series[idx];
+
+                        // Zabezpieczenie przed undefined dataPointIndex
+                        if (typeof opts.dataPointIndex === 'undefined' || !series || !series.data) {
+                            return unitFormat(val, type);
+                        }
+
                         const dataPoint = series.data[opts.dataPointIndex];
+
+                        // Dla rangeBar (słupków z zakresem) - wyświetl min-max
                         if (dataPoint && Array.isArray(dataPoint.y)) {
                             const min = unitFormat(dataPoint.y[0], type);
                             const max = unitFormat(dataPoint.y[1], type);
                             return `${min} &mdash; ${max}`;
                         }
-                        return unitFormat(val, type); // Fallback (np. dla linii średniej)
+
+                        // Fallback (np. dla linii średniej)
+                        return unitFormat(val, type);
                     }
                 }
             },
