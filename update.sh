@@ -9,7 +9,9 @@ echo "Repozytorium zaktualizowane."
 sleep 1
 
 echo "Aktualizacja schematu bazy danych..."
-php bin/console d:s:u --dump-sql --force
+php bin/console doctrine:cache:clear-metadata
+sleep 1
+php bin/console doctrine:schema:update --dump-sql --force
 sleep 1
 
 echo "Czyszczenie pamięci podręcznej..."
