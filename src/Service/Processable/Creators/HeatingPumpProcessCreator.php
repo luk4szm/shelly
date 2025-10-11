@@ -8,10 +8,12 @@ use App\Service\Processable\TurnOnHeatingProcess;
 
 class HeatingPumpProcessCreator
 {
-    public function create(bool $enablePumps, \DateTimeImmutable $date): ScheduledProcess
+    public function create(bool $enablePumps, \DateTimeImmutable $date, ?array $conditions = null): ScheduledProcess
     {
         return (new ScheduledProcess())
             ->setName($enablePumps ? TurnOnHeatingProcess::NAME : TurnOffHeatingProcess::NAME)
-            ->setScheduledAt($date);
+            ->setScheduledAt($date)
+            ->setConditions($conditions)
+        ;
     }
 }

@@ -6,6 +6,8 @@ namespace App\Controller\Device;
 
 use App\Repository\Process\ProcessRepository;
 use App\Service\Device\HeatingPumpService;
+use App\Service\Processable\Condition\Fireplace\FireplaceOffCondition;
+use App\Service\Processable\Condition\Fireplace\FireplaceOnCondition;
 use App\Service\Processable\Creators\HeatingPumpProcessCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,12 +24,13 @@ class HeatingPumpController extends AbstractController
         ProcessRepository         $processRepository,
     ): Response
     {
-        $heatingAction  = $request->request->get('heating_action');
-        $heatingStartOn = $request->request->get('heating_start_on');
-        $heatingEndOn   = $request->request->get('heating_end_on');
+        $heatingStartOn           = $request->request->get('heating_start_on');
+        $heatingEndOn             = $request->request->get('heating_end_on');
+        $heatingAction            = $request->request->get('heating_action');
+        $heatingActionConditional = $request->request->get('heating_action_conditional');
 
-        if (!$heatingStartOn && !$heatingEndOn) {
-            // start heating pump immediately
+        if (!$heatingStartOn && !$heatingEndOn && $heatingAction !== null) {
+            // start/stop heating pump immediately
             $heatingPumpService->setHeatingPumpState($heatingAction === 'turn_on');
 
             $this->addFlash('success', 'Heating pump state updated');
@@ -45,6 +48,15 @@ class HeatingPumpController extends AbstractController
             $endProcess = $processCreator->create(false, new \DateTimeImmutable($heatingEndOn));
 
             $processRepository->save($endProcess);
+        }
+
+        if ($heatingActionConditional) {
+            $fireplaceProcess = match ($heatingActionConditional) {
+                FireplaceOnCondition::NAME  => $processCreator->create(true, new \DateTimeImmutable(), [FireplaceOnCondition::NAME]),
+                FireplaceOffCondition::NAME => $processCreator->create(false, new \DateTimeImmutable(), [FireplaceOffCondition::NAME]),
+            };
+
+            $processRepository->save($fireplaceProcess);
         }
 
         return $this->redirectToRoute('app_front_dashboard');

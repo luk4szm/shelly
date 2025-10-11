@@ -10,5 +10,7 @@ interface AbstractProcessableInterface
 {
     public function isSupported(string $processName): bool;
 
+    public function canBeExecuted(Process $process): bool;
+
     public function process(Process $process): void;
 }

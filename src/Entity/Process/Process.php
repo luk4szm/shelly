@@ -3,6 +3,7 @@
 namespace App\Entity\Process;
 
 use App\Repository\Process\ProcessRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProcessRepository::class)]
@@ -22,6 +23,9 @@ abstract class Process
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $conditions = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -45,6 +49,18 @@ abstract class Process
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getConditions(): ?array
+    {
+        return $this->conditions;
+    }
+
+    public function setConditions(?array $conditions): static
+    {
+        $this->conditions = $conditions;
 
         return $this;
     }

@@ -8,7 +8,5 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('app.shelly.processable.recurring')]
 interface RecurringProcessInterface
 {
-    public function isSupported(string $processName): bool;
-
     public function process(RecurringProcess $process): void;
 }

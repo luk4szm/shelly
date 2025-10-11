@@ -85,11 +85,14 @@ class ShellyProcessConsumeCommand extends Command
                     continue;
                 }
 
-                $consumer->process($process);
+                if ($consumer->canBeExecuted($process))
+                {
+                    $consumer->process($process);
 
-                $this->executedProcesses++;
+                    $this->executedProcesses++;
 
-                mail('lukasz@mikowski.pl', 'Executed process', $processName);
+                    mail('lukasz@mikowski.pl', 'Executed process', $processName);
+                }
 
                 break;
             }
