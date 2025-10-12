@@ -26,7 +26,6 @@ final class DashboardController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
         HeatingPumpService                                              $heatingPumpService,
-        ScheduledProcessRepository                                      $scheduledProcessRepository,
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
@@ -73,13 +72,32 @@ final class DashboardController extends AbstractController
                 'supply' => $heatingPumpService->getActualState('pompa-zasilanie'),
                 'return' => $heatingPumpService->getActualState('pompa-powrot'),
             ],
-            'scheduledProcesses' => [
-                'heatingTurnOn'  => $scheduledProcessRepository->findNextProcessToExecute(TurnOnHeatingProcess::NAME),
-                'heatingTurnOff' => $scheduledProcessRepository->findNextProcessToExecute(TurnOffHeatingProcess::NAME),
-            ],
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],
             'weather'     => $weatherRepository->findActualForecast(),
+        ]);
+    }
+
+    #[Route('/dashboard/heating-modal-form-render', name: 'app_front_heating_modal_form_render')]
+    public function heatingFormRender(
+        HeatingPumpService         $heatingPumpService,
+        ScheduledProcessRepository $scheduledProcessRepository,
+    ): Response {
+        $heatingPumpSupply = $heatingPumpService->getActualState('pompa-zasilanie');
+        $heatingPumpReturn = $heatingPumpService->getActualState('pompa-powrot');
+
+        return $this->json([
+            'form' => $this->renderView('front/_modals/_heating_controller_form.html.twig', [
+                'isHeatingActive'    => $heatingPumpSupply['active'] && $heatingPumpReturn['active'],
+                'heatingPump'        => [
+                    'supply' => $heatingPumpSupply,
+                    'return' => $heatingPumpReturn,
+                ],
+                'scheduledProcesses' => [
+                    'heatingTurnOn'  => $scheduledProcessRepository->findNextProcessToExecute(TurnOnHeatingProcess::NAME),
+                    'heatingTurnOff' => $scheduledProcessRepository->findNextProcessToExecute(TurnOffHeatingProcess::NAME),
+                ],
+            ]),
         ]);
     }
 }

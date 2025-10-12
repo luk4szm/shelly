@@ -197,3 +197,69 @@
         init();
     }
 })();
+
+(function () {
+    const modalId = 'heatingControllerModal';
+    const modalSelector = `#${modalId}`;
+    const routeUrl = '/dashboard/heating-modal-form-render';
+
+    function setBodyContent(html) {
+        const body = document.querySelector(`${modalSelector} .modal-body`);
+        if (body) {
+            body.innerHTML = html;
+        }
+    }
+
+    function showLoading() {
+        setBodyContent('<div class="text-muted">Ładowanie…</div>');
+    }
+
+    function showError() {
+        setBodyContent('<div class="text-danger">Nie udało się wczytać formularza. Spróbuj ponownie.</div>');
+    }
+
+    async function loadForm() {
+        showLoading();
+        try {
+            const resp = await fetch(routeUrl, {
+                method: 'GET',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                credentials: 'same-origin',
+            });
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status}`);
+            }
+            const data = await resp.json();
+            if (!data || typeof data.form !== 'string') {
+                throw new Error('Brak pola "form" w odpowiedzi');
+            }
+            setBodyContent(data.form);
+        } catch (e) {
+            showError();
+            // opcjonalnie: console.error(e);
+        }
+    }
+
+    function onModalShow() {
+        loadForm();
+    }
+
+    function onDomReady() {
+        const modalEl = document.getElementById(modalId);
+        if (!modalEl) return;
+
+        // Bootstrap 5: zdarzenie show.bs.modal
+        modalEl.addEventListener('show.bs.modal', onModalShow);
+
+        // Opcjonalnie: czyszczenie zawartości po zamknięciu
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            setBodyContent('');
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onDomReady);
+    } else {
+        onDomReady();
+    }
+})();

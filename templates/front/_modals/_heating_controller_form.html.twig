@@ -1,0 +1,61 @@
+<form method="post" action="{{ path('app_device_heating_pump_index') }}" class="text-center">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('heating_pump_controller') }}"/>
+    <div class="mb-4">
+        Możesz ustawić czas włączenia i wyłączenia ogrzewania. Jeśli pozostawisz pola puste włączenie nastąpi automatycznie
+    </div>
+    {% if scheduledProcesses.heatingTurnOn %}
+        <div class="alert alert-warning alert-dismissible alert-solid alert-label-icon" role="alert">
+            <i class="ri-check-fill label-icon"></i>
+            [{{ scheduledProcesses.heatingTurnOn.scheduledAt|date("d.m.Y H:i") }}] <strong>Zaplanowane włączenie ogrzewania!</strong>
+        </div>
+    {% endif %}
+    {% if scheduledProcesses.heatingTurnOff %}
+        <div class="alert alert-warning alert-dismissible alert-solid alert-label-icon" role="alert">
+            <i class="ri-check-fill label-icon"></i>
+            [{{ scheduledProcesses.heatingTurnOff.scheduledAt|date("d.m.Y H:i") }}] <strong>Zaplanowane wyłączenie ogrzewania!</strong>
+        </div>
+    {% endif %}
+    <div class="row my-5 justify-content-center">
+        {% if isHeatingActive %}
+            <div class="col-md-5 col-12">
+                <label class="form-label" for="heating_send">Wyłączenie</label>
+                <input type="datetime-local" class="form-control mb-2" id="heating_end" name="heating_end_on" min="{{ "now"|date('Y-m-d H:i') }}">
+            </div>
+            <div class="col-md-5 col-12">
+                <label class="form-label" for="heating_start">Ponowne włączenie</label>
+                <input type="datetime-local" class="form-control mb-2" id="heating_start" name="heating_start_on">
+            </div>
+        {% else %}
+            <div class="col-md-5 col-12">
+                <label class="form-label" for="heating_start">Włączenie</label>
+                <input type="datetime-local" class="form-control mb-2" id="heating_start" name="heating_start_on"
+                       min="{{ "now"|date('Y-m-d H:i') }}">
+            </div>
+            <div class="col-md-5 col-12">
+                <label class="form-label" for="heating_end">Wyłączenie</label>
+                <input type="datetime-local" class="form-control mb-2" id="heating_end" name="heating_end_on">
+            </div>
+        {% endif %}
+    </div>
+    <button type="submit"
+            class="btn btn-success btn-4 w-75 mb-3"
+            name="heating_action"
+            value="{{ isHeatingActive ? 'turn_off' : 'turn_on' }}">
+        {{ isHeatingActive ? 'Wyłącz ogrzewanie natychmiast' : 'Włącz ogrzewanie natychmiast' }}
+    </button>
+    <div class="row">
+        <div class="col-12">
+            <hr class="mt-3 mb-4">
+            <button type="submit"
+                    class="btn btn-success btn-4 w-75 mb-3"
+                    name="heating_action_conditional"
+                    value="{{ isHeatingActive
+                        ? constant('App\\Service\\Processable\\Condition\\Fireplace\\FireplaceOffCondition::NAME')
+                        : constant('App\\Service\\Processable\\Condition\\Fireplace\\FireplaceOnCondition::NAME')
+                    }}"
+            >
+                {{ isHeatingActive ? 'Wyłącz ogrzewanie, gdy kominek zgaśnie' : 'Włącz ogrzewanie, gdy kominek będzie się palić' }}
+            </button>
+        </div>
+    </div>
+</form>
