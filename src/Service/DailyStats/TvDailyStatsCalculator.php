@@ -20,6 +20,11 @@ final class TvDailyStatsCalculator extends DeviceDailyStatsCalculator implements
         return $device === self::getDeviceName();
     }
 
+    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
+    {
+        return new \DateTime(Tv::INSTALLATION_DATE) <= $date;
+    }
+
     public function getDeviceName(): string
     {
         return Tv::NAME;

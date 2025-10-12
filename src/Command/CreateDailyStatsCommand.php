@@ -50,6 +50,7 @@ class CreateDailyStatsCommand extends DailyStatsCommand
             if (
                 null !== $device
                 && !$statsCalculator->supports($device)
+                || !$statsCalculator->isDeviceInstalledOn($date)
             ) {
                 continue;
             }

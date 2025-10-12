@@ -20,6 +20,11 @@ final class HydrophoreDailyStatsCalculator extends DeviceDailyStatsCalculator im
         return $device === self::getDeviceName();
     }
 
+    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
+    {
+        return new \DateTime(Hydrophore::INSTALLATION_DATE) <= $date;
+    }
+
     public function getDeviceName(): string
     {
         return Hydrophore::NAME;

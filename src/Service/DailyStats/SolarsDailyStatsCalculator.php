@@ -20,6 +20,11 @@ final class SolarsDailyStatsCalculator extends DeviceDailyStatsCalculator implem
         return $device === self::getDeviceName();
     }
 
+    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
+    {
+        return new \DateTime(Solars::INSTALLATION_DATE) <= $date;
+    }
+
     public function getDeviceName(): string
     {
         return Solars::NAME;

@@ -20,6 +20,11 @@ final class FireplaceDailyStatsCalculator extends DeviceDailyStatsCalculator imp
         return $device === self::getDeviceName();
     }
 
+    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
+    {
+        return new \DateTime(Fireplace::INSTALLATION_DATE) <= $date;
+    }
+
     public function getDeviceName(): string
     {
         return Fireplace::NAME;
