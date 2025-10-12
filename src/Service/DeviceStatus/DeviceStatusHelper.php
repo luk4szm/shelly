@@ -4,6 +4,7 @@ namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
 use App\Model\DateRange;
+use App\Model\Device\DeviceInterface;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Repository\HookRepository;
