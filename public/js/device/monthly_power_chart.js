@@ -195,13 +195,18 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.render();
     chart.hideSeries('Liczba włączeń');
 
-    if (deviceName !== 'tv' && deviceName !== 'hydrofor') {
-        chart.hideSeries('Czas pracy');
-    } else {
-        chart.hideSeries('Zużyta energia');
-    }
+    const TIME_BASED_DEVICES = new Set(['tv', 'hydrofor', 'pompa-zasilanie', 'pompa-powrot', 'kominek']);
+    const isTimeBasedDevice = TIME_BASED_DEVICES.has(deviceName);
 
     if (deviceName === 'piec') {
+        // Piec: ukryj energię (gaz pozostaje widoczny, jeśli dodany wcześniej)
         chart.hideSeries('Zużyta energia');
+        chart.hideSeries('Czas pracy');
+    } else if (isTimeBasedDevice) {
+        // Urządzenia czasowe: pokaż czas pracy, ukryj energię
+        chart.hideSeries('Zużyta energia');
+    } else {
+        // Pozostałe urządzenia: pokaż energię, ukryj czas pracy
+        chart.hideSeries('Czas pracy');
     }
 });
