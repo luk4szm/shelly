@@ -51,6 +51,26 @@
                             <li class="nav-item dropdown">
                                 <a
                                     class="nav-link dropdown-toggle"
+                                    href="#navbar-controllers"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    role="button"
+                                    aria-expanded="false"
+                                >
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        {{ include('_icons/device-remote-icon.svg.twig') }}
+                                    </span>
+                                    <span class="nav-link-title"> Controllers </span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="{{ path('app_remote_gate') }}"> Brama </a>
+                                    <a class="dropdown-item" href="{{ path('app_remote_garage') }}"> Garaż </a>
+                                    <a class="dropdown-item" href="{{ path('app_remote_cover') }}"> Rolety </a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a
+                                    class="nav-link dropdown-toggle"
                                     href="#navbar-location"
                                     data-bs-toggle="dropdown"
                                     data-bs-auto-close="outside"

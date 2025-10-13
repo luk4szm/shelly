@@ -1,0 +1,36 @@
+{% extends 'remote/remote.html.twig' %}
+
+{% block pageTitle %}Rolety{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h2>Rolety</h2>
+                            </div>
+                            <div class="col text-end">
+                                <span class="avatar {{ last_direction == 'open' ? 'bg-success' : (last_direction == 'close' ? 'bg-red' : 'bg-warning') }}">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9 col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <ul>
+                            {% for row in logs %}
+                                <li>{{ row }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
