@@ -72,6 +72,11 @@ final class DashboardController extends AbstractController
                 'supply' => $heatingPumpService->getActualState('pompa-zasilanie'),
                 'return' => $heatingPumpService->getActualState('pompa-powrot'),
             ],
+            'heatingTemps' => [
+                'supply' => $hookRepository->findActualTempForLocation('podl-zasilanie'),
+                'recirculation' => $hookRepository->findActualTempForLocation('podl-powrot-recyrkulacja'),
+                'return' => $hookRepository->findActualTempForLocation('podl-powrot-bufor'),
+            ],
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],
             'weather'     => $weatherRepository->findActualForecast(),

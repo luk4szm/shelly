@@ -1,7 +1,7 @@
 <div class="card card-sm mt-2">
     <div class="card-body py-2">
         <div class="row">
-            <div class="col-6">
+            <div class="col">
                 <div class="row align-items-center my-2">
                     <div class="col-auto">
                         <span class="{{ heatingPump.supply.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
@@ -16,7 +16,26 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-auto">
+                <div class="d-inline-grid fs-base">
+                    <div>
+                        <span class="text-secondary">{% include '_icons/trening-up-icon.svg.twig' %}</span>
+                        <span class="fw-bold">{{ heatingTemps.supply.value|number_format(1) }}</span>
+                        <span class="text-secondary">°C</span>
+                    </div>
+                    <div>
+                        <span class="text-secondary">{% include '_icons/u-turn-left-icon.svg.twig' %}</span>
+                        <span class="fw-bold">{{ heatingTemps.recirculation.value|number_format(1) }}</span>
+                        <span class="text-secondary">°C</span>
+                    </div>
+                    <div>
+                        <span class="text-secondary">{% include '_icons/trening-down-icon.svg.twig' %}</span>
+                        <span class="fw-bold">{{ heatingTemps.return.value|number_format(1) }}</span>
+                        <span class="text-secondary">°C</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
                 <div class="row align-items-center my-2">
                     <div class="col text-end">
                         <div class="fw-bolder fs-3">{{heatingPump.return.power }} W</div>
