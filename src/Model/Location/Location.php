@@ -13,4 +13,9 @@ abstract class Location
     {
         return $this::GROUP;
     }
+
+    public function getChartColor(): ?string
+    {
+        return $this::CHART_COLOR ?? null;
+    }
 }

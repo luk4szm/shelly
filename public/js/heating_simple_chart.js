@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const baseColors = ["var(--tblr-primary)", "var(--tblr-orange)", "var(--tblr-green)", "var(--tblr-red)"];
     let chart = null;
 
     const fetchData = async () => {
@@ -43,11 +42,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const transform = (raw) => {
         const current = raw?.currentDay || {};
+        const locationColors = raw?.locationColors || {}; // mapa: nazwa lokacji -> kolor z backendu
         const series = [];
         let idx = 0;
         for (const key in current) {
             if (!Object.prototype.hasOwnProperty.call(current, key)) continue;
-            const color = baseColors[idx % baseColors.length];
+            const color = locationColors[key] || null;
             series.push({
                 name: key,
                 data: current[key].map(p => ({ x: new Date(p.datetime).getTime(), y: p.value })),
@@ -58,8 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Posortuj punkty i przytnij do 8h
         series.forEach(s => s.data.sort((a, b) => a.x - b.x));
         const sliced = last8Hours(series);
-        const colors = sliced.map((s, i) => series[i]?._color || baseColors[i % baseColors.length]);
-        return { series: sliced, colors };
+        // użyj kolorów z backendu w kolejności serii; jeśli brak – nie ustawiaj (ApexCharts dobierze domyślne)
+        const colors = sliced.map((s, i) => series[i]?._color).filter(c => !!c);
+        return { series: sliced, colors: colors.length ? colors : undefined };
     };
 
     const render = ({ series, colors }) => {
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 lineCap: 'round'
             },
             series,
-            colors,
+            ...(colors ? { colors } : {}),
             dataLabels: { enabled: false },
             tooltip: { theme: 'dark', x: { format: 'dd MMM, HH:mm' } },
             xaxis: {

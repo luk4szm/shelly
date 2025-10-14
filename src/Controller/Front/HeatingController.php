@@ -11,6 +11,7 @@ use App\Repository\HeatingNoteRepository;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
+use App\Service\Location\LocationRegistry;
 use App\Utils\HeatingNoteSerializer;
 use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,6 +53,7 @@ final class HeatingController extends AbstractController
         HeatingNoteRepository                                           $noteRepository,
         TemperatureGraphHandler                                         $graphHandler,
         #[AutowireIterator('app.shelly.device_status_helper')] iterable $statusHelpers,
+        LocationRegistry                                                $locationRegistry,
         string                                                          $date = '',
     ): Response {
         $from      = (new \DateTime($date))->setTime(0, 0);
@@ -130,16 +132,20 @@ final class HeatingController extends AbstractController
         $notes = $noteRepository->findForDate($from);
 
         return $this->json([
-            'currentDay'  => empty($currentDayHooks) ? [] : $graphHandler->prepareGroupedHooks($currentDayHooks),
-            'previousDay' => empty($previousDayHooks) ? [] : $graphHandler->prepareGroupedHooks($previousDayHooks),
-            'activities'  => $activities,
-            'notes'       => [
+            'currentDay'     => empty($currentDayHooks) ? [] : $graphHandler->prepareGroupedHooks($currentDayHooks),
+            'previousDay'    => empty($previousDayHooks) ? [] : $graphHandler->prepareGroupedHooks($previousDayHooks),
+            'activities'     => $activities,
+            'locationColors' => array_combine($locations, array_map(
+                fn(string $location) => $locationRegistry->createByName($location)->getChartColor(),
+                $locations
+            )),
+            'notes'          => [
                 'data'     => array_map(function (HeatingNote $note) {
                     return HeatingNoteSerializer::serialize($note);
                 }, $notes),
                 'rendered' => $this->renderView('front/heating/_partials/heating_notes.html.twig', [
                     'notes' => $notes,
-                ])
+                ]),
             ],
         ]);
     }
