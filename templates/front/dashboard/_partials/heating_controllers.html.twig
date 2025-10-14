@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="col-auto">
-                <div class="d-inline-grid fs-base" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
+                <div class="d-inline-grid fs-base text-center" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
                     <div>
                         <span class="text-secondary">{% include '_icons/trening-up-icon.svg.twig' %}</span>
                         <span class="fw-bold">{{ heatingTemps.supply.value|number_format(1) }}</span>
