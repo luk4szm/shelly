@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\AirQualityRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: AirQualityRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+class AirQuality
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column]
+    private ?int $sensor = null;
+
+    #[ORM\Column]
+    private ?float $pm25 = null;
+
+    #[ORM\Column]
+    private ?float $pm10 = null;
+
+    #[ORM\Column]
+    private ?\DateTime $measuredAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\PrePersist]
+    public function pre(): void
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getSensor(): ?int
+    {
+        return $this->sensor;
+    }
+
+    public function setSensor(int $sensor): static
+    {
+        $this->sensor = $sensor;
+
+        return $this;
+    }
+
+    public function getPm25(): ?float
+    {
+        return $this->pm25;
+    }
+
+    public function setPm25(float $pm25): static
+    {
+        $this->pm25 = $pm25;
+
+        return $this;
+    }
+
+    public function getPm10(): ?float
+    {
+        return $this->pm10;
+    }
+
+    public function setPm10(float $pm10): static
+    {
+        $this->pm10 = $pm10;
+
+        return $this;
+    }
+
+    public function getMeasuredAt(): ?\DateTime
+    {
+        return $this->measuredAt;
+    }
+
+    public function setMeasuredAt(\DateTime $measuredAt): static
+    {
+        $this->measuredAt = $measuredAt;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+}
