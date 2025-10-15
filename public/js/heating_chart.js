@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /**
      * Pobiera dane z backendu. Oczekuje odpowiedzi w formacie:
-     * { currentDay: {...}, previousDay: {...} }
+     * { currentDay: {...}, previousDay: {...}, locationColors: {...} }
      * @param {string} dateString - Data w formacie YYYY-MM-DD.
      * @returns {Promise<Object|null>}
      */
@@ -60,31 +60,19 @@ document.addEventListener("DOMContentLoaded", function () {
     /**
      * Przekształca dane z formatu backendu na format wymagany przez ApexCharts,
      * tworząc serie dla dnia bieżącego i poprzedniego z odpowiednimi stylami.
+     * ZAMIANA: kolory linii pochodzą z rawData.locationColors.
      * @param {Object} rawData - Surowe dane z backendu.
-     * @param {Array<string>} baseColors - Podstawowa paleta kolorów.
      * @returns {{series: Array<Object>, colors: Array<string>, dashArrays: Array<number>, strokeWidths: Array<number>}}
      */
-    const transformDataForChart = (rawData, baseColors) => {
+    const transformDataForChart = (rawData) => {
         const finalSeries = [];
         const finalColors = [];
         const finalDashArrays = [];
-        const finalStrokeWidths = []; // NOWOŚĆ: Tablica na grubości linii
+        const finalStrokeWidths = [];
 
-        /**
-         * Konwertuje kolor (np. zmienną CSS lub hex) na format RGBA z zadaną przezroczystością.
-         * @param {string} colorStr - Kolor wejściowy.
-         * @param {number} alpha - Poziom przezroczystości (0-1).
-         * @returns {string} Kolor w formacie RGBA.
-         */
         const toPaleColor = (colorStr, alpha = 0.65) => {
-            // Jeśli kolor to zmienna CSS, pobierz jej faktyczną wartość
-            if (colorStr.startsWith('var(')) {
-                const varName = colorStr.match(/--[\w-]+/)[0];
-                colorStr = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-            }
-
             // Konwertuj HEX na RGBA
-            if (colorStr.startsWith('#')) {
+            if (typeof colorStr === 'string' && colorStr.startsWith('#')) {
                 const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
                 const hex = colorStr.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -95,44 +83,52 @@ document.addEventListener("DOMContentLoaded", function () {
                     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 }
             }
-            return colorStr; // Zwróć oryginał, jeśli konwersja się nie powiedzie
+            return colorStr;
         };
 
         const currentDayData = rawData.currentDay || {};
         const previousDayData = rawData.previousDay || {};
+        const locationColors = rawData.locationColors || {};
 
-        let colorIndex = 0;
         for (const seriesName in currentDayData) {
-            if (Object.hasOwnProperty.call(currentDayData, seriesName)) {
-                const color = baseColors[colorIndex % baseColors.length];
+            if (!Object.hasOwnProperty.call(currentDayData, seriesName)) continue;
 
-                // 1. Seria dla dnia bieżącego (gruba, ciągła, pełny kolor)
+            const baseColor = locationColors[seriesName] || undefined;
+
+            // 1) Dzień bieżący
+            finalSeries.push({
+                name: seriesName,
+                data: currentDayData[seriesName].map(p => ({ x: new Date(p.datetime).getTime(), y: p.value }))
+            });
+            finalColors.push(baseColor);
+            finalDashArrays.push(0);
+            finalStrokeWidths.push(2.5);
+
+            // 2) Dzień poprzedni
+            if (previousDayData[seriesName]) {
                 finalSeries.push({
-                    name: seriesName,
-                    data: currentDayData[seriesName].map(p => ({ x: new Date(p.datetime).getTime(), y: p.value }))
+                    name: `${seriesName} (pop.)`,
+                    data: previousDayData[seriesName].map(p => {
+                        const prevDate = new Date(p.datetime);
+                        prevDate.setHours(prevDate.getHours() + 24);
+                        return { x: prevDate.getTime(), y: p.value };
+                    })
                 });
-                finalColors.push(color);
-                finalDashArrays.push(0); // 0 = linia ciągła
-                finalStrokeWidths.push(2.5); // Standardowa grubość
-
-                // 2. Seria dla dnia poprzedniego (cienka, przerywana, blady kolor)
-                if (previousDayData[seriesName]) {
-                    finalSeries.push({
-                        name: `${seriesName} (pop.)`,
-                        data: previousDayData[seriesName].map(p => {
-                            const prevDate = new Date(p.datetime);
-                            prevDate.setHours(prevDate.getHours() + 24);
-                            return { x: prevDate.getTime(), y: p.value };
-                        })
-                    });
-                    finalColors.push(toPaleColor(color)); // Ten sam kolor, ale bledszy
-                    finalDashArrays.push(5); // > 0 = linia przerywana
-                    finalStrokeWidths.push(1.5); // Cieńsza linia
-                }
-                colorIndex++;
+                finalColors.push(baseColor ? toPaleColor(baseColor) : undefined);
+                finalDashArrays.push(5);
+                finalStrokeWidths.push(1.5);
             }
         }
-        return { series: finalSeries, colors: finalColors, dashArrays: finalDashArrays, strokeWidths: finalStrokeWidths };
+
+        // Jeżeli wszystkie kolory są undefined, zwróć tablicę bez colors (Apex nada domyślne)
+        const hasAnyColor = finalColors.some(c => !!c);
+        return {
+            series: finalSeries,
+            colors: hasAnyColor ? finalColors : undefined,
+            dashArrays: finalDashArrays,
+            strokeWidths: finalStrokeWidths
+        };
+        // ... existing code ...
     };
 
     /**
@@ -168,17 +164,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const baseColors = ["var(--tblr-primary)", "var(--tblr-orange)", "var(--tblr-green)", "var(--tblr-red)"];
-        // ZMIANA: Pobieramy teraz również grubości linii
-        const { series, colors, dashArrays, strokeWidths } = transformDataForChart(rawData, baseColors);
+        // ZMIANA: usunięto bazowe kolory; używamy kolorów z backendu
+        const { series, colors, dashArrays, strokeWidths } = transformDataForChart(rawData);
 
-        // Przygotuj adnotacje (zacienione zakresy) dla pracy urządzeń
         const buildAnnotations = (activities) => {
             if (!activities) return { xaxis: [] };
             const deviceColors = {
-                'piec': 'rgba(220, 53, 69, 0.45)',      // red-ish
-                'kominek': 'rgba(253, 126, 20, 0.1)',  // orange
-                'solary': 'rgba(25, 135, 84, 0.4)',    // green
+                'piec': 'rgba(220, 53, 69, 0.45)',
+                'kominek': 'rgba(253, 126, 20, 0.1)',
+                'solary': 'rgba(25, 135, 84, 0.4)',
             };
             const xaxis = [];
             Object.entries(activities).forEach(([device, intervals]) => {
@@ -265,13 +259,13 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             annotations: mergedAnnotations,
             stroke: {
-                width: strokeWidths, // ZMIANA: Użycie tablicy grubości linii
+                width: strokeWidths,
                 lineCap: "round",
                 curve: "smooth",
                 dashArray: dashArrays,
             },
             series: series,
-            colors: colors,
+            ...(colors ? { colors } : {}),
             tooltip: {
                 theme: "dark",
                 x: { format: 'dd MMM, HH:mm' }
