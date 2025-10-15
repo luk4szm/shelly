@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const options = {
             chart: {
                 type: 'line',
-                height: 314,
+                height: 340,
                 animations: { enabled: true },
                 toolbar: { show: false }
             },
