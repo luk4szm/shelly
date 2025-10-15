@@ -3,6 +3,7 @@
 namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
+use App\Repository\AirQualityRepository;
 use App\Repository\HookRepository;
 use App\Repository\Process\ScheduledProcessRepository;
 use App\Repository\WeatherForecastRepository;
@@ -26,6 +27,7 @@ final class DashboardController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
         HeatingPumpService                                              $heatingPumpService,
+        AirQualityRepository                                            $airQualityRepository,
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
@@ -77,6 +79,7 @@ final class DashboardController extends AbstractController
                 'recirculation' => $hookRepository->findActualTempForLocation('podl-powrot-recyrkulacja'),
                 'return' => $hookRepository->findActualTempForLocation('podl-powrot-bufor'),
             ],
+            'airQuality'  => $airQualityRepository->findLast(),
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],
             'weather'     => $weatherRepository->findActualForecast(),
