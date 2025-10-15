@@ -20,17 +20,23 @@
                 <div class="d-inline-grid fs-base text-center" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
                     <div>
                         <span class="text-secondary">{% include '_icons/trening-up-icon.svg.twig' %}</span>
-                        <span class="fw-bold">{{ heatingTemps.supply.value|number_format(1) }}</span>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorSupply::CHART_COLOR') }}">
+                            {{ heatingTemps.supply.value|number_format(1) }}
+                        </span>
                         <span class="text-secondary">°C</span>
                     </div>
                     <div>
                         <span class="text-secondary">{% include '_icons/u-turn-left-icon.svg.twig' %}</span>
-                        <span class="fw-bold">{{ heatingTemps.recirculation.value|number_format(1) }}</span>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnRecirculation::CHART_COLOR') }}">
+                            {{ heatingTemps.recirculation.value|number_format(1) }}
+                        </span>
                         <span class="text-secondary">°C</span>
                     </div>
                     <div>
                         <span class="text-secondary">{% include '_icons/trening-down-icon.svg.twig' %}</span>
-                        <span class="fw-bold">{{ heatingTemps.return.value|number_format(1) }}</span>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnBuffer::CHART_COLOR') }}">
+                            {{ heatingTemps.return.value|number_format(1) }}
+                        </span>
                         <span class="text-secondary">°C</span>
                     </div>
                 </div>
