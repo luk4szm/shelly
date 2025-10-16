@@ -32,7 +32,7 @@ class AirQualityService
 
             if (
                 $lastValue !== null
-                && $lastValue->getMeasuredAt()->format('U') <= $timestamp->format('U')
+                && $lastValue->getMeasuredAt()->format('U') >= $timestamp->format('U')
             ) {
                 continue;
             }
