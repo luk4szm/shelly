@@ -19,7 +19,7 @@ class AirQualityRepository extends CrudRepository
     public function findLast(): ?AirQuality
     {
         return $this->createQueryBuilder('aq')
-            ->orderBy('aq.id', 'DESC')
+            ->orderBy('aq.measuredAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
