@@ -30,7 +30,10 @@ class AirQualityService
             $timestamp = new \DateTime($measurement['timestamp'], new DateTimeZone('UTC'));
             $timestamp->setTimezone(new DateTimeZone('Europe/Warsaw'));
 
-            if ($lastValue !== null && $lastValue->getMeasuredAt() === $timestamp) {
+            if (
+                $lastValue !== null
+                && $lastValue->getMeasuredAt()->format('U') <= $timestamp->format('U')
+            ) {
                 continue;
             }
 
