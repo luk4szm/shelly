@@ -22,7 +22,7 @@ class CoverController extends AbstractController
 
         return $this->render('remote/cover.html.twig', [
             'last_direction' => $lastDirection ?? null,
-            'logs'           => $logReader->getLastLogLines(),
+            'parsedLogs'     => $logReader->getParsedLogs(),
         ]);
     }
 }

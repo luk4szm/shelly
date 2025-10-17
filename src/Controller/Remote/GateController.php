@@ -23,8 +23,8 @@ class GateController extends AbstractController
         }
 
         return $this->render('remote/gate.html.twig', [
-            'is_open' => !($gateResponse['hi'] === true),
-            'logs'    => $logReader->getLastLogLines(),
+            'is_open'    => !($gateResponse['hi'] === true),
+            'parsedLogs' => $logReader->getParsedLogs(),
         ]);
     }
 }

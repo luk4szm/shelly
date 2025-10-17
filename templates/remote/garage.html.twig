@@ -29,12 +29,26 @@
             </div>
             <div class="col-md-9 col-12">
                 <div class="card">
-                    <div class="card-body">
-                        <ul>
-                            {% for row in logs %}
-                                <li>{{ row }}</li>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                            <tr>
+                                <th>Time / Message</th>
+                                <th>Data</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for log in parsedLogs %}
+                                <tr>
+                                    <td class="d-inline-grid">
+                                        <span class="text-muted">{{ log.timestamp|date('d.m.Y H:i:s') }}</span>
+                                        <span>{{ log.message }}</span>
+                                    </td>
+                                    <td><pre class="mb-0 p-1">{{ log.data|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre></td>
+                                </tr>
                             {% endfor %}
-                        </ul>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

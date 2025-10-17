@@ -21,8 +21,8 @@ class GarageController extends AbstractController
         } catch (\Exception $e) { }
 
         return $this->render('remote/garage.html.twig', [
-            'is_open' => $isOpen ?? null,
-            'logs'    => $logReader->getLastLogLines(),
+            'is_open'    => $isOpen ?? null,
+            'parsedLogs' => $logReader->getParsedLogs(),
         ]);
     }
 }
