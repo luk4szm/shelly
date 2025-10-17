@@ -28,6 +28,14 @@ final class HookController extends AbstractController
         return $this->json([]);
     }
 
+    #[Route('/hook/garage/open-close', name: 'app_hoke_garage_save')]
+    public function garage(LoggerInterface $garageControllerLogger): Response
+    {
+        $garageControllerLogger->info('The button was clicked', ['device' => 'switch']);
+
+        return $this->json([]);
+    }
+
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
     public function hook(
         string                   $device,
