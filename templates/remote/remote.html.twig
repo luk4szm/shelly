@@ -4,7 +4,7 @@
 
 {% block pageTitleActions %}{% endblock %}
 
-{% block pageBody %}
+{% block customCss %}
     <style>
        /* Ustawienia dla przycisku z funkcją przytrzymania */
        .long-press-btn {
@@ -64,7 +64,9 @@
           }
        }
     </style>
+{% endblock %}
 
+{% block pageBody %}
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
@@ -77,4 +79,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/device_control.js') }}"></script>
 {% endblock %}
