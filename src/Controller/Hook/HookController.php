@@ -9,6 +9,7 @@ use App\Repository\HookRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -24,6 +25,15 @@ final class HookController extends AbstractController
         };
 
         $coverControllerLogger->info($message, ['device' => 'switch']);
+
+        return $this->json([]);
+    }
+
+    #[Route('/hook/air-quality', name: 'app_hoke_air_quality_save')]
+    public function airQuality(Request $request): Response
+    {
+        mail('lukasz@mikowski.pl', 'Air quality', $request->getContent());
+        mail('lukasz@mikowski.pl', 'Air quality POST', json_encode($request->request->all()));
 
         return $this->json([]);
     }
