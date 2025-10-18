@@ -14,7 +14,7 @@ class AirQuality
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $sensor = null;
 
     #[ORM\Column]
@@ -22,6 +22,15 @@ class AirQuality
 
     #[ORM\Column]
     private ?float $pm10 = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $temperature = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $pressure = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $humidity = null;
 
     #[ORM\Column]
     private ?\DateTime $measuredAt = null;
@@ -72,6 +81,42 @@ class AirQuality
     public function setPm10(float $pm10): static
     {
         $this->pm10 = $pm10;
+
+        return $this;
+    }
+
+    public function getTemperature(): ?float
+    {
+        return $this->temperature;
+    }
+
+    public function setTemperature(?float $temperature): static
+    {
+        $this->temperature = $temperature;
+
+        return $this;
+    }
+
+    public function getPressure(): ?float
+    {
+        return $this->pressure;
+    }
+
+    public function setPressure(?float $pressure): static
+    {
+        $this->pressure = $pressure;
+
+        return $this;
+    }
+
+    public function getHumidity(): ?float
+    {
+        return $this->humidity;
+    }
+
+    public function setHumidity(?float $humidity): static
+    {
+        $this->humidity = $humidity;
 
         return $this;
     }

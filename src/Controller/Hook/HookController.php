@@ -6,6 +6,7 @@ use App\Entity\Hook;
 use App\Event\Hook\CoHookEvent;
 use App\Event\Hook\TvHookEvent;
 use App\Repository\HookRepository;
+use App\Service\AirQuality\AirQualityService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -30,10 +31,15 @@ final class HookController extends AbstractController
     }
 
     #[Route('/hook/air-quality', name: 'app_hoke_air_quality_save')]
-    public function airQuality(Request $request): Response
+    public function airQuality(Request $request, AirQualityService $airQualityService): Response
     {
-        mail('lukasz@mikowski.pl', 'Air quality', $request->getContent());
-        mail('lukasz@mikowski.pl', 'Air quality POST', json_encode($request->request->all()));
+        if (!isset($request->getContent()['sensordatavalues'])) {
+            return $this->json([], 400);
+        }
+
+        $sensorDataValues = $request->getContent()['sensordatavalues'];
+
+        $airQualityService->saveData($sensorDataValues);
 
         return $this->json([]);
     }
