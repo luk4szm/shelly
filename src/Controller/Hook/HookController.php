@@ -33,11 +33,13 @@ final class HookController extends AbstractController
     #[Route('/hook/air-quality', name: 'app_hoke_air_quality_save', methods: ['POST'])]
     public function airQuality(Request $request, AirQualityService $airQualityService): Response
     {
-        if (!isset($request->getContent()['sensordatavalues'])) {
+        $data = json_decode($request->getContent());
+
+        if (!isset($data['sensordatavalues'])) {
             return $this->json([], 400);
         }
 
-        $sensorDataValues = $request->getContent()['sensordatavalues'];
+        $sensorDataValues = $data['sensordatavalues'];
 
         $airQualityService->saveData($sensorDataValues);
 
