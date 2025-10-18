@@ -66,17 +66,17 @@ class AirQualityService
 
     /**
      * Extracts the sensor reading value ('value') for a specified value type ('value_type')
-     * from the nested sensor data array.
+     * from the nested sensor data array, assuming the items are objects.
      *
      * @param string $valueType The type of value to search for (e.g., 'SDS_P1').
-     * @return float|null The measurement value as a string, or null if not found.
+     * @return float|null The measurement value as a float, or null if not found.
      */
     private function getSensorValue(string $valueType): ?float
     {
-        // Filter the array to find the element whose 'value_type' matches the requested type
+        // Filter the array to find the element whose 'value_type' matches the requested type.
         $filtered = array_filter(
             $this->sensorData,
-            fn($item) => isset($item['value_type']) && $item['value_type'] === $valueType
+            fn($item) => isset($item->value_type) && $item->value_type === $valueType
         );
 
         // Check if any element was found
@@ -84,10 +84,20 @@ class AirQualityService
             return null;
         }
 
-        // Extract the 'value' from the found element(s)
-        $values = array_column($filtered, 'value');
+        // Since array_column works best with arrays, we'll manually extract the 'value'
+        // from the first element and cast it to float, as declared in the return type.
 
-        // Return the first found value (assuming there's only one match)
-        return reset($values);
+        // Get the first matching object
+        $matchingItem = reset($filtered);
+
+        // Check if the 'value' property exists on the object
+        if (!isset($matchingItem->value)) {
+            return null;
+        }
+
+        // Return the value, explicitly casting it to float
+        // Note: The value in your example is a string ("22.77"), so PHP will automatically
+        // convert it to float during the return, but explicit casting is clearer.
+        return (float)$matchingItem->value;
     }
 }
