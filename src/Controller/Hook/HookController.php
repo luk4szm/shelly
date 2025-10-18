@@ -35,13 +35,11 @@ final class HookController extends AbstractController
     {
         $data = json_decode($request->getContent());
 
-        if (!isset($data['sensordatavalues'])) {
+        if (!property_exists($data, 'sensordatavalues')) {
             return $this->json([], 400);
         }
 
-        $sensorDataValues = $data['sensordatavalues'];
-
-        $airQualityService->saveData($sensorDataValues);
+        $airQualityService->saveData($data->sensordatavalues);
 
         return $this->json([]);
     }
