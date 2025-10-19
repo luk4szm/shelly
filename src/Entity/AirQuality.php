@@ -63,6 +63,8 @@ class AirQuality
 
     public function getPm25(): ?float
     {
+        dump($_ENV);
+
         return $this->pm25;
     }
 
@@ -107,6 +109,37 @@ class AirQuality
         $this->pressure = $pressure;
 
         return $this;
+    }
+
+    public function getSeaLevelPressure(int $altitude): ?float
+    {
+        if ($this->pressure === null) {
+            return null;
+        }
+
+        // 2. Define the simplified barometric constant 'C'.
+        // This constant is derived from: C = (g * M) / R
+        // g ≈ 9.80665 m/s² (gravity)
+        // M ≈ 0.0289644 kg/mol (molar mass of air)
+        // R ≈ 8.314 J/(mol*K) (universal gas constant)
+        // C ≈ 0.03416 [1/m*K]
+        $barometricConstant = 0.03416;
+
+        // 1. Convert temperature from Celsius to Kelvin (T_K = T_C + 273.15)
+        $temperatureKelvin = $this->temperature + 273.15;
+
+        if ($temperatureKelvin === null || $temperatureKelvin <= 0) {
+            // Prevent division by zero or non-physical negative temperatures
+            return 0.0;
+        }
+
+        // 3. Apply the barometric formula: P₀ = P_abs * exp( (C * h) / T_K )
+        $exponent = ($barometricConstant * $altitude) / $temperatureKelvin;
+
+        $seaLevelPressure = $this->pressure * exp($exponent);
+
+        // Round the result for typical meteorological precision (two decimal places)
+        return round($seaLevelPressure, 2);
     }
 
     public function getHumidity(): ?float

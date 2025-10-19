@@ -59,11 +59,12 @@
                 </div>
                 <div class="col">
                     <div class="mb-0 text-nowrap">
-                        {% set airPressureExtraClass = weather.airPressure >= 1030
+                        {% set seaLevelPressure = airQuality.getSeaLevelPressure(home_altitude) %}
+                        {% set airPressureExtraClass = seaLevelPressure >= 1030
                             ? 'text-danger' : (
-                                weather.airPressure >= 1020 ? 'text-danger-emphasis' : (
-                                    weather.airPressure <= 1000 ? 'text-info-emphasis' : (
-                                        weather.airPressure <= 990 ? 'text-info' : ''
+                                seaLevelPressure >= 1020 ? 'text-danger-emphasis' : (
+                                    seaLevelPressure <= 1000 ? 'text-info-emphasis' : (
+                                        seaLevelPressure <= 990 ? 'text-info' : ''
                                     )
                                 )
                             )
@@ -71,21 +72,21 @@
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        <span class="fs-3 {{ airPressureExtraClass }}">{{ weather.airPressure|number_format(0, "", "") }} kPa</span>
+                        <span class="fs-3 {{ airPressureExtraClass }}">{{ seaLevelPressure|number_format(1, ".", "") }} <small>kPa</small></span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         {% set precipitationExtraClass = weather.precipitation > 0 ? 'text-azure' : '' %}
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        <span class="fs-3 {{ precipitationExtraClass }}">{{ weather.precipitation }} mm</span>
+                        <span class="fs-3 {{ precipitationExtraClass }}">{{ weather.precipitation }} <small>mm</small></span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/wind-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
                         {% set windExtraClass = weather.windSpeed >= 8 ? 'text-danger' : (weather.windSpeed >= 5 ? 'text-danger-emphasis' : '') %}
-                        <span class="fs-3 {{ windExtraClass }}">{{ (weather.windSpeed * 3.6)|number_format(0) }} km/h</span>
+                        <span class="fs-3 {{ windExtraClass }}">{{ (weather.windSpeed * 3.6)|number_format(0) }} <small>km/h</small></span>
                         <span class="wind-arrow__arrow" style="display:inline-block; transform: rotate({{ weather.windDirection }}deg); transform-origin: center;">
                             {{ include('_icons/arrow-up-icon.svg.twig', { size: 20 }) }}
                         </span>

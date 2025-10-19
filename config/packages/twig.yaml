@@ -3,6 +3,7 @@ twig:
     form_themes: ["_forms/tabler_layout.html.twig"]
     globals:
         yr_no_location_id: '%yr_no_location_id%'
+        home_altitude: '%env(ALTITUDE)%'
 
 when@test:
     twig:
