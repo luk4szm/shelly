@@ -84,7 +84,7 @@
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/wind-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        {% set windExtraClass = weather.windSpeed >= 14 ? 'text-danger' : (weather.windSpeed >= 8 ? 'text-danger-emphasis' : '') %}
+                        {% set windExtraClass = weather.windSpeed >= 8 ? 'text-danger' : (weather.windSpeed >= 5 ? 'text-danger-emphasis' : '') %}
                         <span class="fs-3 {{ windExtraClass }}">{{ (weather.windSpeed * 3.6)|number_format(0) }} km/h</span>
                         <span class="wind-arrow__arrow" style="display:inline-block; transform: rotate({{ weather.windDirection }}deg); transform-origin: center;">
                             {{ include('_icons/arrow-up-icon.svg.twig', { size: 20 }) }}
