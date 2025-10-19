@@ -17,11 +17,11 @@
                 </div>
                 <div class="col">
                     <div class="mb-0 text-nowrap">
-                        {% set temperatureExtraClass = weather.temperature >= 30
+                        {% set temperatureExtraClass = airQuality.temperature >= 30
                             ? 'text-danger' : (
-                                weather.temperature >= 25 ? 'text-danger-emphasis' : (
-                                    weather.temperature <= 0 ? 'text-info-emphasis' : (
-                                        weather.temperature <= -5 ? 'text-info' : ''
+                                airQuality.temperature >= 25 ? 'text-danger-emphasis' : (
+                                    airQuality.temperature <= 0 ? 'text-info-emphasis' : (
+                                        airQuality.temperature <= -5 ? 'text-info' : ''
                                     )
                                 )
                             )
@@ -29,13 +29,13 @@
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/temperature-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        <span class="fs-3 {{ temperatureExtraClass }}">{{ weather.temperature }} °C</span>
+                        <span class="fs-3 {{ temperatureExtraClass }}">{{ airQuality.temperature }} °C</span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/droplet-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        <span class="fs-3">{{ weather.humidity }} %</span>
+                        <span class="fs-3">{{ airQuality.humidity }} %</span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
