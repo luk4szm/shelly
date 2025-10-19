@@ -63,8 +63,6 @@ class AirQuality
 
     public function getPm25(): ?float
     {
-        dump($_ENV);
-
         return $this->pm25;
     }
 
