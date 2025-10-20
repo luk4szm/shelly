@@ -49,7 +49,7 @@
                         </span>
                         <span class="fs-3">{{ sunrise_hour() }}</span>
                     </div>
-                    {% set airQuality25ExtraClass = airQuality.pm25 >= 50 ? 'text-danger' : ( airQuality.pm25 >= 25 ? 'text-danger-emphasis' ) %}
+                    {% set airQuality25ExtraClass = airQuality.pm25 >= 45 ? 'text-danger' : ( airQuality.pm25 >= 15 ? 'text-danger-emphasis' ) %}
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/25-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
@@ -97,7 +97,7 @@
                         </span>
                         <span class="fs-3">{{ sunset_hour() }}</span>
                     </div>
-                    {% set airQuality10ExtraClass = airQuality.pm10 >= 100 ? 'text-danger' : ( airQuality.pm10 >= 50 ? 'text-danger-emphasis' ) %}
+                    {% set airQuality10ExtraClass = airQuality.pm10 >= 135 ? 'text-danger' : ( airQuality.pm10 >= 45 ? 'text-danger-emphasis' ) %}
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/10-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
