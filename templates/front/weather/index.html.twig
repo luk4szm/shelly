@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}Jakość powietrza i prognoza pogody{% endblock %}
+{% block pagePreTitle %}{% endblock %}
+
+{% block pageTitleActions %}
+    <div class="d-flex">
+        <div class="input-group ms-3">
+            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
+                &#8592;
+            </button>
+            <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-03-12"
+                   max="{{ "now"|date("Y-m-d") }}">
+            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
+                &#8594;
+            </button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">
+                                Temperature
+                            </div>
+                            <div class="ms-auto lh-1">
+                                <div class="dropdown">
+                                    <a class="dropdown-toggle text-secondary" id="active-users-dropdown" href="#" data-bs-toggle="dropdown"
+                                       aria-haspopup="true" aria-expanded="false" aria-label="Select time range for active users">Last 7
+                                        days</a>
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="active-users-dropdown">
+                                        <a class="dropdown-item active" href="#" aria-current="true">Last 7 days</a>
+                                        <a class="dropdown-item" href="#">Last 30 days</a>
+                                        <a class="dropdown-item" href="#">Last 3 months</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-baseline">
+                            <div class="h1 mb-0 me-2">{{ airQuality.actual.temperature }} <small>°C</small></div>
+                            <div class="me-auto">
+                                <span class="text-azure d-inline-flex align-items-center mb-0" style="height: 16px; width: 16px; position: relative; top: 4px">
+                                    {{ include ('_icons/droplet-icon.svg.twig') }}
+                                </span>
+                                <span class="text-azure d-inline-flex align-items-center">
+                                    {{ airQuality.actual.humidity|number_format(1) }} <small>%</small>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">
+                                PM2.5
+                            </div>
+                            <div class="ms-auto lh-1 text-secondary">from 8h</div>
+                        </div>
+                        <div class="d-flex align-items-baseline">
+                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
+                        </div>
+                    </div>
+                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">
+                                PM10
+                            </div>
+                            <div class="ms-auto lh-1 text-secondary">from 8h</div>
+                        </div>
+                        <div class="d-flex align-items-baseline">
+                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
+                        </div>
+                    </div>
+                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row row-cards mt-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
