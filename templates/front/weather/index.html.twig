@@ -21,71 +21,75 @@
 {% block pageBody %}
     <div class="container-xl">
         <div class="row row-cards">
-            <div class="col-md-4 col-12">
+            <div class="col-md col-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 Temperature
                             </div>
-                            <div class="ms-auto lh-1">
-                                <div class="dropdown">
-                                    <a class="dropdown-toggle text-secondary" id="active-users-dropdown" href="#" data-bs-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false" aria-label="Select time range for active users">Last 7
-                                        days</a>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="active-users-dropdown">
-                                        <a class="dropdown-item active" href="#" aria-current="true">Last 7 days</a>
-                                        <a class="dropdown-item" href="#">Last 30 days</a>
-                                        <a class="dropdown-item" href="#">Last 3 months</a>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <div class="d-flex align-items-baseline">
                             <div class="h1 mb-0 me-2">{{ airQuality.actual.temperature }} <small>°C</small></div>
-                            <div class="me-auto">
-                                <span class="text-azure d-inline-flex align-items-center mb-0" style="height: 16px; width: 16px; position: relative; top: 4px">
-                                    {{ include ('_icons/droplet-icon.svg.twig') }}
-                                </span>
-                                <span class="text-azure d-inline-flex align-items-center">
-                                    {{ airQuality.actual.humidity|number_format(1) }} <small>%</small>
-                                </span>
-                            </div>
                         </div>
                     </div>
-                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
                 </div>
             </div>
-            <div class="col-md-4 col-12">
+            <div class="col-md col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">
+                                Pressure
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-baseline">
+                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pressure }} <small>kPa</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">
+                                Humidity
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="h1 mb-0 me-2">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
+                            <div class="h3 mb-0 ms-0 text-muted">x̄ {{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 PM2.5
                             </div>
-                            <div class="ms-auto lh-1 text-secondary">from 8h</div>
                         </div>
                         <div class="d-flex align-items-baseline">
                             <div class="h1 mb-0 me-2">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
                         </div>
                     </div>
-                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
                 </div>
             </div>
-            <div class="col-md-4 col-12">
+            <div class="col-md col-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 PM10
                             </div>
-                            <div class="ms-auto lh-1 text-secondary">from 8h</div>
                         </div>
                         <div class="d-flex align-items-baseline">
                             <div class="h1 mb-0 me-2">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
                         </div>
                     </div>
-                    <div id="chart-temp-pm25" class="position-relative rounded-bottom chart-sm chart-temperature"></div>
                 </div>
             </div>
         </div>
@@ -93,9 +97,27 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+                        <div id="chart-air-quality" class="position-relative" style="min-height: 355px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row row-cards mt-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather" class="position-relative" style="min-height: 300px"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/weather/air_quality.js') }}"></script>
+    <script src="{{ asset('js/weather/weather.js') }}"></script>
+{#    <script src="{{ asset('js/weather/temperature.js') }}"></script>#}
+{#    <script src="{{ asset('js/weather/humidity.js') }}"></script>#}
+{#    <script src="{{ asset('js/weather/pressure.js') }}"></script>#}
 {% endblock %}
