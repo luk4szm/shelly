@@ -8,7 +8,6 @@ use App\Entity\AirQuality;
 use App\Repository\AirQualityRepository;
 use App\Repository\WeatherForecastRepository;
 use App\Utils\Hook\GraphHandler\AirQualityGraphHandler;
-use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +21,7 @@ class WeatherController extends AbstractController
         return $this->render('front/weather/index.html.twig', [
             'airQuality' => [
                 'actual' => $airQualityRepository->findLast(),
-                'daily'  => [],
+                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime()),
             ],
             'forecast' => [
                 'actual' => $forecastRepository->findActualForecast(),

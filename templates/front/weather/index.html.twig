@@ -29,8 +29,9 @@
                                 Temperature
                             </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-0 me-2">{{ airQuality.actual.temperature }} <small>°C</small></div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.temperature }} <small>°C</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.temperature|number_format(2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -43,8 +44,9 @@
                                 Pressure
                             </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pressure }} <small>kPa</small></div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pressure|number_format(1) }} <small>kPa</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pressure|number_format(1) }}</div>
                         </div>
                     </div>
                 </div>
@@ -58,8 +60,8 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 me-2">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
-                            <div class="h3 mb-0 ms-0 text-muted">x̄ {{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.humidity|number_format(1) }}</div>
                         </div>
                     </div>
                 </div>
@@ -72,8 +74,9 @@
                                 PM2.5
                             </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm25|number_format(1) }}</div>
                         </div>
                     </div>
                 </div>
@@ -86,8 +89,9 @@
                                 PM10
                             </div>
                         </div>
-                        <div class="d-flex align-items-baseline">
-                            <div class="h1 mb-0 me-2">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm10|number_format(1) }}</div>
                         </div>
                     </div>
                 </div>
