@@ -9,7 +9,7 @@
             <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
                 &#8592;
             </button>
-            <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-03-12"
+            <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16"
                    max="{{ "now"|date("Y-m-d") }}">
             <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
                 &#8594;
@@ -120,7 +120,7 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/weather/air_quality.js') }}"></script>
-    <script src="{{ asset('js/weather/weather.js') }}"></script>
+{#    <script src="{{ asset('js/weather/weather.js') }}"></script>#}
 {#    <script src="{{ asset('js/weather/temperature.js') }}"></script>#}
 {#    <script src="{{ asset('js/weather/humidity.js') }}"></script>#}
 {#    <script src="{{ asset('js/weather/pressure.js') }}"></script>#}
