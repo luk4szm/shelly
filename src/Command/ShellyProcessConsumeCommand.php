@@ -90,8 +90,6 @@ class ShellyProcessConsumeCommand extends Command
                     $consumer->process($process);
 
                     $this->executedProcesses++;
-
-                    mail('lukasz@mikowski.pl', 'Executed process', $processName);
                 }
 
                 break;
