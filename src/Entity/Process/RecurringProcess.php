@@ -11,6 +11,10 @@ class RecurringProcess extends Process
     #[ORM\Column]
     private ?bool $isActive = null;
 
+    /** @var int|null Time in minutes between process runs */
+    #[ORM\Column(nullable: true)]
+    private ?int $timeInterval = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTime $lastRunAt = null;
 
@@ -22,6 +26,18 @@ class RecurringProcess extends Process
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getTimeInterval(): ?int
+    {
+        return $this->timeInterval;
+    }
+
+    public function setTimeInterval(?int $timeInterval): static
+    {
+        $this->timeInterval = $timeInterval;
 
         return $this;
     }
