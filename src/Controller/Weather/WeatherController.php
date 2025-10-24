@@ -26,7 +26,7 @@ class WeatherController extends AbstractController
             'date' => $request->get('date'),
             'airQuality' => [
                 'actual' => $airQualityRepository->findLast(),
-                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->get('date'))),
+                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->get('date', ''))),
             ],
             'forecast' => [
                 'actual' => $forecastRepository->findActualForecast(),
