@@ -29,14 +29,24 @@
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">
-                                Temperature
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Temperature
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.temperature }} <small>°C</small></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.temperature }} <small>°C</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_min|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_max|number_format(2) }} <small>°C</small></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,14 +59,24 @@
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">
-                                Pressure
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Pressure
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -64,14 +84,24 @@
             <div class="col-md col-12">
                 <div class="card">
                     <div class="card-body px-xl-3">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">
-                                Humidity
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Humidity
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_min|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_max|number_format(1) }} <small>%</small></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -82,14 +112,24 @@
                         airQuality.actual.pm25 >= 5 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">
-                                PM2.5
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        PM2.5
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm25|number_format(1) }} <small>µg/m³</small></div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_min|number_format(1) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25|number_format(1) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_max|number_format(1) }} <small>µg/m³</small></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -100,14 +140,24 @@
                         airQuality.actual.pm10 >= 15 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
-                        <div class="d-flex align-items-center">
-                            <div class="subheader">
-                                PM10
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        PM10
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm10|number_format(1) }} <small>µg/m³</small></div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_min|number_format(1) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10|number_format(1) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_max|number_format(1) }} <small>µg/m³</small></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
