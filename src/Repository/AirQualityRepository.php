@@ -38,8 +38,6 @@ class AirQualityRepository extends CrudRepository
 
     public function findAverageForDate(\DateTimeInterface $date): ?array
     {
-        dump($date);
-
         return $this->createQueryBuilder('aq')
             ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
             ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
