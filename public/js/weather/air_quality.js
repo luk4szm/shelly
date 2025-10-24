@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
         elWeather.innerHTML = '';
-        if (!weatherChart) { weatherChart = new ApexCharts(elWeather, options); weatherChart.render(); }
+        if (!weatherChart) { weatherChart = new ApexCharts(elWeather, options); weatherChart.render(); weatherChart.hideSeries('Wilgotność'); }
         else { weatherChart.updateOptions(options, true, true); }
     };
 
