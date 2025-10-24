@@ -21,7 +21,7 @@ class AirQualityGraphHandler
             'measuredAt'  => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
             'temperature' => (float)$airQuality->getTemperature(),
             'humidity'    => (float)$airQuality->getHumidity(),
-            'pressure'    => (float)$airQuality->getPressure(),
+            'pressure'    => (float)$airQuality->getSeaLevelPressure(),
         ];
     }
 
