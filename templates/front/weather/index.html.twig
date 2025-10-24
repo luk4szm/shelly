@@ -23,7 +23,12 @@
         <div class="row row-cards">
             <div class="col-md col-12">
                 <div class="card">
-                    <div class="card-body">
+                    {% set temperatureExtraClass = airQuality.actual.temperature >= 30 ? 'bg-danger-lt' : (
+                        airQuality.actual.temperature >= 25 ? 'bg-warning-lt' : (
+                            airQuality.actual.temperature <= 0 ? 'bg-info-lt' : ''
+                        )
+                    ) %}
+                    <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 Temperature
@@ -31,29 +36,34 @@
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
                             <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.temperature }} <small>°C</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.temperature|number_format(2) }}</div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    <div class="card-body">
+                    {% set airPressureExtraClass = airQuality.actual.seaLevelPressure >= 1030 ? 'bg-danger-lt' : (
+                        airQuality.actual.seaLevelPressure >= 1020 ? 'bg-warning-lt' : (
+                            airQuality.actual.seaLevelPressure <= 1000 ? 'bg-info-lt' : ''
+                        )
+                    ) %}
+                    <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 Pressure
                             </div>
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.seaLevelPressure|number_format(1) }} <small>kPa</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.seaLevelPressure|number_format(1) }}</div>
+                            <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body px-xl-3">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 Humidity
@@ -61,7 +71,7 @@
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
                             <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.humidity|number_format(1) }} <small>%</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.humidity|number_format(1) }}</div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
                         </div>
                     </div>
                 </div>
@@ -71,7 +81,7 @@
                     {% set airQuality25ExtraClass = airQuality.actual.pm25 >= 15 ? 'bg-danger-lt' : (
                         airQuality.actual.pm25 >= 5 ? 'bg-warning-lt' : ''
                     ) %}
-                    <div class="card-body {{ airQuality25ExtraClass }}">
+                    <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 PM2.5
@@ -79,7 +89,7 @@
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
                             <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm25 }} <small>µg/m³</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm25|number_format(1) }}</div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm25|number_format(1) }} <small>µg/m³</small></div>
                         </div>
                     </div>
                 </div>
@@ -89,7 +99,7 @@
                     {% set airQuality10ExtraClass = airQuality.actual.pm10 >= 45 ? 'bg-danger-lt' : (
                         airQuality.actual.pm10 >= 15 ? 'bg-warning-lt' : ''
                     ) %}
-                    <div class="card-body {{ airQuality10ExtraClass }}">
+                    <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
                         <div class="d-flex align-items-center">
                             <div class="subheader">
                                 PM10
@@ -97,7 +107,7 @@
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between">
                             <div class="h1 mb-0 text-nowrap">{{ airQuality.actual.pm10 }} <small>µg/m³</small></div>
-                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm10|number_format(1) }}</div>
+                            <div class="h3 mb-0 text-nowrap text-muted">{{ airQuality.daily.pm10|number_format(1) }} <small>µg/m³</small></div>
                         </div>
                     </div>
                 </div>
