@@ -67,12 +67,11 @@
                 </div>
                 <div class="col">
                     <div class="mb-0 text-nowrap">
-                        {% set seaLevelPressure = airQuality.getSeaLevelPressure(home_altitude) %}
-                        {% set airPressureExtraClass = seaLevelPressure >= 1030
+                        {% set airPressureExtraClass = airQuality.getSeaLevelPressure >= 1030
                             ? 'text-danger' : (
-                                seaLevelPressure >= 1020 ? 'text-danger-emphasis' : (
-                                    seaLevelPressure <= 1000 ? 'text-info-emphasis' : (
-                                        seaLevelPressure <= 990 ? 'text-info' : ''
+                                airQuality.getSeaLevelPressure >= 1020 ? 'text-danger-emphasis' : (
+                                    airQuality.getSeaLevelPressure <= 1000 ? 'text-info-emphasis' : (
+                                        airQuality.getSeaLevelPressure <= 990 ? 'text-info' : ''
                                     )
                                 )
                             )
@@ -80,7 +79,7 @@
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
-                        <span class="fs-3 {{ airPressureExtraClass }}">{{ seaLevelPressure|number_format(1, ".", "") }} <small>kPa</small></span>
+                        <span class="fs-3 {{ airPressureExtraClass }}">{{ airQuality.getSeaLevelPressure|number_format(1, ".", "") }} <small>kPa</small></span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         {% set precipitationExtraClass = weather.precipitation > 0 ? 'text-azure' : '' %}

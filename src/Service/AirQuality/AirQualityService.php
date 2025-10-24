@@ -28,6 +28,7 @@ class AirQualityService
         $airQuality->setTemperature($this->getSensorValue('BME280_temperature'));
         $airQuality->setPressure(round($this->getSensorValue('BME280_pressure') / 100, 2));
         $airQuality->setHumidity($this->getSensorValue('BME280_humidity'));
+        $airQuality->calculateSeaLevelPressure($_ENV['ALTITUDE']);
 
         $this->airQualityRepository->save($airQuality);
     }

@@ -30,6 +30,9 @@ class AirQuality
     private ?float $pressure = null;
 
     #[ORM\Column(nullable: true)]
+    private ?float $seaLevelPressure = null;
+
+    #[ORM\Column(nullable: true)]
     private ?float $humidity = null;
 
     #[ORM\Column]
@@ -109,10 +112,22 @@ class AirQuality
         return $this;
     }
 
-    public function getSeaLevelPressure(int $altitude): ?float
+    public function getSeaLevelPressure(): ?float
+    {
+        return $this->seaLevelPressure;
+    }
+
+    public function setSeaLevelPressure(?float $seaLevelPressure): static
+    {
+        $this->seaLevelPressure = $seaLevelPressure;
+
+        return $this;
+    }
+
+    public function calculateSeaLevelPressure(int $altitude): void
     {
         if ($this->pressure === null) {
-            return null;
+            return;
         }
 
         // 2. Define the simplified barometric constant 'C'.
@@ -128,7 +143,9 @@ class AirQuality
 
         if ($temperatureKelvin === null || $temperatureKelvin <= 0) {
             // Prevent division by zero or non-physical negative temperatures
-            return 0.0;
+            $this->seaLevelPressure = 0.0;
+
+            return;
         }
 
         // 3. Apply the barometric formula: P₀ = P_abs * exp( (C * h) / T_K )
@@ -137,7 +154,7 @@ class AirQuality
         $seaLevelPressure = $this->pressure * exp($exponent);
 
         // Round the result for typical meteorological precision (two decimal places)
-        return round($seaLevelPressure, 2);
+        $this->seaLevelPressure = round($seaLevelPressure, 2);
     }
 
     public function getHumidity(): ?float
