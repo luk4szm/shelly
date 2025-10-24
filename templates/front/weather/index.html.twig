@@ -25,9 +25,10 @@
         <div class="row row-cards" id="air_quality_data_cards">
             <div class="col-md col-12">
                 <div class="card">
-                    {% set temperatureExtraClass = airQuality.actual.temperature >= 30 ? 'bg-danger-lt' : (
-                        airQuality.actual.temperature >= 25 ? 'bg-warning-lt' : (
-                            airQuality.actual.temperature <= 0 ? 'bg-info-lt' : ''
+                    {% set referalValue = isToday ? airQuality.actual.temperature : airQuality.daily.temperature %}
+                    {% set temperatureExtraClass = referalValue >= 30 ? 'bg-danger-lt' : (
+                        referalValue >= 25 ? 'bg-warning-lt' : (
+                            referalValue <= 0 ? 'bg-info-lt' : ''
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
@@ -58,9 +59,10 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set airPressureExtraClass = airQuality.actual.seaLevelPressure >= 1030 ? 'bg-danger-lt' : (
-                        airQuality.actual.seaLevelPressure >= 1020 ? 'bg-warning-lt' : (
-                            airQuality.actual.seaLevelPressure <= 1000 ? 'bg-info-lt' : ''
+                    {% set referalValue = isToday ? airQuality.actual.seaLevelPressure : airQuality.daily.seaLevelPressure %}
+                    {% set airPressureExtraClass = referalValue >= 1030 ? 'bg-danger-lt' : (
+                        referalValue >= 1020 ? 'bg-warning-lt' : (
+                            referalValue <= 1000 ? 'bg-info-lt' : ''
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
@@ -119,8 +121,9 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set airQuality25ExtraClass = airQuality.actual.pm25 >= 15 ? 'bg-danger-lt' : (
-                        airQuality.actual.pm25 >= 5 ? 'bg-warning-lt' : ''
+                    {% set referalValue = isToday ? airQuality.actual.pm25 : airQuality.daily.pm25 %}
+                    {% set airQuality25ExtraClass = referalValue >= 15 ? 'bg-danger-lt' : (
+                        referalValue >= 5 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
                         <div class="row">
@@ -150,8 +153,9 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set airQuality10ExtraClass = airQuality.actual.pm10 >= 45 ? 'bg-danger-lt' : (
-                        airQuality.actual.pm10 >= 15 ? 'bg-warning-lt' : ''
+                    {% set referalValue = isToday ? airQuality.actual.pm10 : airQuality.daily.pm10 %}
+                    {% set airQuality10ExtraClass = referalValue >= 45 ? 'bg-danger-lt' : (
+                        referalValue >= 15 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
                         <div class="row">
@@ -163,7 +167,7 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.pm10 :  airQuality.daily.pm10|number_format(2) }}
+                                        {{ isToday ? airQuality.actual.pm10 : airQuality.daily.pm10|number_format(2) }}
                                         <small>µg/m³</small>
                                     </div>
                                 </div>
