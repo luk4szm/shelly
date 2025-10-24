@@ -1,6 +1,10 @@
+// language: javascript
 /**
- * Jeden kontroler obsługujący oba wykresy: jakość powietrza i pogodę.
- * Zapobiega podwójnej zmianie daty przez współdzielone przyciski.
+ * Kontroler wykresów jakości powietrza i pogody z obsługą daty:
+ * - start z data-role-date (YYYY-MM-DD),
+ * - aktualizacja ?date= w URL przy każdej zmianie,
+ * - pobieranie danych dla wybranej daty,
+ * - odświeżanie kart z tej samej strony pod wybraną datę.
  */
 document.addEventListener('DOMContentLoaded', function () {
     if (!window.ApexCharts) {
@@ -8,17 +12,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Wspólne elementy sterujące datą
+    // Elementy sterujące i kontenery wykresów
     const dateInput = document.getElementById('wheater_date');
     const prevBtn = document.getElementById('prev-day-btn');
     const nextBtn = document.getElementById('next-day-btn');
-
-    // Kontenery wykresów (mogą istnieć jeden lub oba)
     const elAir = document.getElementById('chart-air-quality');
     const elWeather = document.getElementById('chart-weather');
 
     if (!dateInput || !prevBtn || !nextBtn || (!elAir && !elWeather)) {
-        // Brak wymaganych elementów na stronie – nic nie robimy
         return;
     }
 
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let airChart = null;
     let weatherChart = null;
 
-    // --- Pomocnicze dla sterowania datą ---
+    // Narzędzia
     const formatDate = (date) => date.toISOString().split('T')[0];
 
     const updateNextButtonState = () => {
@@ -37,17 +38,37 @@ document.addEventListener('DOMContentLoaded', function () {
         nextBtn.disabled = currentDate >= today;
     };
 
+    const setUrlDateParam = (dateStr, replace = false) => {
+        const url = new URL(window.location.href);
+        if (dateStr) {
+            url.searchParams.set('date', dateStr);
+        } else {
+            url.searchParams.delete('date');
+        }
+        if (replace) {
+            window.history.replaceState({}, '', url.toString());
+        } else {
+            window.history.pushState({}, '', url.toString());
+        }
+    };
+
     const changeDate = (days) => {
         if (!dateInput.value) return;
         const currentDate = new Date(dateInput.value);
         currentDate.setDate(currentDate.getDate() + days);
-        dateInput.value = formatDate(currentDate);
+        const newVal = formatDate(currentDate);
+        dateInput.value = newVal;
+        setUrlDateParam(newVal);
         updateNextButtonState();
-        // Kluczowe: tylko jeden listener zmienia dane (poniżej), unikamy wielokrotnych handlerów w wielu plikach
-        loadAll(dateInput.value);
+        loadAll(newVal);
     };
 
-    // --- API: pobieranie danych ---
+    // Odczyt daty ze znacznika data-role-date
+    const dateHolder = document.querySelector('[data-role-date]');
+    const dateFromDataAttr = dateHolder ? (dateHolder.getAttribute('data-role-date') || '').trim() : '';
+    const isValidDateStr = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+    // API: pobieranie danych
     const fetchAirQuality = async (dateStr) => {
         try {
             if (elAir) elAir.innerHTML = '<div class="text-center p-4">Ładowanie…</div>';
@@ -72,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // --- Transformacje ---
+    // Transformacje danych
     const transformAir = (raw) => {
         if (!Array.isArray(raw)) return { series: [] };
         const points = raw
@@ -128,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     };
 
-    // --- Renderery ---
+    // Renderery
     const renderAir = ({ series }) => {
         if (!elAir) return;
         const hasData = series.some(s => s.data.length > 0);
@@ -218,25 +239,67 @@ document.addEventListener('DOMContentLoaded', function () {
         else { weatherChart.updateOptions(options, true, true); }
     };
 
-    // --- Ładowanie obu wykresów dla danej daty ---
+    // Odświeżanie kart (zachowuje wybraną datę)
+    const reloadAirQualityCards = async () => {
+        const container = document.getElementById('air_quality_data_cards');
+        if (!container) return;
+        container.innerHTML = '<div class="text-center p-3">Ładowanie…</div>';
+        try {
+            const url = new URL(window.location.href);
+            const currentDate = dateInput.value || '';
+            if (currentDate) url.searchParams.set('date', currentDate);
+            const res = await fetch(url.toString(), { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const html = await res.text();
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const fresh = tmp.querySelector('#air_quality_data_cards');
+            container.innerHTML = fresh ? fresh.innerHTML : '<div class="text-center text-muted p-3">Brak danych.</div>';
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div class="text-center text-muted p-3">Nie udało się załadować.</div>';
+        }
+    };
+
+    // Ładowanie danych dla danej daty
     const loadAll = async (dateStr) => {
-        // Równolegle, ale tylko te które istnieją na stronie
         const tasks = [];
         if (elAir) tasks.push(fetchAirQuality(dateStr).then(raw => renderAir(transformAir(raw || []))));
         if (elWeather) tasks.push(fetchWeather(dateStr).then(raw => renderWeather(transformWeather(raw || []))));
+        tasks.push(reloadAirQualityCards());
         await Promise.allSettled(tasks);
     };
 
-    // --- Podpięcie JEDNEGO zestawu handlerów do wspólnych kontrolek ---
+    // Handlery
     prevBtn.addEventListener('click', () => changeDate(-1));
     nextBtn.addEventListener('click', () => changeDate(1));
     dateInput.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (!isValidDateStr(val)) return;
+        setUrlDateParam(val);
         updateNextButtonState();
-        loadAll(e.target.value);
+        loadAll(val);
+    });
+
+    // Reakcja na nawigację wstecz/przód (przywróć stan po zmianie historii)
+    window.addEventListener('popstate', () => {
+        const url = new URL(window.location.href);
+        const d = url.searchParams.get('date');
+        const dateStr = isValidDateStr(d) ? d : dateInput.value;
+        if (isValidDateStr(dateStr)) {
+            dateInput.value = dateStr;
+            updateNextButtonState();
+            loadAll(dateStr);
+        }
     });
 
     // Inicjalizacja
+    const urlDate = new URL(window.location.href).searchParams.get('date');
+    const initial = isValidDateStr(urlDate)
+        ? urlDate
+        : (isValidDateStr(dateFromDataAttr) ? dateFromDataAttr : (dateInput.value || formatDate(new Date())));
+    dateInput.value = initial;
+    setUrlDateParam(initial, true); // zsynchronizuj URL bez dodawania wpisu w historii
     updateNextButtonState();
-    const startDate = dateInput.value || new Date().toISOString().split('T')[0];
-    loadAll(startDate);
+    loadAll(initial);
 });

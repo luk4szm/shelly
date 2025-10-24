@@ -16,12 +16,17 @@ use Symfony\Component\Routing\Attribute\Route;
 class WeatherController extends AbstractController
 {
     #[Route('/weather', name: 'app_weather_index', methods: ['GET'])]
-    public function index(WeatherForecastRepository $forecastRepository, AirQualityRepository $airQualityRepository): Response
+    public function index(
+        Request                   $request,
+        WeatherForecastRepository $forecastRepository,
+        AirQualityRepository      $airQualityRepository,
+    ): Response
     {
         return $this->render('front/weather/index.html.twig', [
+            'date' => $request->get('date'),
             'airQuality' => [
                 'actual' => $airQualityRepository->findLast(),
-                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime()),
+                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->get('date'))),
             ],
             'forecast' => [
                 'actual' => $forecastRepository->findActualForecast(),
