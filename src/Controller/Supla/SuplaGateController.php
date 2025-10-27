@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller\Supla;
 
+use App\Event\SuplaGateOpenEvent;
 use App\Service\Gate\SuplaGateOpener;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -13,14 +15,24 @@ use Symfony\Component\Routing\Attribute\Route;
 final class SuplaGateController extends AbstractController
 {
     #[Route('/open', name: 'open', methods: ['PATCH'])]
-    public function open(SuplaGateOpener $gateOpener): Response
+    public function open(
+        SuplaGateOpener          $gateOpener,
+        EventDispatcherInterface $dispatcher,
+    ): Response
     {
+        $dispatcher->dispatch(new SuplaGateOpenEvent('open', $this->getUser()->getUserIdentifier()));
+
         return $this->json($gateOpener->open());
     }
 
     #[Route('/open-close', name: 'open_close', methods: ['PATCH'])]
-    public function openClose(SuplaGateOpener $gateOpener): Response
+    public function openClose(
+        SuplaGateOpener          $gateOpener,
+        EventDispatcherInterface $dispatcher,
+    ): Response
     {
+        $dispatcher->dispatch(new SuplaGateOpenEvent('open-close', $this->getUser()->getUserIdentifier()));
+
         return $this->json($gateOpener->sendOpenCloseSimpleRequest());
     }
 

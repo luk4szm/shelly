@@ -42,9 +42,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: HeatingNote::class, mappedBy: 'createdBy', orphanRemoval: true)]
     private Collection $heatingNotes;
 
+    /**
+     * @var Collection<int, UserNotification>
+     */
+    #[ORM\OneToMany(targetEntity: UserNotification::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $userNotifications;
+
     public function __construct()
     {
-        $this->heatingNotes = new ArrayCollection();
+        $this->heatingNotes      = new ArrayCollection();
+        $this->userNotifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -158,6 +165,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($heatingNote->getCreatedBy() === $this) {
                 $heatingNote->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserNotification>
+     */
+    public function getUserNotifications(): Collection
+    {
+        return $this->userNotifications;
+    }
+
+    public function addUserNotification(UserNotification $userNotification): static
+    {
+        if (!$this->userNotifications->contains($userNotification)) {
+            $this->userNotifications->add($userNotification);
+            $userNotification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserNotification(UserNotification $userNotification): static
+    {
+        if ($this->userNotifications->removeElement($userNotification)) {
+            // set the owning side to null (unless already changed)
+            if ($userNotification->getUser() === $this) {
+                $userNotification->setUser(null);
             }
         }
 

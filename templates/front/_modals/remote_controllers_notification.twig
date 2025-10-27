@@ -1,0 +1,23 @@
+<div class="modal fade" id="open_notification_modal" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Włącz powiadomienie o otwarciu bramy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-6 col-12">
+                        <a href="{{ path('app_remote_gate_enable_notification', {'channel': 'sms'}) }}" class="btn btn-azure btn-3 w-100"> SMS </a>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <a href="{{ path('app_remote_gate_enable_notification', {'channel': 'email'}) }}" class="btn btn-azure btn-3 w-100"> E-mail </a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn ms-auto" data-bs-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>

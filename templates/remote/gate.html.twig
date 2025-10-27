@@ -24,6 +24,15 @@
                                 </button>
                             </div>
                         </div>
+                        {% if is_granted("ROLE_ADMIN") %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <a href="#" class="btn btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#open_notification_modal">
+                                        <span class="d-md-block d-none">Powiadomienia</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

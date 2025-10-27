@@ -84,3 +84,7 @@
 {% block pagejs %}
     <script src="{{ asset('js/device_control.js') }}"></script>
 {% endblock %}
+
+{% block modals %}
+    {% include 'front/_modals/remote_controllers_notification.twig' %}
+{% endblock %}
