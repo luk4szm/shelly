@@ -263,43 +263,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Ładowanie danych dla danej daty
     const loadAll = async (dateStr) => {
-        const tasks = [];
-        if (elAir) tasks.push(fetchAirQuality(dateStr).then(raw => renderAir(transformAir(raw || []))));
-        if (elWeather) tasks.push(fetchWeather(dateStr).then(raw => renderWeather(transformWeather(raw || []))));
-        tasks.push(reloadAirQualityCards());
-        await Promise.allSettled(tasks);
-    };
+            const tasks = [];
+            if (elAir) tasks.push(fetchAirQuality(dateStr).then(raw => renderAir(transformAir(raw || []))));
+            if (elWeather) tasks.push(fetchWeather(dateStr).then(raw => renderWeather(transformWeather(raw || []))));
+            // Usunięto automatyczne odświeżanie kart przy starcie; zostawiamy je wyłącznie na zmianę daty.
+            // tasks.push(reloadAirQualityCards());
+            await Promise.allSettled(tasks);
+        };
 
-    // Handlery
-    prevBtn.addEventListener('click', () => changeDate(-1));
-    nextBtn.addEventListener('click', () => changeDate(1));
-    dateInput.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (!isValidDateStr(val)) return;
-        setUrlDateParam(val);
-        updateNextButtonState();
-        loadAll(val);
-    });
-
-    // Reakcja na nawigację wstecz/przód (przywróć stan po zmianie historii)
-    window.addEventListener('popstate', () => {
-        const url = new URL(window.location.href);
-        const d = url.searchParams.get('date');
-        const dateStr = isValidDateStr(d) ? d : dateInput.value;
-        if (isValidDateStr(dateStr)) {
-            dateInput.value = dateStr;
+        // Handlery
+        prevBtn.addEventListener('click', () => {
+            changeDate(-1);
+            // Po zmianie daty przeładuj karty
+            reloadAirQualityCards();
+        });
+        nextBtn.addEventListener('click', () => {
+            changeDate(1);
+            // Po zmianie daty przeładuj karty
+            reloadAirQualityCards();
+        });
+        dateInput.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (!isValidDateStr(val)) return;
+            setUrlDateParam(val);
             updateNextButtonState();
-            loadAll(dateStr);
-        }
-    });
+            loadAll(val);
+            // Po ręcznej zmianie daty przeładuj karty
+            reloadAirQualityCards();
+        });
 
-    // Inicjalizacja
-    const urlDate = new URL(window.location.href).searchParams.get('date');
-    const initial = isValidDateStr(urlDate)
-        ? urlDate
-        : (isValidDateStr(dateFromDataAttr) ? dateFromDataAttr : (dateInput.value || formatDate(new Date())));
-    dateInput.value = initial;
-    setUrlDateParam(initial, true); // zsynchronizuj URL bez dodawania wpisu w historii
-    updateNextButtonState();
-    loadAll(initial);
+        // Reakcja na nawigację wstecz/przód (przywróć stan po zmianie historii)
+        window.addEventListener('popstate', () => {
+            const url = new URL(window.location.href);
+            const d = url.searchParams.get('date');
+            const dateStr = isValidDateStr(d) ? d : dateInput.value;
+            if (isValidDateStr(dateStr)) {
+                dateInput.value = dateStr;
+                updateNextButtonState();
+                loadAll(dateStr);
+                // Po przywróceniu stanu historii przeładuj karty
+                reloadAirQualityCards();
+            }
+        });
+
+        // Inicjalizacja
+        const urlDate = new URL(window.location.href).searchParams.get('date');
+        const initial = isValidDateStr(urlDate)
+            ? urlDate
+            : (isValidDateStr(dateFromDataAttr) ? dateFromDataAttr : (dateInput.value || formatDate(new Date())));
+        dateInput.value = initial;
+        setUrlDateParam(initial, true); // zsynchronizuj URL bez dodawania wpisu w historii
+        updateNextButtonState();
+        // Na starcie NIE przeładowujemy kart, bo są już wyrenderowane serwerowo.
+        loadAll(initial);
 });
