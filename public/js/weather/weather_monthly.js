@@ -35,7 +35,13 @@ document.addEventListener('DOMContentLoaded', function () {
             chart: { type: 'candlestick', height, toolbar: { show: false } },
             series: [{ name, type: 'candlestick', data }],
             xaxis: { type: 'datetime', labels: { format: 'dd MMM', datetimeUTC: false } },
-            yaxis: { tooltip: { enabled: true }, title: { text: yTitle } },
+            yaxis: {
+                tooltip: { enabled: true },
+                title: { text: yTitle },
+                labels: {
+                    formatter: (val) => Number.isFinite(val) ? Math.round(val).toString() : ''
+                }
+            },
             plotOptions: { candlestick: { wick: { useFillColor: true } } },
             legend: { show: false },
             grid: { strokeDashArray: 4 }
