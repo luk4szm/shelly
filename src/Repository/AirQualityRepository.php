@@ -62,44 +62,71 @@ class AirQualityRepository extends CrudRepository
         // Uwaga: korzystamy z zmiennych użytkownika, aby wyłuskać first/last per day bez window functions.
         $sql = <<<SQL
 SELECT
-  d.day as day,
-  -- PM2.5
-  (SELECT aq.pm25 FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at ASC LIMIT 1)  AS pm25_open,
-  (SELECT aq.pm25 FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at DESC LIMIT 1) AS pm25_close,
-  (SELECT MIN(aq.pm25) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                               AS pm25_low,
-  (SELECT MAX(aq.pm25) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                               AS pm25_high,
+    -- Dzień
+    DATE(aq.measured_at) AS day,
 
-  -- PM10
-  (SELECT aq.pm10 FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at ASC LIMIT 1)  AS pm10_open,
-  (SELECT aq.pm10 FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at DESC LIMIT 1) AS pm10_close,
-  (SELECT MIN(aq.pm10) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                 AS pm10_low,
-  (SELECT MAX(aq.pm10) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                 AS pm10_high,
+    -- PM2.5 (Open/Close z użyciem złączeń do aq_open i aq_close)
+    aq_open.pm25 AS pm25_open,
+    aq_close.pm25 AS pm25_close,
+    -- PM2.5 (Low/High z użyciem funkcji agregujących)
+    MIN(aq.pm25) AS pm25_low,
+    MAX(aq.pm25) AS pm25_high,
 
-  -- Temperature
-  (SELECT aq.temperature FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at ASC LIMIT 1)  AS temperature_open,
-  (SELECT aq.temperature FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at DESC LIMIT 1) AS temperature_close,
-  (SELECT MIN(aq.temperature) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS temperature_low,
-  (SELECT MAX(aq.temperature) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS temperature_high,
+    -- PM10
+    aq_open.pm10 AS pm10_open,
+    aq_close.pm10 AS pm10_close,
+    MIN(aq.pm10) AS pm10_low,
+    MAX(aq.pm10) AS pm10_high,
 
-  -- Humidity
-  (SELECT aq.humidity FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at ASC LIMIT 1)  AS humidity_open,
-  (SELECT aq.humidity FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at DESC LIMIT 1) AS humidity_close,
-  (SELECT MIN(aq.humidity) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS humidity_low,
-  (SELECT MAX(aq.humidity) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS humidity_high,
+    -- Temperature
+    aq_open.temperature AS temperature_open,
+    aq_close.temperature AS temperature_close,
+    MIN(aq.temperature) AS temperature_low,
+    MAX(aq.temperature) AS temperature_high,
 
-  -- Sea level pressure
-  (SELECT aq.sea_level_pressure FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at ASC LIMIT 1)  AS seaLevelPressure_open,
-  (SELECT aq.sea_level_pressure FROM air_quality aq WHERE DATE(aq.measured_at) = d.day ORDER BY aq.measured_at DESC LIMIT 1) AS seaLevelPressure_close,
-  (SELECT MIN(aq.sea_level_pressure) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS seaLevelPressure_low,
-  (SELECT MAX(aq.sea_level_pressure) FROM air_quality aq WHERE DATE(aq.measured_at) = d.day)                                  AS seaLevelPressure_high
+    -- Humidity
+    aq_open.humidity AS humidity_open,
+    aq_close.humidity AS humidity_close,
+    MIN(aq.humidity) AS humidity_low,
+    MAX(aq.humidity) AS humidity_high,
 
-FROM (
-  SELECT DATE(aq.measured_at) AS day
-  FROM air_quality aq
-  WHERE aq.measured_at BETWEEN :from AND :to
-  GROUP BY DATE(aq.measured_at)
-) d
-ORDER BY d.day ASC
+    -- Sea level pressure
+    aq_open.sea_level_pressure AS seaLevelPressure_open,
+    aq_close.sea_level_pressure AS seaLevelPressure_close,
+    MIN(aq.sea_level_pressure) AS seaLevelPressure_low,
+    MAX(aq.sea_level_pressure) AS seaLevelPressure_high
+
+FROM air_quality aq
+
+-- 1. Podzapytanie do obliczenia Min i Max `measured_at` dla każdego dnia
+JOIN (
+    SELECT
+        DATE(measured_at) AS day_key,
+        MIN(measured_at) AS min_time,
+        MAX(measured_at) AS max_time
+    FROM air_quality
+    WHERE measured_at BETWEEN :from AND :to
+    GROUP BY day_key
+) AS daily_times
+    ON DATE(aq.measured_at) = daily_times.day_key
+
+-- 2. Złączenie w celu pobrania wartości 'OPEN' (pierwszy pomiar dnia)
+LEFT JOIN air_quality aq_open
+    ON aq_open.measured_at = daily_times.min_time
+
+-- 3. Złączenie w celu pobrania wartości 'CLOSE' (ostatni pomiar dnia)
+LEFT JOIN air_quality aq_close
+    ON aq_close.measured_at = daily_times.max_time
+
+-- Grupowanie po dniu (dla MIN/MAX) oraz dołączenie wartości OPEN/CLOSE
+GROUP BY
+    day,
+    aq_open.pm25, aq_close.pm25,
+    aq_open.pm10, aq_close.pm10,
+    aq_open.temperature, aq_close.temperature,
+    aq_open.humidity, aq_close.humidity,
+    aq_open.sea_level_pressure, aq_close.sea_level_pressure
+ORDER BY day ASC;
 SQL;
 
         $stmt   = $conn->prepare($sql);
