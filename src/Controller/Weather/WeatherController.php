@@ -62,14 +62,21 @@ class WeatherController extends AbstractController
         );
     }
 
-    // Miesięczne: jakości powietrza (dobowe średnie + ostatnia kolumna JS przelicza średnią kroczącą)
     #[Route('/get-air-quality-monthly-avg', name: 'air_quality_monthly_avg', methods: ['GET'])]
     public function getAirQualityMonthlyAvg(Request $request, AirQualityRepository $airQualityRepository): Response
     {
-        $date = new \DateTime($request->get('date', 'now'));
-        $rows = $airQualityRepository->findDailyAveragesForMonth($date);
+        $dateParam = $request->get('date');
+        if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
+            $from = new \DateTime($dateParam . '-01');
+            $to   = (clone $from)->modify('last day of this month')->setTime(23, 59, 59);
+            $rows = $airQualityRepository->findDailyAveragesForRange($from, $to);
+        } else {
+            // ostatnie 30 dni (bez parametru date)
+            $to = new \DateTime('today 23:59:59');
+            $from = (clone $to)->modify('-29 days')->setTime(0, 0, 0);
+            $rows = $airQualityRepository->findDailyAveragesForRange($from, $to);
+        }
 
-        // zwrot: [{ x: ts, pm25: float, pm10: float }]
         $out = [];
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
@@ -83,12 +90,20 @@ class WeatherController extends AbstractController
         return $this->json($out);
     }
 
-    // Miesięczne: dane atmosferyczne (świeczki)
     #[Route('/get-atmosphere-monthly-candles', name: 'atmosphere_monthly_candles', methods: ['GET'])]
     public function getAtmosphereMonthlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
     {
-        $date = new \DateTime($request->get('date', 'now'));
-        $rows = $airQualityRepository->findAtmosphereCandlesForMonth($date);
+        $dateParam = $request->get('date');
+        if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
+            $from = new \DateTime($dateParam . '-01');
+            $to   = (clone $from)->modify('last day of this month')->setTime(23, 59, 59);
+            $rows = $airQualityRepository->findAtmosphereCandlesForRange($from, $to);
+        } else {
+            // ostatnie 30 dni (bez parametru date)
+            $to = new \DateTime('today 23:59:59');
+            $from = (clone $to)->modify('-29 days')->setTime(0, 0, 0);
+            $rows = $airQualityRepository->findAtmosphereCandlesForRange($from, $to);
+        }
 
         $out = [
             'temperature' => [],

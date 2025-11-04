@@ -1,5 +1,5 @@
 // language: javascript
-// PM2.5/PM10: wykres liniowy z dobowymi średnimi i średnią kroczącą (front).
+// PM2.5/PM10: linia, brak markerów, pełne liczby; bez ?date= ładuje ostatnie 30 dni.
 document.addEventListener('DOMContentLoaded', function () {
     if (!window.ApexCharts) return;
 
@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updateNextButtonState = () => {
         const lock = new Date();
+        const urlDate = new URL(window.location.href).searchParams.get('date');
+        if (!isValidMonthStr(urlDate)) { nextBtn.disabled = true; return; } // w trybie 30 dni przyciski nie mają sensu
         const current = parseMonth(dateInput.value);
         const lockYm = new Date(lock.getFullYear(), lock.getMonth(), 1);
         const currYm = current ? new Date(current.getFullYear(), current.getMonth(), 1) : null;
@@ -42,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const changeMonth = (delta) => {
+        const urlDate = new URL(window.location.href).searchParams.get('date');
+        if (!isValidMonthStr(urlDate)) return; // w trybie 30 dni nic nie zmieniamy
         const d = parseMonth(dateInput.value);
         if (!d) return;
         d.setMonth(d.getMonth() + delta);
@@ -51,12 +55,13 @@ document.addEventListener('DOMContentLoaded', function () {
         updateNextButtonState();
         loadAir(v);
         reloadCards();
-        // poinformuj drugi skrypt (pogoda), aby też się przeładował
         dispatchMonthChanged(v);
     };
 
-    const fetchAirQualityMonthlyAvg = async (monthStr) => {
-        const res = await fetch(`/weather/get-air-quality-monthly-avg?date=${encodeURIComponent(monthStr)}`, { cache: 'no-store' });
+    const fetchAirQualityMonthlyAvg = async (dateParam) => {
+        const url = new URL('/weather/get-air-quality-monthly-avg', window.location.origin);
+        if (dateParam) url.searchParams.set('date', dateParam);
+        const res = await fetch(url.toString(), { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json();
     };
@@ -93,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasData = series.some(s => s.data.some(p => p.y != null));
         if (!hasData) {
             if (airChart) { airChart.destroy(); airChart = null; }
-            elAir.innerHTML = '<div class="text-center p-4">Brak danych miesięcznych.</div>';
+            elAir.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
         const options = {
@@ -101,18 +106,18 @@ document.addEventListener('DOMContentLoaded', function () {
             series,
             stroke: { curve: 'smooth', width: 2 },
             dataLabels: { enabled: false },
-            markers: { size: 0 }, // brak punktów
+            markers: { size: 0 },
             xaxis: { type: 'datetime', labels: { format: 'dd MMM', datetimeUTC: false } },
             yaxis: {
                 min: 0,
                 forceNiceScale: true,
-                labels: { formatter: (v) => (v == null ? '' : Math.round(v).toString()) }, // pełne liczby
+                labels: { formatter: (v) => (v == null ? '' : Math.round(v).toString()) },
                 title: { text: 'µg/m³' }
             },
             tooltip: {
                 shared: true, intersect: false, theme: 'dark',
                 x: { format: 'dd MMM' },
-                y: { formatter: v => (v == null ? '' : `${v.toFixed(0)} µg/m³`) } // pełne liczby
+                y: { formatter: v => (v == null ? '' : `${v.toFixed(0)} µg/m³`) }
             },
             legend: { show: true, position: 'bottom' },
             colors: ['#ff6b6b', '#4dabf7'],
@@ -129,8 +134,8 @@ document.addEventListener('DOMContentLoaded', function () {
         container.innerHTML = '<div class="text-center p-3">Ładowanie…</div>';
         try {
             const url = new URL(window.location.href);
-            const m = dateInput.value || '';
-            if (m) url.searchParams.set('date', m);
+            const d = url.searchParams.get('date');
+            if (d) url.searchParams.set('date', d);
             const res = await fetch(url.toString(), { cache: 'no-store' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const html = await res.text();
@@ -143,52 +148,62 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    const loadAir = async (monthStr) => {
+    const loadAir = async (dateParam) => {
         try {
             elAir.innerHTML = '<div class="text-center p-4">Ładowanie…</div>';
-            const raw = await fetchAirQualityMonthlyAvg(monthStr);
+            const raw = await fetchAirQualityMonthlyAvg(dateParam || '');
             renderAir(transformAir(raw || []));
         } catch {
             elAir.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';
         }
     };
 
+    // Inicjalizacja: jeśli brak ?date= -> tryb „ostatnie 30 dni”
+    const urlDate = new URL(window.location.href).searchParams.get('date');
+    let initialMonth = '';
+    if (isValidMonthStr(urlDate)) {
+        initialMonth = urlDate;
+        dateInput.value = initialMonth;
+        setUrlDateParam(initialMonth, true);
+    } else {
+        // tryb 30 dni – blokuj nextBtn i nie ustawiaj parametru date
+        const now = new Date();
+        dateInput.value = toMonthStr(now);
+        const url = new URL(window.location.href);
+        url.searchParams.delete('date');
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    updateNextButtonState();
+    loadAir(initialMonth || '');
+
+    // Zdarzenia
     prevBtn.addEventListener('click', () => changeMonth(-1));
     nextBtn.addEventListener('click', () => changeMonth(1));
     dateInput.addEventListener('change', (e) => {
         const val = e.target.value;
-        if (!isValidMonthStr(val)) return;
-        setUrlDateParam(val);
-        updateNextButtonState();
-        loadAir(val);
-        reloadCards();
-        dispatchMonthChanged(val); // wywołaj także przeładowanie pogodowych wykresów
+        // w trybie 30 dni przejście na konkretny miesiąc po wyborze z inputa
+        if (isValidMonthStr(val)) {
+            setUrlDateParam(val);
+            updateNextButtonState();
+            loadAir(val);
+            reloadCards();
+            dispatchMonthChanged(val);
+        }
     });
     window.addEventListener('popstate', () => {
         const d = new URL(window.location.href).searchParams.get('date');
-        const m = isValidMonthStr(d) ? d : dateInput.value;
-        if (isValidMonthStr(m)) {
-            dateInput.value = m;
+        if (isValidMonthStr(d)) {
+            dateInput.value = d;
             updateNextButtonState();
-            loadAir(m);
+            loadAir(d);
             reloadCards();
-            dispatchMonthChanged(m);
+            dispatchMonthChanged(d);
+        } else {
+            updateNextButtonState();
+            loadAir('');
+            reloadCards();
+            dispatchMonthChanged('');
         }
     });
-
-    const urlDate = new URL(window.location.href).searchParams.get('date');
-    let initial = '';
-    if (/^\d{4}-\d{2}$/.test(urlDate)) initial = urlDate;
-    else {
-        const holder = document.querySelector('[data-role-date]');
-        const raw = holder ? (holder.getAttribute('data-role-date') || '').trim() : '';
-        const m = raw.match(/^(\d{4}-\d{2})/);
-        initial = m ? m[1] : toMonthStr(new Date());
-    }
-    dateInput.value = initial;
-    setUrlDateParam(initial, true);
-    updateNextButtonState();
-    loadAir(initial);
-    // poinformuj drugi skrypt o starcie (aby zaczytał ten sam miesiąc)
-    dispatchMonthChanged(initial);
 });

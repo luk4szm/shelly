@@ -51,11 +51,8 @@ class AirQualityRepository extends CrudRepository
      * Dobowe średnie (PM2.5, PM10) dla wskazanego miesiąca.
      * Zwraca: day (YYYY-MM-DD), pm25_avg, pm10_avg.
      */
-    public function findDailyAveragesForMonth(\DateTimeInterface $date): array
+    public function findDailyAveragesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
-        $from = (clone $date)->modify('first day of this month')->setTime(0, 0, 0);
-        $to   = (clone $date)->modify('last day of this month')->setTime(23, 59, 59);
-
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = <<<SQL
@@ -69,7 +66,7 @@ GROUP BY DATE(measured_at)
 ORDER BY day ASC
 SQL;
 
-        $stmt = $conn->prepare($sql);
+        $stmt   = $conn->prepare($sql);
         $result = $stmt->executeQuery([
             'from' => $from->format('Y-m-d H:i:s'),
             'to'   => $to->format('Y-m-d H:i:s'),
@@ -82,11 +79,8 @@ SQL;
      * Dane świeczkowe (open/high/low/close) dla parametrów atmosferycznych w rozbiciu dziennym.
      * Zwraca rekordy po dniach dla: temperature, humidity, sea_level_pressure.
      */
-    public function findAtmosphereCandlesForMonth(\DateTimeInterface $date): array
+    public function findAtmosphereCandlesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
-        $from = (clone $date)->modify('first day of this month')->setTime(0, 0, 0);
-        $to   = (clone $date)->modify('last day of this month')->setTime(23, 59, 59);
-
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = <<<SQL
@@ -145,7 +139,7 @@ GROUP BY
 ORDER BY day ASC;
 SQL;
 
-        $stmt = $conn->prepare($sql);
+        $stmt   = $conn->prepare($sql);
         $result = $stmt->executeQuery([
             'from' => $from->format('Y-m-d H:i:s'),
             'to'   => $to->format('Y-m-d H:i:s'),
