@@ -62,29 +62,45 @@ class WeatherController extends AbstractController
         );
     }
 
-    #[Route('/get-air-quality-monthly', name: 'air_quality_monthly_data', methods: ['GET'])]
-    public function getAirQualityMonthlyData(Request $request, AirQualityRepository $airQualityRepository): Response
+    // Miesięczne: jakości powietrza (dobowe średnie + ostatnia kolumna JS przelicza średnią kroczącą)
+    #[Route('/get-air-quality-monthly-avg', name: 'air_quality_monthly_avg', methods: ['GET'])]
+    public function getAirQualityMonthlyAvg(Request $request, AirQualityRepository $airQualityRepository): Response
     {
         $date = new \DateTime($request->get('date', 'now'));
-        $rows = $airQualityRepository->findCandleDataForMonth($date);
+        $rows = $airQualityRepository->findDailyAveragesForMonth($date);
 
-        // Serialization in the format for candlestick charts (ApexCharts: [x, [open, high, low, close]])
+        // zwrot: [{ x: ts, pm25: float, pm10: float }]
+        $out = [];
+        foreach ($rows as $r) {
+            $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
+            $out[] = [
+                'x' => $ts,
+                'pm25' => $r['pm25_avg'] !== null ? (float)$r['pm25_avg'] : null,
+                'pm10' => $r['pm10_avg'] !== null ? (float)$r['pm10_avg'] : null,
+            ];
+        }
+
+        return $this->json($out);
+    }
+
+    // Miesięczne: dane atmosferyczne (świeczki)
+    #[Route('/get-atmosphere-monthly-candles', name: 'atmosphere_monthly_candles', methods: ['GET'])]
+    public function getAtmosphereMonthlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
+    {
+        $date = new \DateTime($request->get('date', 'now'));
+        $rows = $airQualityRepository->findAtmosphereCandlesForMonth($date);
+
         $out = [
-            'pm25'             => [],
-            'pm10'             => [],
-            'temperature'      => [],
-            'humidity'         => [],
+            'temperature' => [],
+            'humidity' => [],
             'seaLevelPressure' => [],
         ];
 
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
 
-            $out['pm25'][] = [$ts, [(float)$r['pm25_open'], (float)$r['pm25_high'], (float)$r['pm25_low'], (float)$r['pm25_close']]];
-            $out['pm10'][] = [$ts, [(float)$r['pm10_open'], (float)$r['pm10_high'], (float)$r['pm10_low'], (float)$r['pm10_close']]];
-
-            $out['temperature'][]      = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
-            $out['humidity'][]         = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
+            $out['temperature'][] = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
+            $out['humidity'][] = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
             $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
         }
 

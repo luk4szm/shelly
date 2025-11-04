@@ -23,7 +23,7 @@
     {% set isToday = (date|date('Y-m-d')) == ('now'|date('Y-m-d')) %}
     <div data-role-date="{{ date }}"></div>
     <div class="container-xl">
-        <div class="row row-cards" id="air_quality_data_cards">
+        <div class="row row-cards" id="air_quality_data_cards" style="min-height: 99px">
             <div class="col-md col-12">
                 <div class="card">
                     {% set temperatureExtraClass = airQuality.monthly.temperature >= 30 ? 'bg-danger-lt' : (
@@ -220,4 +220,5 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/weather/air_quality_monthly.js') }}"></script>
+    <script src="{{ asset('js/weather/weather_monthly.js') }}"></script>
 {% endblock %}
