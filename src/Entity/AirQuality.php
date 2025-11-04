@@ -6,6 +6,7 @@ use App\Repository\AirQualityRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AirQualityRepository::class)]
+#[ORM\Index(name: 'air_quality_idx', columns: ['measured_at'])]
 #[ORM\HasLifecycleCallbacks]
 class AirQuality
 {
