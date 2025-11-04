@@ -13,16 +13,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/weather', name: 'app_weather_')]
 class WeatherController extends AbstractController
 {
-    #[Route('/weather', name: 'app_weather_index', methods: ['GET'])]
-    public function index(
+    #[Route('/daily', name: 'daily', methods: ['GET'])]
+    public function daily(
         Request                   $request,
         WeatherForecastRepository $forecastRepository,
         AirQualityRepository      $airQualityRepository,
     ): Response
     {
-        return $this->render('front/weather/index.html.twig', [
+        return $this->render('front/weather/daily.html.twig', [
             'date' => $request->get('date'),
             'airQuality' => [
                 'actual' => $airQualityRepository->findLast(),
@@ -35,7 +36,23 @@ class WeatherController extends AbstractController
         ]);
     }
 
-    #[Route('/weather/get-air-quality', name: 'app_weather_air_quality_data', methods: ['GET'])]
+    #[Route('/monthly', name: 'monthly', methods: ['GET'])]
+    public function monthly(
+        Request              $request,
+        AirQualityRepository $airQualityRepository,
+    ): Response
+    {
+        $date = new \DateTime($request->get('date', 'now'));
+
+        return $this->render('front/weather/monthly.html.twig', [
+            'date' => $date->format('Y-m-d'),
+            'airQuality' => [
+                'monthly'  => $airQualityRepository->findAverageForMonth($date),
+            ],
+        ]);
+    }
+
+    #[Route('/get-air-quality', name: 'air_quality_data', methods: ['GET'])]
     public function getAirQualityData(Request $request, AirQualityRepository $airQualityRepository): Response
     {
         return $this->json(
@@ -45,42 +62,41 @@ class WeatherController extends AbstractController
         );
     }
 
-    #[Route('/weather/get-weather-data', name: 'app_weather_data', methods: ['GET'])]
+    #[Route('/get-air-quality-monthly', name: 'air_quality_monthly_data', methods: ['GET'])]
+    public function getAirQualityMonthlyData(Request $request, AirQualityRepository $airQualityRepository): Response
+    {
+        $date = new \DateTime($request->get('date', 'now'));
+        $rows = $airQualityRepository->findCandleDataForMonth($date);
+
+        // Serialization in the format for candlestick charts (ApexCharts: [x, [open, high, low, close]])
+        $out = [
+            'pm25'             => [],
+            'pm10'             => [],
+            'temperature'      => [],
+            'humidity'         => [],
+            'seaLevelPressure' => [],
+        ];
+
+        foreach ($rows as $r) {
+            $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
+
+            $out['pm25'][] = [$ts, [(float)$r['pm25_open'], (float)$r['pm25_high'], (float)$r['pm25_low'], (float)$r['pm25_close']]];
+            $out['pm10'][] = [$ts, [(float)$r['pm10_open'], (float)$r['pm10_high'], (float)$r['pm10_low'], (float)$r['pm10_close']]];
+
+            $out['temperature'][]      = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
+            $out['humidity'][]         = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
+            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+        }
+
+        return $this->json($out);
+    }
+
+    #[Route('/get-weather-data', name: 'weather_data', methods: ['GET'])]
     public function getWeatherData(Request $request, AirQualityRepository $airQualityRepository): Response
     {
         return $this->json(
             array_map(function (AirQuality $airQuality) {
                 return AirQualityGraphHandler::serializeWeather($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
-        );
-    }
-
-    #[Route('/weather/get-temperature', name: 'app_weather_temperature_data', methods: ['GET'])]
-    public function getTemperatureData(Request $request, AirQualityRepository $airQualityRepository): Response
-    {
-        return $this->json(
-            array_map(function (AirQuality $airQuality) {
-                return AirQualityGraphHandler::serializeTemperature($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
-        );
-    }
-
-    #[Route('/weather/get-pressure', name: 'app_weather_pressure_data', methods: ['GET'])]
-    public function getPressureData(Request $request, AirQualityRepository $airQualityRepository): Response
-    {
-        return $this->json(
-            array_map(function (AirQuality $airQuality) {
-                return AirQualityGraphHandler::serializePressure($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
-        );
-    }
-
-    #[Route('/weather/get-humidity', name: 'app_weather_humidity_data', methods: ['GET'])]
-    public function getHumidityData(Request $request, AirQualityRepository $airQualityRepository): Response
-    {
-        return $this->json(
-            array_map(function (AirQuality $airQuality) {
-                return AirQualityGraphHandler::serializeHumidity($airQuality);
             }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
         );
     }

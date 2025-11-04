@@ -4,16 +4,17 @@
 {% block pagePreTitle %}{% endblock %}
 
 {% block pageTitleActions %}
-    <div class="d-flex">
-        <div class="input-group ms-3">
-            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">
-                &#8592;
-            </button>
-            <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16"
-                   max="{{ "now"|date("Y-m-d") }}">
-            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">
-                &#8594;
-            </button>
+    <div class="d-inline-flex">
+        <div class="btn-group me-3" role="group">
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off" {% if app.current_route == 'app_weather_daily' %}checked="checked"{% endif %}">
+            <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_weather_daily') }}'">dzień</label>
+            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off" {% if app.current_route == 'app_weather_monthly' %}checked="checked"{% endif %}">
+            <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_weather_monthly') }}'">miesiąc</label>
+        </div>
+        <div class="input-group">
+            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
+            <input type="month" class="form-control" id="wheater_date" value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}" min="2025-10" max="{{ "now"|date("Y-m") }}">
+            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
         </div>
     </div>
 {% endblock %}
@@ -25,10 +26,9 @@
         <div class="row row-cards" id="air_quality_data_cards">
             <div class="col-md col-12">
                 <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.temperature : airQuality.daily.temperature %}
-                    {% set temperatureExtraClass = referalValue >= 30 ? 'bg-danger-lt' : (
-                        referalValue >= 25 ? 'bg-warning-lt' : (
-                            referalValue <= 0 ? 'bg-info-lt' : ''
+                    {% set temperatureExtraClass = airQuality.monthly.temperature >= 30 ? 'bg-danger-lt' : (
+                        airQuality.monthly.temperature >= 25 ? 'bg-warning-lt' : (
+                            airQuality.monthly.temperature <= 0 ? 'bg-info-lt' : ''
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
@@ -41,16 +41,16 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.temperature : airQuality.daily.temperature|number_format(2) }}
+                                        {{ airQuality.monthly.temperature|number_format(2) }}
                                         <small>°C</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_min|number_format(2) }} <small>°C</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_max|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.temperature_min|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.temperature|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.temperature_max|number_format(2) }} <small>°C</small></div>
                                 </div>
                             </div>
                         </div>
@@ -59,10 +59,9 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.seaLevelPressure : airQuality.daily.seaLevelPressure %}
-                    {% set airPressureExtraClass = referalValue >= 1030 ? 'bg-danger-lt' : (
-                        referalValue >= 1020 ? 'bg-warning-lt' : (
-                            referalValue <= 1000 ? 'bg-info-lt' : ''
+                    {% set airPressureExtraClass = airQuality.monthly.seaLevelPressure >= 1030 ? 'bg-danger-lt' : (
+                        airQuality.monthly.seaLevelPressure >= 1020 ? 'bg-warning-lt' : (
+                            airQuality.monthly.seaLevelPressure <= 1000 ? 'bg-info-lt' : ''
                         )
                     ) %}
                     <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
@@ -75,16 +74,16 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.seaLevelPressure|number_format(1, '.', '') : airQuality.daily.seaLevelPressure|number_format(1, '.', '') }}
+                                        {{ airQuality.monthly.seaLevelPressure|number_format(1, '.', '') }}
                                         <small>kPa</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
                                 </div>
                             </div>
                         </div>
@@ -103,16 +102,16 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.humidity|number_format(1) : airQuality.daily.humidity|number_format(1) }}
+                                        {{ airQuality.monthly.humidity|number_format(1) }}
                                         <small>%</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_min|number_format(1) }} <small>%</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_max|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.humidity_min|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.humidity|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.humidity_max|number_format(1) }} <small>%</small></div>
                                 </div>
                             </div>
                         </div>
@@ -121,9 +120,8 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.pm25 : airQuality.daily.pm25 %}
-                    {% set airQuality25ExtraClass = referalValue >= 15 ? 'bg-danger-lt' : (
-                        referalValue >= 5 ? 'bg-warning-lt' : ''
+                    {% set airQuality25ExtraClass = airQuality.monthly.pm25 >= 15 ? 'bg-danger-lt' : (
+                        airQuality.monthly.pm25 >= 5 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
                         <div class="row">
@@ -135,16 +133,16 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.pm25 : airQuality.daily.pm25|number_format(2) }}
+                                        {{ airQuality.monthly.pm25|number_format(2) }}
                                         <small>µg/m³</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_min|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_max|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm25_min|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm25|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm25_max|number_format(2) }} <small>µg/m³</small></div>
                                 </div>
                             </div>
                         </div>
@@ -153,9 +151,8 @@
             </div>
             <div class="col-md col-12">
                 <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.pm10 : airQuality.daily.pm10 %}
-                    {% set airQuality10ExtraClass = referalValue >= 45 ? 'bg-danger-lt' : (
-                        referalValue >= 15 ? 'bg-warning-lt' : ''
+                    {% set airQuality10ExtraClass = airQuality.monthly.pm10 >= 45 ? 'bg-danger-lt' : (
+                        airQuality.monthly.pm10 >= 15 ? 'bg-warning-lt' : ''
                     ) %}
                     <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
                         <div class="row">
@@ -167,16 +164,16 @@
                                 </div>
                                 <div class="d-flex align-items-baseline justify-content-between">
                                     <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.pm10 : airQuality.daily.pm10|number_format(2) }}
+                                        {{ airQuality.monthly.pm10|number_format(2) }}
                                         <small>µg/m³</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_min|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_max|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm10_min|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm10|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.monthly.pm10_max|number_format(2) }} <small>µg/m³</small></div>
                                 </div>
                             </div>
                         </div>
@@ -184,6 +181,8 @@
                 </div>
             </div>
         </div>
+
+        {# Wykresy świeczkowe dla miesiąca #}
         <div class="row row-cards mt-1">
             <div class="col-12">
                 <div class="card">
@@ -197,7 +196,21 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div id="chart-weather" class="position-relative" style="min-height: 300px"></div>
+                        <div id="chart-weather-temperature" class="position-relative" style="min-height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather-pressure" class="position-relative" style="min-height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather-humidity" class="position-relative" style="min-height: 300px"></div>
                     </div>
                 </div>
             </div>
@@ -206,9 +219,5 @@
 {% endblock %}
 
 {% block pagejs %}
-    <script src="{{ asset('js/weather/air_quality.js') }}"></script>
-{#    <script src="{{ asset('js/weather/weather.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/temperature.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/humidity.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/pressure.js') }}"></script>#}
+    <script src="{{ asset('js/weather/air_quality_monthly.js') }}"></script>
 {% endblock %}
