@@ -12,9 +12,17 @@
             <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_weather_monthly') }}'">miesiąc</label>
         </div>
         <div class="input-group">
-            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
-            <input type="month" class="form-control" id="wheater_date" value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}" min="2025-10" max="{{ "now"|date("Y-m") }}">
-            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
+            <button class="btn d-none" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
+            <input
+                type="month"
+                class="form-control"
+                id="wheater_date"
+                value=""
+                min="2025-10"
+                max="{{ 'now'|date('Y-m') }}"
+                placeholder="Wybierz miesiąc"
+            >
+            <button class="btn d-none" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
         </div>
     </div>
 {% endblock %}
@@ -219,6 +227,7 @@
 {% endblock %}
 
 {% block pagejs %}
+    <script src="{{ asset('js/weather/date_input_handler.js') }}"></script>
     <script src="{{ asset('js/weather/air_quality_monthly.js') }}"></script>
     <script src="{{ asset('js/weather/weather_monthly.js') }}"></script>
 {% endblock %}

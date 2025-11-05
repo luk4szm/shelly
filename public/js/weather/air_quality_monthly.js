@@ -166,13 +166,17 @@ document.addEventListener('DOMContentLoaded', function () {
         dateInput.value = initialMonth;
         setUrlDateParam(initialMonth, true);
     } else {
-        // tryb 30 dni – blokuj nextBtn i nie ustawiaj parametru date
-        const now = new Date();
-        dateInput.value = toMonthStr(now);
+        // tryb 30 dni – ukryj nawigację i NIE ustawiaj wartości w input
         const url = new URL(window.location.href);
         url.searchParams.delete('date');
         window.history.replaceState({}, '', url.toString());
+        dateInput.value = ''; // ważne: wyczyść input
+        prevBtn.classList.add('d-none');
+        nextBtn.classList.add('d-none');
     }
+
+    updateNextButtonState();
+    loadAir(initialMonth || '');
 
     updateNextButtonState();
     loadAir(initialMonth || '');
@@ -182,8 +186,10 @@ document.addEventListener('DOMContentLoaded', function () {
     nextBtn.addEventListener('click', () => changeMonth(1));
     dateInput.addEventListener('change', (e) => {
         const val = e.target.value;
-        // w trybie 30 dni przejście na konkretny miesiąc po wyborze z inputa
         if (isValidMonthStr(val)) {
+            // pokaż nawigację dopiero po wyborze miesiąca
+            prevBtn.classList.remove('d-none');
+            nextBtn.classList.remove('d-none');
             setUrlDateParam(val);
             updateNextButtonState();
             loadAir(val);
@@ -195,11 +201,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const d = new URL(window.location.href).searchParams.get('date');
         if (isValidMonthStr(d)) {
             dateInput.value = d;
+            prevBtn.classList.remove('d-none');
+            nextBtn.classList.remove('d-none');
             updateNextButtonState();
             loadAir(d);
             reloadCards();
             dispatchMonthChanged(d);
         } else {
+            dateInput.value = '';            // ważne: nie wpisuj bieżącego miesiąca
+            prevBtn.classList.add('d-none'); // ukryj nawigację
+            nextBtn.classList.add('d-none');
             updateNextButtonState();
             loadAir('');
             reloadCards();
