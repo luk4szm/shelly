@@ -36,13 +36,32 @@
 {% block pageBody %}
     <div class="container-xl">
         <div class="row row-deck row-cards">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body" style="min-height: 432px;">
-                        <div id="location-chart" class="position-relative" data-location-slug="{{ location }}" data-chart-type="{{ type }}"></div>
+            {% if type == 'daily' %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body" style="min-height: 432px;">
+                            <div id="location-chart" class="position-relative" data-location-slug="{{ location }}" data-chart-type="{{ type }}"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body" style="min-height: 432px;">
+                            <div id="location-chart-temperature" class="position-relative" data-location-slug="{{ location }}"
+                                 data-chart-type="{{ type }}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body" style="min-height: 432px;">
+                            <div id="location-chart-humidity" class="position-relative" data-location-slug="{{ location }}"
+                                 data-chart-type="{{ type }}"></div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
