@@ -25,6 +25,15 @@
             {% endif %}
         </div>
     {% endif %}
+    {% if scheduledProcesses.heatingTurnOn or scheduledProcesses.heatingTurnOff %}
+        <button type="submit"
+                class="btn btn-outline-success btn-4 w-75"
+                name="heating_action"
+                value="remove_scheduled_process"
+        >
+            Usuń zaplanowane procesy
+        </button>
+    {% endif %}
     <div class="row my-5 justify-content-center">
         {% if isHeatingActive %}
             <div class="col-md-5 col-12">

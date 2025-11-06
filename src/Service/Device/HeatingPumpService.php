@@ -4,6 +4,7 @@ namespace App\Service\Device;
 
 use App\Entity\Hook;
 use App\Repository\HookRepository;
+use App\Repository\Process\ScheduledProcessRepository;
 use App\Service\Shelly\Switch\HeatingPumpsService;
 
 class HeatingPumpService
@@ -12,8 +13,9 @@ class HeatingPumpService
     private ?Hook $powerHook;
 
     public function __construct(
-        private readonly HookRepository      $hookRepository,
-        private readonly HeatingPumpsService $heatingPumpsService,
+        private readonly HookRepository             $hookRepository,
+        private readonly HeatingPumpsService        $heatingPumpsService,
+        private readonly ScheduledProcessRepository $scheduledProcessRepository,
     ) {}
 
     public function getActualState(string $pump): array
@@ -30,6 +32,11 @@ class HeatingPumpService
     public function setHeatingPumpState(bool $enable): void
     {
         $enable ? $this->heatingPumpsService->turnOn() : $this->heatingPumpsService->turnOff();
+    }
+
+    public function removeAllScheduledProcesses(): void
+    {
+        $this->scheduledProcessRepository->deleteScheduledHeatingProcesses();
     }
 
     protected function isPumpRunning(): bool

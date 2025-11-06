@@ -4,6 +4,8 @@ namespace App\Repository\Process;
 
 use App\Entity\Process\ScheduledProcess;
 use App\Repository\Abstraction\CrudRepository;
+use App\Service\Processable\TurnOffHeatingProcess;
+use App\Service\Processable\TurnOnHeatingProcess;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -36,5 +38,16 @@ class ScheduledProcessRepository extends CrudRepository
             ->orderBy('p.scheduledAt', 'ASC')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function deleteScheduledHeatingProcesses(): void
+    {
+        $this->createQueryBuilder('p')
+            ->delete()
+            ->where('p.name IN (:names)')
+            ->andWhere('p.executedAt IS NULL')
+            ->setParameter('names', [TurnOnHeatingProcess::NAME, TurnOffHeatingProcess::NAME])
+            ->getQuery()
+            ->execute();
     }
 }

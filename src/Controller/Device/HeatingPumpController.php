@@ -29,6 +29,14 @@ class HeatingPumpController extends AbstractController
         $heatingAction            = $request->request->get('heating_action');
         $heatingActionConditional = $request->request->get('heating_action_conditional');
 
+        if ($heatingAction === 'remove_scheduled_process') {
+            $heatingPumpService->removeAllScheduledProcesses();
+
+            $this->addFlash('success', 'All scheduled processes removed');
+
+            return $this->redirectToRoute('app_front_dashboard');
+        }
+
         if (!$heatingStartOn && !$heatingEndOn && $heatingAction !== null) {
             // start/stop heating pump immediately
             $heatingPumpService->setHeatingPumpState($heatingAction === 'turn_on');
