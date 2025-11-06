@@ -4,6 +4,7 @@ namespace App\Service\AirQuality;
 
 use App\Entity\AirQuality;
 use App\Repository\AirQualityRepository;
+use App\Repository\WeatherForecastRepository;
 use App\Service\Curl\SensorCommunity\SensorCommunityCurlRequest;
 use DateTimeZone;
 
@@ -14,6 +15,7 @@ class AirQualityService
     public function __construct(
         private readonly SensorCommunityCurlRequest $sensorCommunityCurlRequest,
         private readonly AirQualityRepository       $airQualityRepository,
+        private readonly WeatherForecastRepository  $forecastRepository,
     ) {
     }
 
@@ -21,13 +23,17 @@ class AirQualityService
     {
         $this->sensorData = $data;
 
+        $temperature = $this->getSensorValue('BME280_temperature');
+        $humidity    = $this->getSensorValue('BME280_humidity');
+
         $airQuality = new AirQuality();
         $airQuality->setMeasuredAt(new \DateTime());
         $airQuality->setPm10($this->getSensorValue('SDS_P1'));
         $airQuality->setPm25($this->getSensorValue('SDS_P2'));
-        $airQuality->setTemperature($this->getSensorValue('BME280_temperature'));
+        $airQuality->setTemperature($temperature);
+        $airQuality->setPerceivedTemperature($this->calculatePerceivedTemperature($temperature, $humidity));
         $airQuality->setPressure(round($this->getSensorValue('BME280_pressure') / 100, 2));
-        $airQuality->setHumidity($this->getSensorValue('BME280_humidity'));
+        $airQuality->setHumidity($humidity);
         $airQuality->calculateSeaLevelPressure($_ENV['ALTITUDE']);
 
         $this->airQualityRepository->save($airQuality);
@@ -100,5 +106,18 @@ class AirQualityService
         // Note: The value in your example is a string ("22.77"), so PHP will automatically
         // convert it to float during the return, but explicit casting is clearer.
         return (float)$matchingItem->value;
+    }
+
+    private function calculatePerceivedTemperature(float $temperature, float $humidity): float
+    {
+        $forecast = $this->forecastRepository->findForecastForDate();
+
+        $perceivedTemperatureCalculator = new PerceivedTemperatureCalculator(
+            $temperature,
+            $humidity,
+            $forecast->getWindSpeed()
+        );
+
+        return $perceivedTemperatureCalculator->calculatePerceivedTemperature();
     }
 }

@@ -27,11 +27,11 @@ class WeatherForecastRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findActualForecast(): ?WeatherForecast
+    public function findForecastForDate(?\DateTimeInterface $date = null): ?WeatherForecast
     {
         return $this->createQueryBuilder('wf')
             ->where('wf.time >= :start')
-            ->setParameter('start', new \DateTime("-1 hour"))
+            ->setParameter('start', ($date ?? new \DateTime())->modify("-1 hour"))
             ->orderBy('wf.time', 'ASC')
             ->setMaxResults(1)
             ->getQuery()

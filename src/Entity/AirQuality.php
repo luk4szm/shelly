@@ -28,6 +28,9 @@ class AirQuality
     private ?float $temperature = null;
 
     #[ORM\Column(nullable: true)]
+    private ?float $perceivedTemperature = null;
+
+    #[ORM\Column(nullable: true)]
     private ?float $pressure = null;
 
     #[ORM\Column(nullable: true)]
@@ -97,6 +100,18 @@ class AirQuality
     public function setTemperature(?float $temperature): static
     {
         $this->temperature = $temperature;
+
+        return $this;
+    }
+
+    public function getPerceivedTemperature(): ?float
+    {
+        return $this->perceivedTemperature;
+    }
+
+    public function setPerceivedTemperature(?float $perceivedTemperature): static
+    {
+        $this->perceivedTemperature = $perceivedTemperature;
 
         return $this;
     }

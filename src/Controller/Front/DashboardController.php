@@ -82,7 +82,7 @@ final class DashboardController extends AbstractController
             'airQuality'  => $airQualityRepository->findLast(),
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],
-            'weather'     => $weatherRepository->findActualForecast(),
+            'weather'     => $weatherRepository->findForecastForDate(),
         ]);
     }
 
