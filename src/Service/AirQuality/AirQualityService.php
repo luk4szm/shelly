@@ -118,6 +118,6 @@ class AirQualityService
             $forecast->getWindSpeed()
         );
 
-        return $perceivedTemperatureCalculator->calculatePerceivedTemperature();
+        return round($perceivedTemperatureCalculator->calculatePerceivedTemperature(), 2);
     }
 }
