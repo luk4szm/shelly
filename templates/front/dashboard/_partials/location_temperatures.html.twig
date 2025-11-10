@@ -5,7 +5,7 @@
                 <div class="subheader">
                     <a class="text-secondary" href="{{ path('app_front_location_buffer_index') }}">Bufor</a>
                 </div>
-                <div class="ms-auto lh-1 text-secondary">from 8h</div>
+                <div class="ms-auto lh-1 text-secondary">{{ buffer.temperature_15m.createdAt|time_diff }}</div>
             </div>
             <div class="d-flex align-items-baseline">
                 <div class="h1 mb-0 me-2">{{ buffer.temperature_15m.value|number_format(1) }} °C</div>
@@ -39,7 +39,7 @@
                             <a class="text-secondary" href="{{ path('app_front_default_location_index', {'location': name, 'type': 'daily'}) }}">{{ name|trans }}</a>
                         {% endif %}
                     </div>
-                    <div class="ms-auto lh-1 text-secondary">from 8h</div>
+                    <div class="ms-auto lh-1 text-secondary">{{ room.temperature.createdAt|time_diff }}</div>
                 </div>
                 <div class="d-flex align-items-baseline">
                     {% if room.temperature is not null %}
