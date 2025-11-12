@@ -36,13 +36,32 @@ class AirQualityRepository extends CrudRepository
     public function findAverageForDate(\DateTimeInterface $date): ?array
     {
         return $this->createQueryBuilder('aq')
-            ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
-            ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
-            ->addSelect('MIN(aq.pm25) as pm25_min', 'MIN(aq.pm10) as pm10_min', 'MIN(aq.temperature) as temperature_min', 'MIN(aq.humidity) as humidity_min', 'MIN(aq.seaLevelPressure) as seaLevelPressure_min')
+            ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.perceivedTemperature) as perceivedTemperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
+            ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.perceivedTemperature) as perceivedTemperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
+            ->addSelect('MIN(aq.pm25) as pm25_min', 'MIN(aq.pm10) as pm10_min', 'MIN(aq.temperature) as temperature_min', 'MIN(aq.perceivedTemperature) as perceivedTemperature_min', 'MIN(aq.humidity) as humidity_min', 'MIN(aq.seaLevelPressure) as seaLevelPressure_min')
             ->where('aq.measuredAt >= :from')
             ->andWhere('aq.measuredAt <= :to')
             ->setParameter('from', (clone $date)->setTime(0, 0))
             ->setParameter('to', (clone $date)->setTime(23, 59, 59))
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Średnie i skrajne wartości dla całego miesiąca (na karty).
+     */
+    public function findAverageForMonth(\DateTimeInterface $date): ?array
+    {
+        $from = (clone $date)->modify('first day of this month')->setTime(0, 0, 0);
+        $to   = (clone $date)->modify('last day of this month')->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('aq')
+            ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.perceivedTemperature) as perceivedTemperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
+            ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.perceivedTemperature) as perceivedTemperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
+            ->addSelect('MIN(aq.pm25) as pm25_min', 'MIN(aq.pm10) as pm10_min', 'MIN(aq.temperature) as temperature_min', 'MIN(aq.perceivedTemperature) as perceivedTemperature_min', 'MIN(aq.humidity) as humidity_min', 'MIN(aq.seaLevelPressure) as seaLevelPressure_min')
+            ->where('aq.measuredAt BETWEEN :from AND :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -146,24 +165,5 @@ SQL;
         ]);
 
         return $result->fetchAllAssociative();
-    }
-
-    /**
-     * Średnie i skrajne wartości dla całego miesiąca (na karty).
-     */
-    public function findAverageForMonth(\DateTimeInterface $date): ?array
-    {
-        $from = (clone $date)->modify('first day of this month')->setTime(0, 0, 0);
-        $to   = (clone $date)->modify('last day of this month')->setTime(23, 59, 59);
-
-        return $this->createQueryBuilder('aq')
-            ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
-            ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
-            ->addSelect('MIN(aq.pm25) as pm25_min', 'MIN(aq.pm10) as pm10_min', 'MIN(aq.temperature) as temperature_min', 'MIN(aq.humidity) as humidity_min', 'MIN(aq.seaLevelPressure) as seaLevelPressure_min')
-            ->where('aq.measuredAt BETWEEN :from AND :to')
-            ->setParameter('from', $from)
-            ->setParameter('to', $to)
-            ->getQuery()
-            ->getOneOrNullResult();
     }
 }

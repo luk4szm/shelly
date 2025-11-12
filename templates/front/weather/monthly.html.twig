@@ -47,9 +47,18 @@
                                         Temperature
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
+                                <div class="d-flex align-items-baseline">
                                     <div class="h1 mb-0 text-nowrap">
                                         {{ airQuality.monthly.temperature|number_format(2) }}
+                                        <small>°C</small>
+                                    </div>
+                                    {% set perceivedTemperatureExtraClass = airQuality.monthly.perceivedTemperature >= 30 ? 'text-danger-emphasis' : (
+                                        airQuality.monthly.perceivedTemperature >= 25 ? 'text-warning' : (
+                                            airQuality.monthly.perceivedTemperature <= 0 ? 'text-info-emphasis' : ''
+                                        )
+                                    ) %}
+                                    <div class="h4 ms-2 mb-0 text-nowrap {{ perceivedTemperatureExtraClass }}" title="real feel temp">
+                                        {{ airQuality.monthly.perceivedTemperature|number_format(2) }}
                                         <small>°C</small>
                                     </div>
                                 </div>

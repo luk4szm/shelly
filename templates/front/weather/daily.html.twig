@@ -42,9 +42,19 @@
                                         Temperature
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
+                                <div class="d-flex align-items-baseline">
                                     <div class="h1 mb-0 text-nowrap">
                                         {{ isToday ? airQuality.actual.temperature : airQuality.daily.temperature|number_format(2) }}
+                                        <small>°C</small>
+                                    </div>
+                                    {% set referalValue = isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature %}
+                                    {% set perceivedTemperatureExtraClass = referalValue >= 30 ? 'text-danger-emphasis' : (
+                                        referalValue >= 25 ? 'text-warning' : (
+                                            referalValue <= 0 ? 'text-info-emphasis' : ''
+                                        )
+                                    ) %}
+                                    <div class="h4 ms-2 mb-0 text-nowrap {{ perceivedTemperatureExtraClass }}" title="real feel temp">
+                                        {{ isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature|number_format(2) }}
                                         <small>°C</small>
                                     </div>
                                 </div>
