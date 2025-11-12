@@ -32,17 +32,27 @@
                         <span class="fs-3 {{ temperatureExtraClass }}">{{ airQuality.temperature }} °C</span>
                     </div>
                     <div class="mb-0 text-nowrap">
+                        {% set airPressureExtraClass = airQuality.getSeaLevelPressure >= 1030
+                            ? 'text-danger' : (
+                                airQuality.getSeaLevelPressure >= 1020 ? 'text-danger-emphasis' : (
+                                    airQuality.getSeaLevelPressure <= 1000 ? 'text-info-emphasis' : (
+                                        airQuality.getSeaLevelPressure <= 990 ? 'text-info' : ''
+                                    )
+                                )
+                            )
+                        %}
+                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                            {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                        </span>
+                        <span class="fs-3 {{ airPressureExtraClass }}">{{ airQuality.getSeaLevelPressure|number_format(1, ".", "") }} <small>kPa</small></span>
+                    </div>
+                    <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/droplet-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                         </span>
                         <span class="fs-3">{{ airQuality.humidity }} %</span>
                     </div>
-                    <div class="mb-0 text-nowrap">
-                        <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                            {{ include('_icons/solar-panel-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
-                        </span>
-                        <span class="fs-3">{{ weather.sunlightFactor }} %</span>
-                    </div>
+
                     <div class="mb-0 text-nowrap">
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                             {{ include('_icons/sunrise-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
@@ -67,19 +77,23 @@
                 </div>
                 <div class="col">
                     <div class="mb-0 text-nowrap">
-                        {% set airPressureExtraClass = airQuality.getSeaLevelPressure >= 1030
+                        {% set perceivedTemperatureExtraClass = airQuality.perceivedTemperature >= 30
                             ? 'text-danger' : (
-                                airQuality.getSeaLevelPressure >= 1020 ? 'text-danger-emphasis' : (
-                                    airQuality.getSeaLevelPressure <= 1000 ? 'text-info-emphasis' : (
-                                        airQuality.getSeaLevelPressure <= 990 ? 'text-info' : ''
+                                airQuality.perceivedTemperature >= 25 ? 'text-danger-emphasis' : (
+                                    airQuality.perceivedTemperature <= 0 ? 'text-info-emphasis' : (
+                                        airQuality.perceivedTemperature <= -5 ? 'text-info' : ''
                                     )
                                 )
                             )
                         %}
                         <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                            {{ include('_icons/brand-speedtest-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            {% if airQuality.perceivedTemperature > airQuality.temperature  %}
+                                {{ include('_icons/temperature-sun-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            {% else %}
+                                {{ include('_icons/temperature-snow-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            {% endif %}
                         </span>
-                        <span class="fs-3 {{ airPressureExtraClass }}">{{ airQuality.getSeaLevelPressure|number_format(1, ".", "") }} <small>kPa</small></span>
+                        <span class="fs-3 {{ perceivedTemperatureExtraClass }}">{{ airQuality.perceivedTemperature }} °C</span>
                     </div>
                     <div class="mb-0 text-nowrap">
                         {% set precipitationExtraClass = weather.precipitation > 0 ? 'text-azure' : '' %}
@@ -124,19 +138,25 @@
             <div class="row align-items-center justify-content-center mt-2">
                 <div class="col">
                     <div class="row text-center">
-                        <div class="col-4">
+                        <div class="col-3">
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
-                                {{ include('_icons/temperature-plus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                                {{ include('_icons/solar-panel-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                             </span>
-                            <span class="fs-3">{{ weather.temperature6hMax }} °C</span>
+                            <span class="fs-3">{{ weather.sunlightFactor }} %</span>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                                 {{ include('_icons/temperature-minus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
                             </span>
                             <span class="fs-3">{{ weather.temperature6hMin }} °C</span>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
+                            <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
+                                {{ include('_icons/temperature-plus-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
+                            </span>
+                            <span class="fs-3">{{ weather.temperature6hMax }} °C</span>
+                        </div>
+                        <div class="col-3">
                             {% set precipitation6hExtraClass = weather.precipitation6h > 0 ? 'text-azure' : '' %}
                             <span class="d-inline-flex align-items-center" style="position: relative; top: 4px">
                                 {{ include('_icons/cloud-rain-icon.svg.twig', { size: 20, class: 'text-azure' }) }}
