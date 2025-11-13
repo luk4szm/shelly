@@ -166,4 +166,13 @@ SQL;
 
         return $result->fetchAllAssociative();
     }
+
+    public function findWithoutPerceivedTemperature(): array
+    {
+        return $this->createQueryBuilder('aq')
+            ->where('aq.perceivedTemperature IS NULL')
+            ->andWhere('aq.sensor IS NULL')
+            ->getQuery()
+            ->getResult();
+    }
 }
