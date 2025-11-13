@@ -108,9 +108,9 @@ class AirQualityService
         return (float)$matchingItem->value;
     }
 
-    public function calculatePerceivedTemperature(float $temperature, float $humidity, ?\DateTimeInterface $dateTime = null): float
+    private function calculatePerceivedTemperature(float $temperature, float $humidity): float
     {
-        $forecast = $this->forecastRepository->findForecastForDate($dateTime);
+        $forecast = $this->forecastRepository->findForecastForDate();
 
         $perceivedTemperatureCalculator = new PerceivedTemperatureCalculator(
             $temperature,
