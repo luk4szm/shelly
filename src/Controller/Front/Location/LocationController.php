@@ -18,11 +18,17 @@ use Symfony\Component\Routing\Attribute\Route;
 class LocationController extends AbstractController
 {
     #[Route('/{type}', name: 'index', requirements: ['type' => '(?!get-data).+'])]
-    public function daily(string $location, string $type): Response
+    public function daily(string $location, string $type, HookRepository $hookRepository): Response
     {
+        $current = [
+            'temperature' => $hookRepository->findActualTempForLocation($location),
+            'humidity'    => $hookRepository->findActualHumidityForLocation($location),
+        ];
+
         return $this->render('front/location/default/index.html.twig', [
             'type'     => $type,
             'location' => $location,
+            'current'  => $current,
         ]);
     }
 
