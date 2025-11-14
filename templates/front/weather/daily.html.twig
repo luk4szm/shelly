@@ -1,24 +1,7 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/weather/index.html.twig' %}
 
-{% block pageTitle %}Jakość powietrza i prognoza pogody{% endblock %}
-{% block pagePreTitle %}{% endblock %}
-
-{% block pageTitleActions %}
-    <div class="d-inline-flex">
-        <div class="btn-group me-3" role="group">
-            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-1" autocomplete="off" {% if app.current_route == 'app_weather_daily' %}checked="checked"{% endif %}">
-            <label for="btn-radio-basic-1" type="button" class="btn" onclick="location.href='{{ path('app_weather_daily') }}'">dzień</label>
-            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-2" autocomplete="off" {% if app.current_route == 'app_weather_monthly' %}checked="checked"{% endif %}">
-            <label for="btn-radio-basic-2" type="button" class="btn" onclick="location.href='{{ path('app_weather_monthly') }}'">miesiąc</label>
-{#            <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off">#}
-{#            <label for="btn-radio-basic-3" type="button" class="btn" onclick="location.href='{{ path('app_weather_yearly') }}'">rok</label>#}
-        </div>
-        <div class="input-group">
-            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
-            <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16" max="{{ "now"|date("Y-m-d") }}">
-            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
-        </div>
-    </div>
+{% block dateInput %}
+    <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16" max="{{ "now"|date("Y-m-d") }}">
 {% endblock %}
 
 {% block pageBody %}
@@ -220,8 +203,4 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/weather/air_quality.js') }}"></script>
-{#    <script src="{{ asset('js/weather/weather.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/temperature.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/humidity.js') }}"></script>#}
-{#    <script src="{{ asset('js/weather/pressure.js') }}"></script>#}
 {% endblock %}
