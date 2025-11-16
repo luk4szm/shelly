@@ -5,8 +5,10 @@ namespace App\Controller\Hook;
 use App\Entity\Hook;
 use App\Event\Hook\CoHookEvent;
 use App\Event\Hook\TvHookEvent;
+use App\Event\SuplaGateOpenEvent;
 use App\Repository\HookRepository;
 use App\Service\AirQuality\AirQualityService;
+use App\Service\Gate\SuplaGateOpener;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -50,6 +52,17 @@ final class HookController extends AbstractController
         $garageControllerLogger->info('The button was clicked', ['device' => 'switch']);
 
         return $this->json([]);
+    }
+
+    #[Route('/hook/gate/open-close/remote/kewfo3287dhubvfo3hfpd98e', name: 'app_hook_gate_open_from_remote_controller')]
+    public function gateOpenFromRemoteController(
+        SuplaGateOpener          $gateOpener,
+        EventDispatcherInterface $dispatcher,
+    ): Response
+    {
+        $dispatcher->dispatch(new SuplaGateOpenEvent('open-close', 'remote controller'));
+
+        return $this->json($gateOpener->sendOpenCloseSimpleRequest());
     }
 
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
