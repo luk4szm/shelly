@@ -69,14 +69,14 @@ readonly class SuplaGateOpener
         return false;
     }
 
-    public function sendOpenCloseSimpleRequest(): bool
+    public function sendOpenCloseSimpleRequest(?string $userIdentifier = null): bool
     {
         $this->user = $this->security->getUser();
 
         $this->gateOpenerLogger->info(
             'Open-Close button click',
             [
-                'user' => $this->user?->getUserIdentifier(),
+                'user' => $userIdentifier ?: $this->user?->getUserIdentifier(),
                 'open' => $this->isOpen(),
             ],
         );

@@ -40,7 +40,7 @@ readonly class SuplaGateSubscriber implements EventSubscriberInterface
             match ($notify->getChannel()) {
                 Channel::SMS   => $this->sendSms($notify->getUser(), $userIdentifier),
                 Channel::EMAIL => $this->sendEmail($notify->getUser(), $userIdentifier, $event->getMethod()),
-                default               => throw new \RuntimeException('Unknown channel'),
+                default        => throw new \RuntimeException('Unknown channel'),
             };
 
             $notify->setExecutedAt(new \DateTimeImmutable());
