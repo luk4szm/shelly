@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     x: t,
                     pressure: typeof r.pressure === 'number' ? r.pressure : null,
                     temperature: typeof r.temperature === 'number' ? r.temperature : null,
+                    perceivedTemperature: typeof r.perceivedTemperature === 'number' ? r.perceivedTemperature : null,
                     humidity: typeof r.humidity === 'number' ? r.humidity : null
                 };
             })
@@ -138,12 +139,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pressure = pts.filter(p => p.pressure != null).map(p => ({ x: p.x, y: p.pressure }));
         const temperature = pts.filter(p => p.temperature != null).map(p => ({ x: p.x, y: p.temperature }));
+        const perceivedTemperature = pts.filter(p => p.perceivedTemperature != null).map(p => ({ x: p.x, y: p.perceivedTemperature }));
         const humidity = pts.filter(p => p.humidity != null).map(p => ({ x: p.x, y: p.humidity }));
 
         return {
             series: [
                 { name: 'Ciśnienie', data: pressure, type: 'line' },
                 { name: 'Temperatura', data: temperature, type: 'area' },
+                { name: 'Temp. odczuwalna', data: perceivedTemperature, type: 'line' },
                 { name: 'Wilgotność', data: humidity, type: 'area' }
             ]
         };
@@ -196,47 +199,111 @@ document.addEventListener('DOMContentLoaded', function () {
             elWeather.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
+
+        // WSPÓLNY ZAKRES DLA TEMPERATURY I TEMPERATURY ODCZUWALNEJ
+        const tempSeries = series[1] || { data: [] }; // "Temperatura"
+        const feelsSeries = series[2] || { data: [] }; // "Temp. odczuwalna"
+
+        const tempValues = []
+            .concat((tempSeries.data || []).map(p => p.y))
+            .concat((feelsSeries.data || []).map(p => p.y))
+            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+
+        let tempMin = null;
+        let tempMax = null;
+        if (tempValues.length > 0) {
+            const rawMin = Math.min(...tempValues);
+            const rawMax = Math.max(...tempValues);
+            const padding = Math.max(1, (rawMax - rawMin) * 0.1); // trochę „oddechu” wokół danych
+            tempMin = rawMin - padding;
+            tempMax = rawMax + padding;
+        }
+
         const options = {
-            chart: { height: 300, type: 'line', stacked: false, toolbar: { show: false }, animations: { enabled: true } },
+            chart: {
+                height: 300,
+                type: 'line',
+                stacked: false,
+                toolbar: { show: false },
+                animations: { enabled: true }
+            },
             series,
-            colors: ['#7463f0', '#d90f0f', '#4bc0c0'],
-            stroke: { curve: 'smooth', width: [2, 2, 2] },
+            colors: ['#7463f0', '#d90f0f', '#d84444', '#4bc0c0'],
+            stroke: {
+                curve: 'smooth',
+                width: [2, 2, 1.5, 2],
+                dashArray: [0, 0, 6, 0] // "Temp. odczuwalna" – cieńsza, kreskowana
+            },
             fill: {
-                type: ['solid', 'gradient', 'gradient'],
-                gradient: { shadeIntensity: 0.3, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 50, 100] }
+                type: ['solid', 'gradient', 'solid', 'gradient'],
+                gradient: {
+                    shadeIntensity: 0.3,
+                    opacityFrom: 0.35,
+                    opacityTo: 0.05,
+                    stops: [0, 50, 100]
+                }
             },
             dataLabels: { enabled: false },
             markers: { size: 0, hover: { sizeOffset: 2 } },
-            xaxis: { type: 'datetime', labels: { format: 'HH:mm', datetimeUTC: false } },
+            xaxis: {
+                type: 'datetime',
+                labels: { format: 'HH:mm', datetimeUTC: false }
+            },
             yaxis: [
                 {
-                    seriesName: 'Ciśnienie', opposite: true, title: { text: 'hPa' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) }, tooltip: { enabled: true }
+                    seriesName: 'Ciśnienie',
+                    opposite: true,
+                    title: { text: 'hPa' },
+                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) },
+                    tooltip: { enabled: true }
                 },
                 {
-                    seriesName: 'Temperatura', opposite: false, title: { text: '°C' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) }
+                    seriesName: 'Temperatura',
+                    opposite: false,
+                    title: { text: '°C' },
+                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax } : {})
                 },
                 {
-                    seriesName: 'Wilgotność', opposite: true, title: { text: '%' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}%`) }, min: 0, max: 100
+                    seriesName: 'Temp. odczuwalna',
+                    opposite: false,
+                    show: false, // ta sama skala co oś powyżej
+                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax } : {})
+                },
+                {
+                    seriesName: 'Wilgotność',
+                    opposite: true,
+                    title: { text: '%' },
+                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}%`) },
+                    min: 0,
+                    max: 100
                 }
             ],
             grid: { strokeDashArray: 4 },
             legend: { show: true, position: 'bottom' },
             tooltip: {
-                shared: true, intersect: false, theme: 'dark',
+                shared: true,
+                intersect: false,
+                theme: 'dark',
                 x: { format: 'dd MMM, HH:mm' },
                 y: [
-                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`) },
-                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`) },
-                    { formatter: v => (v == null ? '' : `${v.toFixed(0)} %`) }
+                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`) }, // Ciśnienie
+                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`) },  // Temperatura
+                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`) },  // Temp. odczuwalna
+                    { formatter: v => (v == null ? '' : `${v.toFixed(0)} %`) }    // Wilgotność
                 ]
             }
         };
+
         elWeather.innerHTML = '';
-        if (!weatherChart) { weatherChart = new ApexCharts(elWeather, options); weatherChart.render(); weatherChart.hideSeries('Wilgotność'); }
-        else { weatherChart.updateOptions(options, true, true); }
+        if (!weatherChart) {
+            weatherChart = new ApexCharts(elWeather, options);
+            weatherChart.render();
+            weatherChart.hideSeries('Wilgotność');
+        } else {
+            weatherChart.updateOptions(options, true, true);
+        }
     };
 
     // Odświeżanie kart (zachowuje wybraną datę)

@@ -18,10 +18,11 @@ class AirQualityGraphHandler
     public static function serializeWeather(AirQuality $airQuality): array
     {
         return [
-            'measuredAt'  => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
-            'temperature' => (float)$airQuality->getTemperature(),
-            'humidity'    => (float)$airQuality->getHumidity(),
-            'pressure'    => (float)$airQuality->getSeaLevelPressure(),
+            'measuredAt'           => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
+            'temperature'          => (float)$airQuality->getTemperature(),
+            'perceivedTemperature' => (float)$airQuality->getPerceivedTemperature(),
+            'humidity'             => (float)$airQuality->getHumidity(),
+            'pressure'             => (float)$airQuality->getSeaLevelPressure(),
         ];
     }
 
