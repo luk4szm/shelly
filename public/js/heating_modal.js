@@ -124,49 +124,43 @@
             applyDisablingAndMinRule();
         }
 
-        // Listeners:
-        // 1) Pierwsze pole – pełna reakcja (min + blokada + ewentualna korekta drugiego na change/blur)
-        if (startInput) {
+        function attachInputHandlers(inputEl) {
+            if (!inputEl) return;
+
+            // Reakcja na wpisywanie i zmianę wartości
             ['input', 'change'].forEach(function (evt) {
-                startInput.addEventListener(evt, function () {
-                    // aktualizuj min i stan przycisku/disabled
+                inputEl.addEventListener(evt, function () {
                     applyButtonState();
+
                     var order = getInputsOrder(modalRoot);
                     if (!order.first || !order.second) return;
+
                     var minInfo = updateSecondMinOnly(order.first, order.second);
 
-                    // na "input" NIE korygujemy wartości drugiego, aby nie kasować wpisywania
+                    // na "change" możemy skorygować wartość drugiego pola
                     if (evt === 'change') {
                         maybeClampSecondValue(order.second, minInfo);
                     }
 
-                    // zaktualizuj disabled po zmianie
-                    order.second.disabled = !(order.first.value && order.first.value.trim().length > 0);
-                }, { passive: true });
-            });
-        }
-
-        // 2) Drugie pole – nie wymuszamy wartości podczas pisania
-        if (endInput) {
-            // Podczas wpisywania – tylko aktualizacja stanu przycisku
-            ['input', 'keyup'].forEach(function (evt) {
-                endInput.addEventListener(evt, function () {
-                    applyButtonState();
-                    // brak klampowania tutaj
+                    // drugie pole jest zablokowane dopóki pierwsze jest puste
+                    var firstHasValue = !!(order.first.value && order.first.value.trim().length > 0);
+                    order.second.disabled = !firstHasValue;
                 }, { passive: true });
             });
 
-            // Na change/blur – jeśli poniżej min, podnieś do min
-            ['change', 'blur'].forEach(function (evt) {
-                endInput.addEventListener(evt, function () {
-                    var order = getInputsOrder(modalRoot);
-                    if (!order.first || !order.second) return;
-                    var minInfo = updateSecondMinOnly(order.first, order.second);
-                    maybeClampSecondValue(order.second, minInfo);
-                    applyButtonState();
-                }, { passive: true });
-            });
+            // Na blur – ewentualna dodatkowa korekta poniżej min
+            inputEl.addEventListener('blur', function () {
+                var order = getInputsOrder(modalRoot);
+                if (!order.first || !order.second) return;
+                var minInfo = updateSecondMinOnly(order.first, order.second);
+                maybeClampSecondValue(order.second, minInfo);
+                applyButtonState();
+            }, { passive: true });
         }
+
+        // Listeners:
+        attachInputHandlers(startInput);
+        attachInputHandlers(endInput);
 
         // 3) Ogólne – na wypadek czyszczenia pól, „search” bywa emitowane
         inputs.forEach(function (el) {
