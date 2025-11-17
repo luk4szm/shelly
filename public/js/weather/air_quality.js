@@ -214,9 +214,25 @@ document.addEventListener('DOMContentLoaded', function () {
         if (tempValues.length > 0) {
             const rawMin = Math.min(...tempValues);
             const rawMax = Math.max(...tempValues);
-            const padding = Math.max(1, (rawMax - rawMin) * 0.1); // trochę „oddechu” wokół danych
+            const padding = Math.max(1, (rawMax - rawMin) * 0.1);
             tempMin = rawMin - padding;
             tempMax = rawMax + padding;
+        }
+
+        // DYNAMICZNY, ALE OGRANICZONY ZAKRES DLA WILGOTNOŚCI (0–100)
+        const humiditySeries = series[3] || { data: [] }; // "Wilgotność"
+        const humValues = (humiditySeries.data || [])
+            .map(p => p.y)
+            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+
+        let humMin = 0;
+        let humMax = 100;
+        if (humValues.length > 0) {
+            const rawHumMin = Math.min(...humValues);
+            const rawHumMax = Math.max(...humValues);
+            const humPadding = Math.max(2, (rawHumMax - rawHumMin) * 0.1); // trochę oddechu
+            humMin = Math.max(0, rawHumMin - humPadding);
+            humMax = Math.min(100, rawHumMax + humPadding);
         }
 
         const options = {
@@ -228,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 animations: { enabled: true }
             },
             series,
-            colors: ['#7463f0', '#d90f0f', '#d84444', '#4bc0c0'],
+            colors: ['#7463f0', '#d90f0f', '#d90f0f', '#4bc0c0'],
             stroke: {
                 curve: 'smooth',
                 width: [2, 2, 1.5, 2],
@@ -240,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     shadeIntensity: 0.3,
                     opacityFrom: 0.35,
                     opacityTo: 0.05,
-                    stops: [0, 50, 100]
+                    stops: [0, 99, 100]
                 }
             },
             dataLabels: { enabled: false },
@@ -276,8 +292,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     opposite: true,
                     title: { text: '%' },
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}%`) },
-                    min: 0,
-                    max: 100
+                    min: humMin,
+                    max: humMax
                 }
             ],
             grid: { strokeDashArray: 4 },
