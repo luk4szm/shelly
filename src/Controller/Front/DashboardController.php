@@ -101,10 +101,7 @@ final class DashboardController extends AbstractController
                     'supply' => $heatingPumpSupply,
                     'return' => $heatingPumpReturn,
                 ],
-                'scheduledProcesses' => [
-                    'heatingTurnOn'  => $scheduledProcessRepository->findNextProcessToExecute(TurnOnHeatingProcess::NAME),
-                    'heatingTurnOff' => $scheduledProcessRepository->findNextProcessToExecute(TurnOffHeatingProcess::NAME),
-                ],
+                'scheduledProcesses' => $scheduledProcessRepository->findHeatingProcessToExecute(),
             ]),
         ]);
     }

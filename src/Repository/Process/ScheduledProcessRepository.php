@@ -40,6 +40,17 @@ class ScheduledProcessRepository extends CrudRepository
             ->getOneOrNullResult();
     }
 
+    public function findHeatingProcessToExecute(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.executedAt IS NULL')
+            ->andWhere('p.name IN (:name)')
+            ->setParameter('name', [TurnOnHeatingProcess::NAME, TurnOffHeatingProcess::NAME])
+            ->orderBy('p.scheduledAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function deleteScheduledHeatingProcesses(): void
     {
         $this->createQueryBuilder('p')
