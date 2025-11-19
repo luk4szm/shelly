@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // WSPÓLNY ZAKRES DLA TEMPERATURY I TEMPERATURY ODCZUWALNEJ
+        // 1. WSPÓLNY ZAKRES DLA TEMPERATURY I TEMP. ODCZUWALNEJ
         const tempSeries = series[1] || { data: [] }; // "Temperatura"
         const feelsSeries = series[2] || { data: [] }; // "Temp. odczuwalna"
 
@@ -214,12 +214,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (tempValues.length > 0) {
             const rawMin = Math.min(...tempValues);
             const rawMax = Math.max(...tempValues);
-            const padding = Math.max(1, (rawMax - rawMin) * 0.1);
-            tempMin = rawMin - padding;
-            tempMax = rawMax + padding;
+
+            // Dodajemy mały margines techniczny przed zaokrągleniem,
+            // żeby punkty leżące np. równo na 10.0 nie wymuszały zakresu na styk.
+            const padding = Math.max(0.5, (rawMax - rawMin) * 0.05);
+
+            const valForMin = rawMin - padding;
+            const valForMax = rawMax + padding;
+
+            // Zaokrąglanie w dół (min) i w górę (max) do pełnych 5
+            tempMin = Math.floor(valForMin / 5) * 5;
+            tempMax = Math.ceil(valForMax / 5) * 5;
         }
 
-        // DYNAMICZNY, ALE OGRANICZONY ZAKRES DLA WILGOTNOŚCI (0–100)
+        // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI (z limitem 0-100)
         const humiditySeries = series[3] || { data: [] }; // "Wilgotność"
         const humValues = (humiditySeries.data || [])
             .map(p => p.y)
@@ -230,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (humValues.length > 0) {
             const rawHumMin = Math.min(...humValues);
             const rawHumMax = Math.max(...humValues);
-            const humPadding = Math.max(2, (rawHumMax - rawHumMin) * 0.1); // trochę oddechu
+            const humPadding = Math.max(2, (rawHumMax - rawHumMin) * 0.1); // margines dla estetyki
             humMin = Math.max(0, rawHumMin - humPadding);
             humMax = Math.min(100, rawHumMax + humPadding);
         }
@@ -278,14 +286,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     opposite: false,
                     title: { text: '°C' },
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
-                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax } : {})
+                    // Wymuszamy zakres zaokrąglony do 5
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
                     seriesName: 'Temp. odczuwalna',
                     opposite: false,
-                    show: false, // ta sama skala co oś powyżej
+                    show: false,
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
-                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax } : {})
+                    // Ten sam zakres dla ukrytej osi
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
                     seriesName: 'Wilgotność',
