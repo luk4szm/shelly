@@ -222,9 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const valForMin = rawMin - padding;
             const valForMax = rawMax + padding;
 
-            // Zaokrąglanie w dół (min) i w górę (max) do pełnych 5
-            tempMin = Math.floor(valForMin / 5) * 5;
-            tempMax = Math.ceil(valForMax / 5) * 5;
+            // Zaokrąglanie w dół (min) i w górę (max) do pełnych 2
+            tempMin = Math.floor(valForMin / 2) * 2;
+            tempMax = Math.ceil(valForMax / 2) * 2;
         }
 
         // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI (z limitem 0-100)
