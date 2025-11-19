@@ -13,35 +13,61 @@ class YrnoForecastFactory
      */
     public static function create(array $data, \DateTime $time): WeatherForecast
     {
-        $cloudAreaFraction = $data['instant']['details']['cloud_area_fraction'];
-        $fogAreaFraction   = $data['instant']['details']['fog_area_fraction'];
-        $sunlightFactor    = (int)max(0, 100 - ($cloudAreaFraction + $fogAreaFraction));
-
-
-        return (new WeatherForecast())
+        $weatherForecast = (new WeatherForecast())
             ->setTime($time)
             ->setTemperature($data['instant']['details']['air_temperature'])
-            ->setTemperature6hMax($data['next_6_hours']['details']['air_temperature_max'])
-            ->setTemperature6hMin($data['next_6_hours']['details']['air_temperature_min'])
-            ->setPrecipitation($data['next_1_hours']['details']['precipitation_amount'])
-            ->setPrecipitation6h($data['next_6_hours']['details']['precipitation_amount'])
             ->setAirPressure($data['instant']['details']['air_pressure_at_sea_level'])
-            ->setClouds($cloudAreaFraction)
             ->setCloudsLow($data['instant']['details']['cloud_area_fraction_low'])
             ->setCloudsMedium($data['instant']['details']['cloud_area_fraction_medium'])
             ->setCloudsHigh($data['instant']['details']['cloud_area_fraction_high'])
             ->setHumidity($data['instant']['details']['relative_humidity'])
             ->setWindSpeed($data['instant']['details']['wind_speed'])
             ->setWindDirection($data['instant']['details']['wind_from_direction'])
-            ->setFog($fogAreaFraction)
-            ->setUvIndex($data['instant']['details']['ultraviolet_index_clear_sky'])
             ->setDewPointTemperature($data['instant']['details']['dew_point_temperature'])
-            ->setSymbolCode($data['next_1_hours']['summary']['symbol_code'])
-            ->setSymbolCode1h($data['next_1_hours']['summary']['symbol_code'])
-            ->setSymbolCode6h($data['next_6_hours']['summary']['symbol_code'])
-            ->setSymbolCode12h($data['next_12_hours']['summary']['symbol_code'])
-            ->setSunlightFactor($sunlightFactor)
         ;
+
+        if (isset($data['instant']['details']['cloud_area_fraction'])) {
+            $cloudAreaFraction = $data['instant']['details']['cloud_area_fraction'];
+
+            $weatherForecast->setClouds($cloudAreaFraction);
+
+            if (isset($data['instant']['details']['fog_area_fraction'])) {
+                $fogAreaFraction = $data['instant']['details']['fog_area_fraction'];
+                $sunlightFactor  = (int)max(0, 100 - ($cloudAreaFraction + $fogAreaFraction));
+
+                $weatherForecast
+                    ->setFog($fogAreaFraction)
+                    ->setSunlightFactor($sunlightFactor)
+                ;
+            }
+        }
+
+        if (isset($data['next_1_hours'])) {
+            $weatherForecast
+                ->setSymbolCode($data['next_1_hours']['summary']['symbol_code'])
+                ->setSymbolCode1h($data['next_1_hours']['summary']['symbol_code'])
+                ->setPrecipitation($data['next_1_hours']['details']['precipitation_amount'])
+            ;
+        }
+
+        if (isset($data['next_6_hours'])) {
+            $weatherForecast
+                ->setTemperature6hMax($data['next_6_hours']['details']['air_temperature_max'])
+                ->setTemperature6hMin($data['next_6_hours']['details']['air_temperature_min'])
+                ->setPrecipitation6h($data['next_6_hours']['details']['precipitation_amount'])
+                ->setSymbolCode6h($data['next_6_hours']['summary']['symbol_code'])
+            ;
+        }
+
+        if (isset($data['next_12_hours'])) {
+            $weatherForecast->setSymbolCode12h($data['next_12_hours']['summary']['symbol_code']);
+        }
+
+        if (isset($data['instant']['details']['ultraviolet_index_clear_sky'])) {
+            $weatherForecast->setUvIndex($data['instant']['details']['ultraviolet_index_clear_sky']);
+        }
+
+        return $weatherForecast;
     }
 
     /**

@@ -28,7 +28,7 @@ readonly class WeatherForecastService
 
     private function storeForecast(array $newData): void
     {
-        $oldData = $this->weatherForecastRepository->findForecastForNextDay();
+        $oldData = $this->weatherForecastRepository->findForecast();
 
         /** @var WeatherForecast $newForecast */
         foreach ($newData as $newForecast) {
@@ -53,6 +53,6 @@ readonly class WeatherForecastService
     {
         $response = $this->weatherForecastCurlRequest->getForecast();
 
-        return array_slice($response['properties']['timeseries'], 0, 24);
+        return $response['properties']['timeseries'];
     }
 }

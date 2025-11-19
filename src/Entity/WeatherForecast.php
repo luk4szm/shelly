@@ -45,7 +45,7 @@ class WeatherForecast
     #[ORM\Column]
     private ?float $windDirection = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $clouds = null;
 
     #[ORM\Column]
@@ -57,10 +57,10 @@ class WeatherForecast
     #[ORM\Column]
     private ?float $cloudsHigh = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $uvIndex = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $fog = null;
 
     #[ORM\Column]
@@ -269,7 +269,7 @@ class WeatherForecast
         return $this->uvIndex;
     }
 
-    public function setUvIndex(float $uvIndex): static
+    public function setUvIndex(?float $uvIndex): static
     {
         $this->uvIndex = $uvIndex;
 
@@ -281,7 +281,7 @@ class WeatherForecast
         return $this->fog;
     }
 
-    public function setFog(float $fog): static
+    public function setFog(?float $fog): static
     {
         $this->fog = $fog;
 
