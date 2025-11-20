@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\Weather;
 
 use App\Entity\AirQuality;
+use App\Entity\WeatherForecast;
 use App\Repository\AirQualityRepository;
 use App\Repository\WeatherForecastRepository;
 use App\Utils\Hook\GraphHandler\AirQualityGraphHandler;
+use App\Utils\Hook\GraphHandler\WeatherForecastGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -123,12 +125,26 @@ class WeatherController extends AbstractController
     }
 
     #[Route('/get-weather-data', name: 'weather_data', methods: ['GET'])]
-    public function getWeatherData(Request $request, AirQualityRepository $airQualityRepository): Response
+    public function getWeatherData(
+        Request                   $request,
+        AirQualityRepository      $airQualityRepository,
+        WeatherForecastRepository $forecastRepository,
+    ): Response
     {
-        return $this->json(
-            array_map(function (AirQuality $airQuality) {
-                return AirQualityGraphHandler::serializeWeather($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
-        );
+        $date = $request->get('date');
+
+        $airQualityInfo = array_map(function (AirQuality $airQuality) {
+                return AirQualityGraphHandler::serializeWeatherData($airQuality);
+            }, $airQualityRepository->findForDate(new \DateTime($date)));
+
+        if ($date < (new \DateTime())->format('Y-m-d')) {
+            return $this->json($airQualityInfo);
+        }
+
+        $forecastData = array_map(function (WeatherForecast $weatherForecast) {
+            return WeatherForecastGraphHandler::serializeForecast($weatherForecast);
+        }, $forecastRepository->findForestForRestOfDay(new \DateTime($date)));
+
+        return $this->json(array_merge($airQualityInfo, $forecastData));
     }
 }

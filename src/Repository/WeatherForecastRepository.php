@@ -25,6 +25,23 @@ class WeatherForecastRepository extends CrudRepository
             ->getResult();
     }
 
+    public function findForestForRestOfDay(\DateTimeInterface $date): array
+    {
+        $start = $date->format('Y-m-d') === (new \DateTime())->format('Y-m-d')
+            ? new \DateTime()
+            : $date;
+
+        $end = (clone $start)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('wf')
+            ->where('wf.time >= :start')
+            ->andWhere('wf.time <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findForecastForDate(?\DateTimeInterface $date = null): ?WeatherForecast
     {
         return $this->createQueryBuilder('wf')

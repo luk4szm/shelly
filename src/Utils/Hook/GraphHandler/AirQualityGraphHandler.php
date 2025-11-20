@@ -15,7 +15,7 @@ class AirQualityGraphHandler
         ];
     }
 
-    public static function serializeWeather(AirQuality $airQuality): array
+    public static function serializeWeatherData(AirQuality $airQuality): array
     {
         return [
             'measuredAt'           => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
@@ -23,30 +23,6 @@ class AirQualityGraphHandler
             'perceivedTemperature' => (float)$airQuality->getPerceivedTemperature(),
             'humidity'             => (float)$airQuality->getHumidity(),
             'pressure'             => (float)$airQuality->getSeaLevelPressure(),
-        ];
-    }
-
-    public static function serializeTemperature(AirQuality $airQuality): array
-    {
-        return [
-            'measuredAt' => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
-            'value'      => (float)$airQuality->getTemperature(),
-        ];
-    }
-
-    public static function serializeHumidity(AirQuality $airQuality): array
-    {
-        return [
-            'measuredAt' => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
-            'value'      => (float)$airQuality->getHumidity(),
-        ];
-    }
-
-    public static function serializePressure(AirQuality $airQuality): array
-    {
-        return [
-            'measuredAt' => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
-            'value'      => (float)$airQuality->getPressure(),
         ];
     }
 }

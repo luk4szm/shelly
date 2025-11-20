@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentDate = new Date(dateInput.value);
         today.setHours(0, 0, 0, 0);
         currentDate.setHours(0, 0, 0, 0);
-        nextBtn.disabled = currentDate >= today;
+        // nextBtn.disabled = currentDate >= today;
     };
 
     const setUrlDateParam = (dateStr, replace = false) => {
@@ -138,14 +138,49 @@ document.addEventListener('DOMContentLoaded', function () {
             .sort((a, b) => a.x - b.x);
 
         const pressure = pts.filter(p => p.pressure != null).map(p => ({ x: p.x, y: p.pressure }));
-        const temperature = pts.filter(p => p.temperature != null).map(p => ({ x: p.x, y: p.temperature }));
+        const temperatureAll = pts.filter(p => p.temperature != null).map(p => ({ x: p.x, y: p.temperature }));
         const perceivedTemperature = pts.filter(p => p.perceivedTemperature != null).map(p => ({ x: p.x, y: p.perceivedTemperature }));
         const humidity = pts.filter(p => p.humidity != null).map(p => ({ x: p.x, y: p.humidity }));
+
+        // LOGIKA PODZIAŁU LINII TEMPERATURY
+        const cutoffTime = new Date().getTime(); // Punkt podziału: teraz
+        const tempSolid = [];
+        const tempDashed = [];
+
+        temperatureAll.forEach((pt, index) => {
+            // Do historii trafiają punkty starsze lub równe punktowi podziału
+            if (pt.x <= cutoffTime) {
+                tempSolid.push(pt);
+            }
+            // Do prognozy trafiają punkty nowsze lub równe punktowi podziału
+            if (pt.x >= cutoffTime) {
+                tempDashed.push(pt);
+            }
+        });
+
+        // Łączenie: Aby nie było przerwy, ostatni punkt solid musi być początkiem dashed
+        // (Powyższy if (>=) i if (<=) mogą już to załatwić, jeśli mamy punkt idealnie w czasie,
+        // ale dla pewności sprawdzamy ciągłość):
+        if (tempSolid.length > 0 && tempDashed.length > 0) {
+            const lastSolid = tempSolid[tempSolid.length - 1];
+            const firstDashed = tempDashed[0];
+            if (firstDashed.x > lastSolid.x) {
+                // Jeśli jest luka w danych, duplikujemy ostatni punkt historii do prognozy
+                tempDashed.unshift(lastSolid);
+            }
+        }
+
+        // Jeśli cała seria jest w przyszłości lub przeszłości, obsłuż przypadki brzegowe
+        if (tempSolid.length === 0 && tempDashed.length === 0 && temperatureAll.length > 0) {
+            // Fallback: przypisz wszystko do solid (jeśli np. błąd daty)
+            tempSolid.push(...temperatureAll);
+        }
 
         return {
             series: [
                 { name: 'Ciśnienie', data: pressure, type: 'line' },
-                { name: 'Temperatura', data: temperature, type: 'area' },
+                { name: 'Temperatura', data: tempSolid, type: 'area' },            // Seria 1 (Solid)
+                { name: 'Prognoza', data: tempDashed, type: 'area' },              // Seria 2 (Dashed)
                 { name: 'Temp. odczuwalna', data: perceivedTemperature, type: 'line' },
                 { name: 'Wilgotność', data: humidity, type: 'area' }
             ]
@@ -201,11 +236,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 1. WSPÓLNY ZAKRES DLA TEMPERATURY I TEMP. ODCZUWALNEJ
-        const tempSeries = series[1] || { data: [] }; // "Temperatura"
-        const feelsSeries = series[2] || { data: [] }; // "Temp. odczuwalna"
+        // series[1] to "Temperatura", series[2] to "Prognoza", series[3] to "Temp. odczuwalna"
+        const tempSeries = series[1] || { data: [] };
+        const forecastSeries = series[2] || { data: [] };
+        const feelsSeries = series[3] || { data: [] };
 
         const tempValues = []
             .concat((tempSeries.data || []).map(p => p.y))
+            .concat((forecastSeries.data || []).map(p => p.y))
             .concat((feelsSeries.data || []).map(p => p.y))
             .filter(v => typeof v === 'number' && !Number.isNaN(v));
 
@@ -228,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI (z limitem 0-100)
-        const humiditySeries = series[3] || { data: [] }; // "Wilgotność"
+        const humiditySeries = series[4] || { data: [] }; // "Wilgotność"
         const humValues = (humiditySeries.data || [])
             .map(p => p.y)
             .filter(v => typeof v === 'number' && !Number.isNaN(v));
@@ -252,14 +290,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 animations: { enabled: true }
             },
             series,
-            colors: ['#7463f0', '#d90f0f', '#d90f0f', '#4bc0c0'],
+            // Kolory: Ciśnienie, Temp(solid), Temp(dashed), Odczuwalna, Wilgotność
+            // Temp(solid) i Temp(dashed) mają ten sam kolor (#d90f0f)
+            colors: ['#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0'],
             stroke: {
                 curve: 'smooth',
-                width: [2, 2, 1.5, 2],
-                dashArray: [0, 0, 6, 0] // "Temp. odczuwalna" – cieńsza, kreskowana
+                // Grubości: Ciśnienie(2), TempSolid(2), TempDashed(1.5), Odczuwalna(1.5), Wilgotność(2)
+                width: [2, 2, 1.5, 1.5, 2],
+                // Kreskowanie: TempDashed(5), Odczuwalna(6)
+                dashArray: [0, 0, 5, 6, 0]
             },
             fill: {
-                type: ['solid', 'gradient', 'solid', 'gradient'],
+                // Typy wypełnienia muszą odpowiadać kolejności serii
+                type: ['solid', 'gradient', 'gradient', 'solid', 'gradient'],
                 gradient: {
                     shadeIntensity: 0.3,
                     opacityFrom: 0.35,
@@ -286,7 +329,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     opposite: false,
                     title: { text: '°C' },
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
-                    // Wymuszamy zakres zaokrąglony do 5
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
+                },
+                {
+                    seriesName: 'Prognoza', // Ukryta oś Y dla prognozy (korzysta z tej samej skali co Temperatura)
+                    show: false,
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
@@ -294,7 +341,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     opposite: false,
                     show: false,
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
-                    // Ten sam zakres dla ukrytej osi
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
@@ -314,10 +360,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 theme: 'dark',
                 x: { format: 'dd MMM, HH:mm' },
                 y: [
-                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`) }, // Ciśnienie
-                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`) },  // Temperatura
-                    { formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`) },  // Temp. odczuwalna
-                    { formatter: v => (v == null ? '' : `${v.toFixed(0)} %`) }    // Wilgotność
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`)}, // Ciśnienie
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temperatura
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Prognoza
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temp. odczuwalna
+                    {formatter: v => (v == null ? '' : `${v.toFixed(0)} %`)}    // Wilgotność
                 ]
             }
         };
