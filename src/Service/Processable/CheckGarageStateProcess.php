@@ -9,6 +9,9 @@ use App\Repository\UserRepository;
 use App\Service\LogReader\GarageLogReader;
 use App\Service\Shelly\Cover\ShellyGarageService;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class CheckGarageStateProcess extends AbstractRecurringProcess implements AbstractProcessableInterface, RecurringProcessInterface
 {
@@ -18,6 +21,7 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
         private readonly UserRepository                              $userRepository,
         private readonly ShellyGarageService                         $garageService,
         private readonly GarageLogReader                             $garageLogReader,
+        private readonly MailerInterface                             $mailer,
     ) {
         parent::__construct($processConditions);
     }
@@ -37,11 +41,16 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
             /** @var \DateTimeImmutable $lastActivity */
             if ($lastActivity->modify("+1 hour") < new \DateTimeImmutable()) {
                 foreach ($this->userRepository->findInmates() as $inmate) {
-                    mail(
-                        $inmate->getEmail(),
-                        'Garage is open',
-                        'It\'s dark outside, and the garage is still open. Time to close up!'
-                    );
+                    $message = (new Email())
+                        ->from(new Address(
+                            $_ENV['MAILER_SENDER_NAME'],
+                            $_ENV['MAILER_SENDER_MAIL'],
+                        ))
+                        ->to($inmate->getEmail())
+                        ->subject('[HA_MSG] Garage is open')
+                        ->text('It\'s dark outside, and the garage is still open. Time to close up!');
+
+                    $this->mailer->send($message);
                 }
             }
         }

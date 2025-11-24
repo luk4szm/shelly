@@ -9,12 +9,16 @@ use App\Event\SuplaGateOpenEvent;
 use App\Repository\UserNotificationRepository;
 use App\Service\SmsApi\SmsSender;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 readonly class SuplaGateSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private SmsSender                  $smsSender,
         private UserNotificationRepository $notificationRepository,
+        private MailerInterface            $mailer,
     ) {
     }
 
@@ -59,11 +63,16 @@ readonly class SuplaGateSubscriber implements EventSubscriberInterface
 
     private function sendEmail(User $recipient, string $userIdentifier, string $method): void
     {
-        mail(
-            $recipient->getEmail(),
-            '[HA_MSG] The gate has been opened!',
-            sprintf('Użytkownik %s właśnie otworzył bramę! (%s)', $userIdentifier, $method)
-        );
+        $message = (new Email())
+            ->from(new Address(
+                $_ENV['MAILER_SENDER_NAME'],
+                $_ENV['MAILER_SENDER_MAIL'],
+            ))
+            ->to($recipient->getEmail())
+            ->subject('[HA_MSG] The gate has been opened!')
+            ->html(sprintf('Użytkownik <b>%s</b> właśnie otworzył bramę! (%s)', $userIdentifier, $method));
+
+        $this->mailer->send($message);
     }
 
 }
