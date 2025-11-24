@@ -15,9 +15,9 @@ abstract class LogReaderService
         $this->projectDir = $parameterBag->get('kernel.project_dir');
     }
 
-    public function getParsedLogs(): array
+    public function getParsedLogs(int $linesCount = 10): array
     {
-        foreach ($this->getLastLogLines() as $line) {
+        foreach ($this->getLastLogLines($linesCount) as $line) {
             $parsedLogs[] = $this->parseLogLine($line);
         }
 

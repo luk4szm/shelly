@@ -6,6 +6,7 @@ use App\Entity\Process\Process;
 use App\Entity\Process\RecurringProcess;
 use App\Repository\Process\ProcessRepository;
 use App\Repository\UserRepository;
+use App\Service\LogReader\GarageLogReader;
 use App\Service\Shelly\Cover\ShellyGarageService;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
@@ -16,6 +17,7 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
         private readonly ProcessRepository                           $processRepository,
         private readonly UserRepository                              $userRepository,
         private readonly ShellyGarageService                         $garageService,
+        private readonly GarageLogReader                             $garageLogReader,
     ) {
         parent::__construct($processConditions);
     }
@@ -29,12 +31,18 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
     public function process(Process $process): void
     {
         if ($this->garageService->isOpen()) {
-            foreach ($this->userRepository->findInmates() as $inmate) {
-                mail(
-                    $inmate->getEmail(),
-                    'Garage is open',
-                    'It\'s dark outside, and the garage is still open. Time to close up!'
-                );
+            // timestamp with last garage roller action
+            $lastActivity = $this->garageLogReader->getParsedLogs(1)[0]['timestamp'];
+
+            /** @var \DateTimeImmutable $lastActivity */
+            if ($lastActivity->modify("+1 hour") < new \DateTimeImmutable()) {
+                foreach ($this->userRepository->findInmates() as $inmate) {
+                    mail(
+                        $inmate->getEmail(),
+                        'Garage is open',
+                        'It\'s dark outside, and the garage is still open. Time to close up!'
+                    );
+                }
             }
         }
 
