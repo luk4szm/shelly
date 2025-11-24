@@ -43,8 +43,8 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
                 foreach ($this->userRepository->findInmates() as $inmate) {
                     $message = (new Email())
                         ->from(new Address(
-                            $_ENV['MAILER_SENDER_NAME'],
                             $_ENV['MAILER_SENDER_MAIL'],
+                            $_ENV['MAILER_SENDER_NAME'],
                         ))
                         ->to($inmate->getEmail())
                         ->subject('[HA_MSG] Garage is open')

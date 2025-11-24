@@ -65,8 +65,8 @@ readonly class SuplaGateSubscriber implements EventSubscriberInterface
     {
         $message = (new Email())
             ->from(new Address(
-                $_ENV['MAILER_SENDER_NAME'],
                 $_ENV['MAILER_SENDER_MAIL'],
+                $_ENV['MAILER_SENDER_NAME'],
             ))
             ->to($recipient->getEmail())
             ->subject('[HA_MSG] The gate has been opened!')
