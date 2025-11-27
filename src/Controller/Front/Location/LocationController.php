@@ -9,7 +9,6 @@ use App\Repository\HookRepository;
 use App\Utils\Hook\GraphHandler\HumidityGraphHandler;
 use App\Utils\Hook\GraphHandler\TemperatureGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,8 +19,6 @@ class LocationController extends AbstractController
     #[Route('/daily', name: 'daily')]
     public function daily(string $location, HookRepository $hookRepository): Response
     {
-        dd($hookRepository->findForCandleChart('salon', 'temp', new \DateTime('2025-10-01'), new \DateTime('2025-10-31')));
-
         $current = [
             'temperature' => $hookRepository->findActualTempForLocation($location),
             'humidity'    => $hookRepository->findActualHumidityForLocation($location),
@@ -48,32 +45,17 @@ class LocationController extends AbstractController
         string         $location,
     ): Response {
         $date = $request->get('date', '');
-        $type = $request->get('type');
+        $from = (new \DateTime($date))->setTime(0, 0);
+        $to   = (new \DateTime($date))->setTime(23, 59, 59);
 
-        switch ($type) {
-            case 'daily':
-                $from = (new \DateTime($date))->setTime(0, 0);
-                $to   = (new \DateTime($date))->setTime(23, 59, 59);
-
-                return $this->json([
-                    'temperature' => array_map(function (Hook $hook) {
-                        return TemperatureGraphHandler::serialize($hook);
-                    }, $hookRepository->findLocationTemperatures($from, $to, $location)),
-                    'humidity'    => array_map(function (Hook $hook) {
-                        return HumidityGraphHandler::serialize($hook);
-                    }, $hookRepository->findLocationHumidity($from, $to, $location)),
-                ]);
-            case 'monthly':
-                $from = (new \DateTime($date))->modify('first day of this month')->setTime(0, 0);
-                $to   = (new \DateTime($date))->modify('last day of this month')->setTime(23, 59, 59);
-
-                return $this->json([
-                    'temperature' => $hookRepository->findMinMaxForDeviceAndProperty($location, 'temp', $from, $to),
-                    'humidity'    => $hookRepository->findMinMaxForDeviceAndProperty($location, 'humidity', $from, $to),
-                ]);
-        }
-
-        throw new BadRequestException('Unrecognized type ' . $type);
+        return $this->json([
+            'temperature' => array_map(function (Hook $hook) {
+                return TemperatureGraphHandler::serialize($hook);
+            }, $hookRepository->findLocationTemperatures($from, $to, $location)),
+            'humidity'    => array_map(function (Hook $hook) {
+                return HumidityGraphHandler::serialize($hook);
+            }, $hookRepository->findLocationHumidity($from, $to, $location)),
+        ]);
     }
 
     #[Route('/get-monthly-data', name: 'get_monthly_data')]

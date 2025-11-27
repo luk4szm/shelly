@@ -12,7 +12,7 @@
  */
 const apiService = {
     async fetchData(slug, date, type) {
-        const url = `/location/${slug}/get-data?date=${date}&type=${type}`;
+        const url = `/location/${slug}/get-daily-data?date=${date}`;
         try {
             const response = await fetch(url);
             if (!response.ok) {
