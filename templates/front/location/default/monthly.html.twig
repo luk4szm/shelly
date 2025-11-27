@@ -1,0 +1,36 @@
+{% extends 'front/location/default/index.html.twig' %}
+
+{% block buttons %}
+<div class="input-group">
+    <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
+    <input type="month" class="form-control" id="location_date"
+           value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}"
+           min="2025-02" max="{{ "now"|date("Y-m") }}"/>
+    <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
+</div>
+{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        <div id="location-chart-temperature" class="position-relative" data-location-slug="{{ location }}" data-chart-type="monthly"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body" style="min-height: 432px;">
+                        <div id="location-chart-humidity" class="position-relative" data-location-slug="{{ location }}" data-chart-type="monthly"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/location_chart_monthly.js') }}"></script>
+{% endblock %}

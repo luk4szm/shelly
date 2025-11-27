@@ -269,6 +269,42 @@ class HookRepository extends CrudRepository
         return $resultSet->fetchAllAssociative();
     }
 
+    public function findForCandleChart(
+        string    $device,
+        string    $property,
+        \DateTime $from,
+        \DateTime $to
+    ): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT
+                DATE(created_at) as day,
+                CAST(SUBSTRING_INDEX(MIN(CONCAT(created_at, "|", value)), "|", -1) AS DECIMAL(10,2)) as start_value,
+                MAX(CAST(value AS DECIMAL(10,2))) as max_value,
+                MIN(CAST(value AS DECIMAL(10,2))) as min_value,
+                CAST(SUBSTRING_INDEX(MAX(CONCAT(created_at, "|", value)), "|", -1) AS DECIMAL(10,2)) as end_value
+            FROM hook
+            WHERE device = :device
+              AND property = :property 
+              AND created_at >= :from 
+              AND created_at <= :to
+            GROUP BY DATE(created_at)
+            ORDER BY day ASC
+        ';
+
+        $resultSet = $conn->executeQuery($sql, [
+            'device'   => $device,
+            'property' => $property,
+            'from'     => $from->format('Y-m-d 00:00:00'),
+            'to'       => $to->format('Y-m-d 23:59:59'),
+        ]);
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $resultSet->fetchAllAssociative();
+    }
+
     private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('hook')

@@ -17,23 +17,32 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/location/{location}', name: 'app_front_default_location_')]
 class LocationController extends AbstractController
 {
-    #[Route('/{type}', name: 'index', requirements: ['type' => '(?!get-data).+'])]
-    public function daily(string $location, string $type, HookRepository $hookRepository): Response
+    #[Route('/daily', name: 'daily')]
+    public function daily(string $location, HookRepository $hookRepository): Response
     {
+        dd($hookRepository->findForCandleChart('salon', 'temp', new \DateTime('2025-10-01'), new \DateTime('2025-10-31')));
+
         $current = [
             'temperature' => $hookRepository->findActualTempForLocation($location),
             'humidity'    => $hookRepository->findActualHumidityForLocation($location),
         ];
 
-        return $this->render('front/location/default/index.html.twig', [
-            'type'     => $type,
+        return $this->render('front/location/default/daily.html.twig', [
             'location' => $location,
             'current'  => $current,
         ]);
     }
 
-    #[Route('/get-data', name: 'get_data')]
-    public function getData(
+    #[Route('/monthly', name: 'monthly')]
+    public function monthly(string $location): Response
+    {
+        return $this->render('front/location/default/monthly.html.twig', [
+            'location' => $location,
+        ]);
+    }
+
+    #[Route('/get-daily-data', name: 'get_daily_data')]
+    public function getDailyData(
         Request        $request,
         HookRepository $hookRepository,
         string         $location,
@@ -65,5 +74,19 @@ class LocationController extends AbstractController
         }
 
         throw new BadRequestException('Unrecognized type ' . $type);
+    }
+
+    #[Route('/get-monthly-data', name: 'get_monthly_data')]
+    public function getMonthlyData(
+        Request        $request,
+        HookRepository $hookRepository,
+        string         $location,
+    ): Response {
+        $date = $request->get('date', '');
+        $type = $request->get('type');
+        $from = (new \DateTime($date))->modify('first day of this month')->setTime(0, 0);
+        $to   = (new \DateTime($date))->modify('last day of this month')->setTime(23, 59, 59);
+
+        return $this->json($hookRepository->findForCandleChart($location, $type, $from, $to));
     }
 }
