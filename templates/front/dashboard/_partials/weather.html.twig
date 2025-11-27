@@ -1,6 +1,7 @@
 <div class="card card-sm">
     <div class="card-body">
         {% if weather is not null %}
+            {% dump(weather) %}
             <div class="row align-items-center">
                 <div class="col text-center">
                     <img src="{{ weather_symbol(weather.symbolCode) }}" alt="{{ weather.symbolCode }}" style="width: 80px; height: 80px;"/>
