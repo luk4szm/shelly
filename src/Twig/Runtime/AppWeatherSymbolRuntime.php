@@ -12,8 +12,12 @@ readonly class AppWeatherSymbolRuntime implements RuntimeExtensionInterface
         private LoggerInterface $logger,
     ) {}
 
-    public function getWeatherSymbolImage(string $weatherSymbolCode): string
+    public function getWeatherSymbolImage(?string $weatherSymbolCode): string
     {
+        if ($weatherSymbolCode === null) {
+            return '/images/question_mark.svg';
+        }
+
         try {
             return sprintf('/images/weather/%s.svg', SymbolCode::valueFromName($weatherSymbolCode));
         } catch (\InvalidArgumentException) {
