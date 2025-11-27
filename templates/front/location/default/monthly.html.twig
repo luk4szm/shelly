@@ -4,7 +4,7 @@
 <div class="input-group">
     <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
     <input type="month" class="form-control" id="location_date"
-           value="{{ app.request.query.get('date') ? app.request.query.get('date')|date('Y-m') : "now"|date("Y-m") }}"
+           value="{{ app.request.query.get('date') }}"
            min="2025-02" max="{{ "now"|date("Y-m") }}"/>
     <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
 </div>

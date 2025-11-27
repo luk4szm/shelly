@@ -84,8 +84,16 @@ class LocationController extends AbstractController
     ): Response {
         $date = $request->get('date', '');
         $type = $request->get('type');
-        $from = (new \DateTime($date))->modify('first day of this month')->setTime(0, 0);
-        $to   = (new \DateTime($date))->modify('last day of this month')->setTime(23, 59, 59);
+
+        if ($date === 'last30days' || empty($date)) {
+            // Zakres: ostatnie 30 dni (od dzisiaj - 30 dni do dzisiaj)
+            $to   = (new \DateTime())->setTime(23, 59, 59);
+            $from = (new \DateTime())->modify('-30 days')->setTime(0, 0);
+        } else {
+            // Zakres: konkretny miesiąc
+            $from = (new \DateTime($date))->modify('first day of this month')->setTime(0, 0);
+            $to   = (new \DateTime($date))->modify('last day of this month')->setTime(23, 59, 59);
+        }
 
         return $this->json($hookRepository->findForCandleChart($location, $type, $from, $to));
     }

@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let tempChart = null;
     let humChart = null;
 
-    // 2. Narzędzia daty (format YYYY-MM)
     const getMonthDate = () => {
         if (!dateInput.value) return new Date();
         // input type="month" zwraca "YYYY-MM", dodajemy "-01" by utworzyć pełną datę
@@ -41,12 +40,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const updateUrlParam = (dateStr) => {
         const url = new URL(window.location.href);
-        url.searchParams.set('date', dateStr);
+        if (dateStr && dateStr !== 'last30days') {
+            url.searchParams.set('date', dateStr);
+        } else {
+            url.searchParams.delete('date');
+        }
         window.history.pushState({}, '', url.toString());
     };
 
     const changeMonth = (delta) => {
-        const currentDate = getMonthDate();
+        let currentDate;
+
+        // Jeśli pole jest puste (tryb "ostatnie 30 dni"), startujemy od obecnego miesiąca
+        if (!dateInput.value) {
+             currentDate = new Date();
+             // Ustawiamy na 1 dzień miesiąca, żeby uniknąć problemów przy przesuwaniu (np. 31 marca -> luty)
+             currentDate.setDate(1);
+        } else {
+             currentDate = getMonthDate();
+        }
+
         currentDate.setMonth(currentDate.getMonth() + delta);
 
         const newVal = formatMonth(currentDate);
@@ -60,6 +73,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const checkNextButtonState = () => {
         const current = getMonthDate();
         const maxStr = dateInput.getAttribute('max');
+
+        // Jeśli input jest pusty, to jesteśmy w "ostatnich 30 dniach", więc "dalej" jest nieaktywne (chyba że chcemy pozwolić przejść do widoku bieżącego miesiąca kalendarzowego, ale zazwyczaj last30days zawiera "dzisiaj")
+        if (!dateInput.value) {
+            nextBtn.disabled = true;
+            return;
+        }
+
         if (maxStr) {
             const maxDate = new Date(maxStr + '-01');
             // Blokujemy, jeśli obecny miesiąc >= max miesiąc
@@ -71,8 +91,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Zakładamy endpointy zgodne z konwencją. Należy dostosować URL, jeśli routing w Symfony jest inny.
     const fetchData = async (type, dateStr) => {
         // type: 'temperature' lub 'humidity'
-        // endpoint np.: /location/{slug}/chart-data/{type}?date=YYYY-MM
-        const url = `/location/${locationSlug}/get-monthly-data?date=${dateStr}&type=${type}`;
+        // Jeśli dateStr jest puste lub null, wysyłamy flagę oznaczającą "ostatnie 30 dni"
+        const queryDate = dateStr || 'last30days';
+
+        // endpoint np.: /location/{slug}/get-monthly-data?date=...&type=...
+        const url = `/location/${locationSlug}/get-monthly-data?date=${queryDate}&type=${type}`;
 
         try {
             const res = await fetch(url, { cache: 'no-store' });
@@ -259,27 +282,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     dateInput.addEventListener('change', (e) => {
         const val = e.target.value;
-        if (val) {
-            updateUrlParam(val);
-            checkNextButtonState();
-            loadAll(val);
-        }
+        // Jeśli użytkownik wyczyścił input (choć w type=month to trudne), traktujemy to jak last30days
+        updateUrlParam(val);
+        checkNextButtonState();
+        loadAll(val || 'last30days');
     });
 
     // Obsługa przycisków Wstecz/Dalej w przeglądarce
     window.addEventListener('popstate', () => {
         const url = new URL(window.location.href);
         const date = url.searchParams.get('date');
+
         if (date) {
             dateInput.value = date;
-            checkNextButtonState();
             loadAll(date);
+        } else {
+            // Powrót do braku parametru -> ostatnie 30 dni
+            dateInput.value = '';
+            loadAll('last30days');
         }
+        checkNextButtonState();
     });
 
     // 8. Inicjalizacja
-    checkNextButtonState();
     // Pobierz wartość początkową z inputa (ustawionego przez Twig)
-    const initialDate = dateInput.value || formatMonth(new Date());
+    // Jeśli input pusty, ładujemy 'last30days'
+    const initialDate = dateInput.value || 'last30days';
+
+    // Upewniamy się, że stan przycisku Next jest poprawny na starcie
+    checkNextButtonState();
+
     loadAll(initialDate);
 });
