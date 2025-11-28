@@ -44,7 +44,7 @@ class LocationController extends AbstractController
         HookRepository $hookRepository,
         string         $location,
     ): Response {
-        $date = $request->get('date', '');
+        $date = $request->query->get('date', '');
         $from = (new \DateTime($date))->setTime(0, 0);
         $to   = (new \DateTime($date))->setTime(23, 59, 59);
 
@@ -64,8 +64,8 @@ class LocationController extends AbstractController
         HookRepository $hookRepository,
         string         $location,
     ): Response {
-        $date = $request->get('date', '');
-        $type = $request->get('type');
+        $date = $request->query->get('date', '');
+        $type = $request->query->get('type');
 
         if ($date === 'last30days' || empty($date)) {
             // Zakres: ostatnie 30 dni (od dzisiaj - 30 dni do dzisiaj)

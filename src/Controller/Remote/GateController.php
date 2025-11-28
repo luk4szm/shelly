@@ -40,7 +40,7 @@ class GateController extends AbstractController
     ): Response
     {
         $notify = (new UserNotification())
-            ->setChannel(Channel::from($request->get('channel')))
+            ->setChannel(Channel::from($request->query->get('channel')))
             ->setUser($this->getUser())
             ->setEvent(SuplaGateOpenEvent::OPEN->value);
 

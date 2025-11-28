@@ -26,10 +26,10 @@ class WeatherController extends AbstractController
     ): Response
     {
         return $this->render('front/weather/daily.html.twig', [
-            'date' => $request->get('date'),
+            'date' => $request->query->get('date'),
             'airQuality' => [
                 'actual' => $airQualityRepository->findLast(),
-                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->get('date', ''))),
+                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->query->get('date', ''))),
             ],
             'forecast' => [
                 'actual' => $forecastRepository->findForecastForDate(),
@@ -44,7 +44,7 @@ class WeatherController extends AbstractController
         AirQualityRepository $airQualityRepository,
     ): Response
     {
-        $date = new \DateTime($request->get('date', 'now'));
+        $date = new \DateTime($request->query->get('date', 'now'));
 
         return $this->render('front/weather/monthly.html.twig', [
             'date' => $date->format('Y-m-d'),
@@ -60,14 +60,15 @@ class WeatherController extends AbstractController
         return $this->json(
             array_map(function (AirQuality $airQuality) {
                 return AirQualityGraphHandler::serializeAirQuality($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($request->get('date'))))
+            }, $airQualityRepository->findForDate(new \DateTime($request->query->get('date'))))
         );
     }
 
     #[Route('/get-air-quality-monthly-avg', name: 'air_quality_monthly_avg', methods: ['GET'])]
     public function getAirQualityMonthlyAvg(Request $request, AirQualityRepository $airQualityRepository): Response
     {
-        $dateParam = $request->get('date');
+        $dateParam = $request->query->get('date');
+
         if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
             $from = new \DateTime($dateParam . '-01');
             $to   = (clone $from)->modify('last day of this month')->setTime(23, 59, 59);
@@ -95,7 +96,8 @@ class WeatherController extends AbstractController
     #[Route('/get-atmosphere-monthly-candles', name: 'atmosphere_monthly_candles', methods: ['GET'])]
     public function getAtmosphereMonthlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
     {
-        $dateParam = $request->get('date');
+        $dateParam = $request->query->get('date');
+
         if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
             $from = new \DateTime($dateParam . '-01');
             $to   = (clone $from)->modify('last day of this month')->setTime(23, 59, 59);
@@ -131,7 +133,7 @@ class WeatherController extends AbstractController
         WeatherForecastRepository $forecastRepository,
     ): Response
     {
-        $date = $request->get('date');
+        $date = $request->query->get('date');
 
         $airQualityInfo = array_map(function (AirQuality $airQuality) {
                 return AirQualityGraphHandler::serializeWeatherData($airQuality);

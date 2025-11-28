@@ -31,7 +31,7 @@ class DeviceController extends AbstractController
         Request  $request,
         string   $device,
     ): Response {
-        $date = new \DateTime($request->get('date', ''));
+        $date = new \DateTime($request->query->get('date', ''));
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
@@ -87,7 +87,7 @@ class DeviceController extends AbstractController
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
     ): Response {
-        $date = new \DateTime($request->get('date', ''));
+        $date = new \DateTime($request->query->get('date', ''));
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
@@ -159,7 +159,7 @@ class DeviceController extends AbstractController
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
     ): Response {
-        $date = new \DateTime($request->get('date', ''));
+        $date = new \DateTime($request->query->get('date', ''));
         $year = (int)$date->format('Y');
 
         /** @var DeviceStatusHelperInterface $helper */
@@ -232,7 +232,7 @@ class DeviceController extends AbstractController
         Request        $request,
         HookRepository $hookRepository,
     ): Response {
-        $date  = new \DateTime($request->get('date'));
+        $date  = new \DateTime($request->query->get('date'));
         $hooks = $hookRepository->findHooksByDeviceAndDate($device, $date);
 
         if (empty($hooks)) {
@@ -248,7 +248,7 @@ class DeviceController extends AbstractController
         }
 
         // clone last hook of device to end of chart
-        $hooks[] = $request->get('date') === (new \DateTime())->format('Y-m-d')
+        $hooks[] = $request->query->get('date') === (new \DateTime())->format('Y-m-d')
             ? (clone end($hooks))->setCreatedAt(new \DateTimeImmutable())
             : (clone end($hooks))->setCreatedAt(new \DateTimeImmutable($date->format('Y-m-dT23:59:59')));
 

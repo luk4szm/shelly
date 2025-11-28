@@ -33,7 +33,7 @@ class BufferController extends AbstractController
         Request        $request,
         HookRepository $hookRepository,
     ): Response {
-        $date = $request->get('date', '');
+        $date = $request->query->get('date', '');
         $from = (new \DateTime($date))->setTime(0, 0);
         $to   = (new \DateTime($date))->setTime(23, 59, 59);
 

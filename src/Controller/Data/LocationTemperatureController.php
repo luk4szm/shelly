@@ -23,10 +23,10 @@ final class LocationTemperatureController extends AbstractController
         TemperatureGraphHandler $graphHandler,
     ): Response
     {
-        $timeRange = $request->get('timeRange');
-        $date      = $request->get('date');
-        $location  = $request->get('location');
-        $group     = $request->get('group');
+        $timeRange = $request->query->get('timeRange');
+        $date      = $request->query->get('date');
+        $location  = $request->query->get('location');
+        $group     = $request->query->get('group');
 
         if ($timeRange !== null) {
             switch ($timeRange) {

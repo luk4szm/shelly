@@ -40,7 +40,7 @@ final class HeatingController extends AbstractController
         }
 
         return $this->render('front/heating/index.html.twig', [
-            'date'  => $request->get('date'),
+            'date'  => $request->query->get('date'),
             'form'  => $form->createView(),
             'notes' => $noteRepository->findForDate(new \DateTime()),
         ]);
