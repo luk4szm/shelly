@@ -19,6 +19,8 @@ class LocationController extends AbstractController
     #[Route('/daily', name: 'daily')]
     public function daily(string $location, HookRepository $hookRepository): Response
     {
+//        test
+
         $current = [
             'temperature' => $hookRepository->findActualTempForLocation($location),
             'humidity'    => $hookRepository->findActualHumidityForLocation($location),
