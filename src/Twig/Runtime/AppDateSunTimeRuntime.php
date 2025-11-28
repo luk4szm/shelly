@@ -8,16 +8,16 @@ use Twig\Extension\RuntimeExtensionInterface;
 
 class AppDateSunTimeRuntime implements RuntimeExtensionInterface
 {
-    public function getSunriseHour(?string $date = null): string
+    public function getSunriseHour(?string $date = ''): string
     {
-        $date = new \DateTime($date ?? null);
+        $date = new \DateTime($date ?? '');
 
         return DateSunInfo::get($date, DateSunTime::SUNRISE)->format("H:i");
     }
 
-    public function getSunsetHour(?string $date = null): string
+    public function getSunsetHour(?string $date = ''): string
     {
-        $date = new \DateTime($date ?? null);
+        $date = new \DateTime($date ?? '');
 
         return DateSunInfo::get($date, DateSunTime::SUNSET)->format("H:i");
     }
