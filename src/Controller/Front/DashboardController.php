@@ -31,7 +31,7 @@ final class DashboardController extends AbstractController
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
         /** @var DeviceStatusHelperInterface $helper */
-        foreach ($statusHelpers as $helper) {
+        foreach ($statusHelpers as $i => $helper) {
             if (!$helper->showOnDashboard()) {
                 continue;
             }
@@ -49,12 +49,16 @@ final class DashboardController extends AbstractController
                 }
             }
 
-            $devices[] = [
+            $devices[$i] = [
                 'name'       => $helper->getDeviceName(),
                 'deviceId'   => $helper->getDeviceId(),
                 'history'    => $helper->getHistory(2),
                 'dailyStats' => $dailyStats ?? null,
             ];
+
+            if ($helper->getDeviceName() === 'kominek') {
+                $devices[$i]['temperature'] = $hookRepository->findActualTempForLocation('kominek');
+            }
         }
 
         foreach ($locationFinder->getLocations('rooms') as $roomName) {

@@ -27,6 +27,9 @@
                             {% if device.name == 'piec' %}
                                 <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</span>
                             {% endif %}
+                            {% if device.temperature is defined %}
+                                <span class="ms-1 {{ device.temperature.value > 25 ? 'text-danger-emphasis' }}">&#127777;{{ device.temperature.value }} °C</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
