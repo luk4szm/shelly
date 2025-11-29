@@ -70,9 +70,11 @@ class HookRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findLastHookOfDay(string $device, \DateTimeInterface $date): ?Hook
+    public function findPreviousHookToDate(string $device, \DateTimeInterface $date): ?Hook
     {
-        return $this->createQueryBuilderForHooksByDevice($device, $date)
+        return $this->createQueryBuilderForHooksByDevice($device)
+            ->andWhere('hook.createdAt < :date')
+            ->setParameter('date', (clone $date)->setTime(0, 0))
             ->orderBy('hook.id', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -116,17 +118,6 @@ class HookRepository extends CrudRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    public function findActualTemps(array $locations): array
-    {
-        foreach ($locations as $location) {
-            $temps[] = $this->findActualTempForLocation($location);
-        }
-
-        return array_filter($temps ?? [], function (?Hook $hook) {
-            return $hook !== null;
-        });
     }
 
     public function findActualHumidityForLocation(string $location): ?Hook
@@ -287,8 +278,8 @@ class HookRepository extends CrudRepository
                 CAST(SUBSTRING_INDEX(MAX(CONCAT(created_at, "|", value)), "|", -1) AS DECIMAL(10,2)) as end_value
             FROM hook
             WHERE device = :device
-              AND property = :property 
-              AND created_at >= :from 
+              AND property = :property
+              AND created_at >= :from
               AND created_at <= :to
             GROUP BY DATE(created_at)
             ORDER BY day ASC

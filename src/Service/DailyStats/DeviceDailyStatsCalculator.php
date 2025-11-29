@@ -109,7 +109,7 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
             return;
         }
 
-        if (null !== $lastHookOfDayBefore = $this->hookRepository->findLastHookOfDay($this->getDeviceName(), (clone $date)->modify("-1 day"))) {
+        if (null !== $lastHookOfDayBefore = $this->hookRepository->findPreviousHookToDate($this->getDeviceName(), $date)) {
             $virtualFirstHook = clone $lastHookOfDayBefore;
             $virtualFirstHook->setCreatedAt(new \DateTimeImmutable((clone $date)->format('Y-m-d')));
 

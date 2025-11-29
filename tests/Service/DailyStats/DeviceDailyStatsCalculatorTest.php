@@ -49,7 +49,7 @@ class DeviceDailyStatsCalculatorTest extends TestCase
             ->willReturn($hooks);
 
         $this->hookRepository->expects($this->any())
-            ->method('findLastHookOfDay')
+            ->method('findPreviousHookToDate')
             ->willReturn(null);
 
         $this->statusHelper->expects($this->any())
