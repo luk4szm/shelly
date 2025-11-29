@@ -2,9 +2,9 @@
 
 namespace App\Model\Location;
 
-final class FloorReturnBuffer extends Location implements LocationInterface
+final class SwitchboardTopReturn extends Location implements LocationInterface
 {
-    public const NAME        = 'podl-powrot-bufor';
+    public const NAME        = 'rozdzielnica-gora-powrot';
     public const GROUP       = ['underfloor-heating'];
     public const CHART_COLOR = '#1877F2';
 }

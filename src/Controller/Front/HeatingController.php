@@ -48,6 +48,7 @@ final class HeatingController extends AbstractController
 
     #[Route('/get-data/{date}', name: 'get_data')]
     public function getData(
+        Request                                                         $request,
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
         HeatingNoteRepository                                           $noteRepository,
@@ -59,7 +60,7 @@ final class HeatingController extends AbstractController
         $from      = (new \DateTime($date))->setTime(0, 0);
         $to        = (clone $from)->setTime(23, 59, 59);
         $isToday   = $from->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
-        $locations = $locationFinder->getLocations('heating-full');
+        $locations = $locationFinder->getLocations($request->query->get('locations', 'heating-full'));
 
         $currentDayHooks = $hookRepository->findLocationTemperatures(
             $from,

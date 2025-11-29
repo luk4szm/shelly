@@ -1,12 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
     // --- ELEMENTY DOM ---
     const datePicker = document.getElementById('heating_date');
-    const chartElement = document.getElementById('chart-temperature');
+    // ZMIANA: Usuwamy sztywne przypisanie chartElement, będziemy pobierać elementy dynamicznie
     const prevDayBtn = document.getElementById('prev-day-btn');
     const nextDayBtn = document.getElementById('next-day-btn');
+    const notesContainer = document.getElementById('heating_notes_card');
+
+    // --- KONFIGURACJA WYKRESÓW ---
+    const chartConfigs = [
+        {
+            elementId: 'chart-temperature',
+            locations: 'heating-full', // Domyślny zestaw danych
+            showActivities: true,      // Pokaż tła (piec, kominek, solary)
+            showNotesOnAxis: true,     // Pokaż markery notatek na osi X
+            updateNotesList: true      // Czy ten wykres ma aktualizować listę notatek w panelu bocznym
+        },
+        {
+            elementId: 'chart-underfloor-heating',
+            locations: 'underfloor-heating',   // Dane dla podłogówki
+            showActivities: false,     // Bez teł urządzeń
+            showNotesOnAxis: true,
+            updateNotesList: false
+        }
+    ];
 
     // --- STAN ---
-    let chart = null; // Instancja wykresu ApexCharts
+    const chartInstances = {}; // Przechowuje instancje ApexCharts: { 'elementId': chartInstance }
 
     // --- LOGIKA PRZYCISKÓW DATY ---
 
@@ -32,16 +51,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // --- LOGIKA WYKRESU ---
 
     /**
-     * Pobiera dane z backendu. Oczekuje odpowiedzi w formacie:
-     * { currentDay: {...}, previousDay: {...}, locationColors: {...} }
+     * Pobiera dane z backendu.
      * @param {string} dateString - Data w formacie YYYY-MM-DD.
+     * @param {string} locations - Parametr locations dla backendu.
      * @returns {Promise<Object|null>}
      */
-    const fetchChartData = async (dateString) => {
-        const url = `/heating/get-data/${dateString}`;
-        if (chartElement) {
-            chartElement.innerHTML = '<div class="text-center p-5">Ładowanie danych...</div>';
-        }
+    const fetchChartData = async (dateString, locations) => {
+        const url = `/heating/get-data/${dateString}?locations=${locations}`;
+        // Nie czyścimy tutaj HTML, bo robimy to per-chart w loadChart
         try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -49,10 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return await response.json();
         } catch (error) {
-            console.error(`Nie udało się pobrać danych dla daty ${dateString}:`, error);
-            if (chartElement) {
-                chartElement.innerHTML = '<div class="text-center p-5 text-danger">Wystąpił błąd podczas ładowania danych.</div>';
-            }
+            console.error(`Nie udało się pobrać danych (${locations}) dla daty ${dateString}:`, error);
             return null;
         }
     };
@@ -128,47 +142,51 @@ document.addEventListener("DOMContentLoaded", function () {
             dashArrays: finalDashArrays,
             strokeWidths: finalStrokeWidths
         };
-        // ... existing code ...
     };
 
     /**
-     * Główna funkcja, która pobiera dane, a następnie renderuje lub aktualizuje wykres.
-     * @param {string} dateString - Data w formacie YYYY-MM-DD.
+     * Ładuje i renderuje pojedynczy wykres na podstawie konfiguracji.
+     * @param {Object} config - Obiekt konfiguracji wykresu.
+     * @param {string} dateString - Data.
      */
-    const loadAndRenderChart = async (dateString) => {
-        if (!dateString) {
-            console.error("Nie podano daty do załadowania wykresu.");
-            return;
-        }
+    const loadSingleChart = async (config, dateString) => {
+        const element = document.getElementById(config.elementId);
+        if (!element) return;
 
-        const rawData = await fetchChartData(dateString);
+        // Ustaw loading state tylko jeśli nie ma jeszcze wykresu lub chcemy go przesłonić
+        // Jeśli wykres istnieje, ApexCharts obsłuży update, ale przy braku danych musimy wyczyścić
+        // Dla UX: przy zmianie daty można pokazać loader
+        // element.innerHTML = '<div class="text-center p-5">Ładowanie...</div>'; // To zniszczy instancję ApexCharts jeśli jest w środku
 
-        const notesContainer = document.getElementById('heating_notes_card');
-        const updateHeatingNotes = (data) => {
-            if (!notesContainer) return;
+        const rawData = await fetchChartData(dateString, config.locations);
+
+        if (config.updateNotesList && notesContainer && rawData) {
             try {
-                notesContainer.innerHTML = data.notes.rendered;
+                notesContainer.innerHTML = rawData.notes.rendered;
             } catch (e) {
                 console.error('Błąd podczas aktualizacji notatek:', e);
             }
-        };
-
-        updateHeatingNotes(rawData);
+        }
 
         if (!rawData || !rawData.currentDay || Object.keys(rawData.currentDay).length === 0) {
-            if (chart) {
-                chart.destroy();
-                chart = null;
+            if (chartInstances[config.elementId]) {
+                chartInstances[config.elementId].destroy();
+                delete chartInstances[config.elementId];
             }
-            chartElement.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia dla wybranego dnia.</div>';
+            element.innerHTML = '<div class="text-center p-5">Brak danych do wyświetlenia dla wybranego dnia.</div>';
             return;
         }
 
-        // ZMIANA: usunięto bazowe kolory; używamy kolorów z backendu
+        // Wyczyszczenie ewentualnego komunikatu o błędzie/ładowaniu jeśli tworzymy nowy wykres
+        if (!chartInstances[config.elementId]) {
+            element.innerHTML = "";
+        }
+
         const { series, colors, dashArrays, strokeWidths } = transformDataForChart(rawData);
 
+        // Budowanie adnotacji (tła aktywności)
         const buildAnnotations = (activities) => {
-            if (!activities) return { xaxis: [] };
+            if (!activities || !config.showActivities) return { xaxis: [] };
             const deviceColors = {
                 'piec': 'rgba(220, 53, 69, 0.45)',
                 'kominek': 'rgba(253, 126, 20, 0.1)',
@@ -190,8 +208,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const annotations = buildAnnotations(rawData.activities);
 
+        // Budowanie adnotacji notatek (markery na osi)
         const buildNoteAnnotations = (notes) => {
-            if (!notes || !Array.isArray(notes.data)) return { xaxis: [] };
+            if (!config.showNotesOnAxis || !notes || !Array.isArray(notes.data)) return { xaxis: [] };
 
             const sorted = notes.data
                 .map(n => ({ x: new Date(n.time).getTime(), note: n.note }))
@@ -297,29 +316,36 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         };
 
-        if (chartElement) {
-            chartElement.innerHTML = "";
-        }
-
-        if (chart === null) {
-            chart = new ApexCharts(chartElement, options);
-            chart.render();
+        if (!chartInstances[config.elementId]) {
+            chartInstances[config.elementId] = new ApexCharts(element, options);
+            chartInstances[config.elementId].render();
         } else {
-            chart.updateOptions(options);
+            chartInstances[config.elementId].updateOptions(options);
         }
     };
 
+    /**
+     * Główna funkcja iterująca po wszystkich wykresach
+     */
+    const loadAllCharts = (dateString) => {
+        if (!dateString) {
+            console.error("Nie podano daty do załadowania wykresów.");
+            return;
+        }
+        chartConfigs.forEach(config => loadSingleChart(config, dateString));
+    };
+
     // --- INICJALIZACJA ---
-    if (window.ApexCharts && datePicker && chartElement && prevDayBtn && nextDayBtn) {
+    if (window.ApexCharts && datePicker && prevDayBtn && nextDayBtn) {
         prevDayBtn.addEventListener('click', () => changeDate(-1));
         nextDayBtn.addEventListener('click', () => changeDate(1));
         datePicker.addEventListener('change', (event) => {
             updateNextButtonState();
-            loadAndRenderChart(event.target.value);
+            loadAllCharts(event.target.value);
         });
 
         updateNextButtonState();
-        loadAndRenderChart(datePicker.value);
+        loadAllCharts(datePicker.value);
     } else {
         console.error("Nie można zainicjować skryptu. Brakuje biblioteki ApexCharts lub kluczowych elementów HTML.");
     }
