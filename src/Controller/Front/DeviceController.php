@@ -177,10 +177,11 @@ class DeviceController extends AbstractController
                 if (empty($monthlyData)) {
                     $monthlyStats[$month] = [
                         'inclusions' => 0,
-                        'energy' => 0,
-                        'time' => 0,
-                        'gas' => 0,
-                        'month' => $monthDate->format('F'),
+                        'energy'     => 0,
+                        'time'       => 0,
+                        'gas'        => 0,
+                        'month'      => $monthDate->format('F'),
+                        'month_iso'  => $monthDate->format('Y-m'),
                     ];
                     continue;
                 }
@@ -197,16 +198,17 @@ class DeviceController extends AbstractController
 
                     return $carry;
                 }, $initialValues);
-                $monthSummary['month'] = $monthDate->format('F');
+                $monthSummary['month']     = $monthDate->format('F');
+                $monthSummary['month_iso'] = $monthDate->format('Y-m');
 
                 $monthlyStats[$month] = $monthSummary;
             }
 
             $yearlyStats = [
                 'inclusions' => array_sum(array_column($monthlyStats, 'inclusions')),
-                'energy' => array_sum(array_column($monthlyStats, 'energy')),
-                'time' => array_sum(array_column($monthlyStats, 'time')),
-                'gas' => array_sum(array_column($monthlyStats, 'gas')),
+                'energy'     => array_sum(array_column($monthlyStats, 'energy')),
+                'time'       => array_sum(array_column($monthlyStats, 'time')),
+                'gas'        => array_sum(array_column($monthlyStats, 'gas')),
             ];
 
 

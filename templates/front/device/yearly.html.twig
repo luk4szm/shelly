@@ -97,7 +97,11 @@
                                 {% for row in device.monthlyStats %}
                                     <tr{{ row.time < 60 ? ' class="text-muted"' }}>
                                         <td class="text-muted">{{ loop.index }}</td>
-                                        <td class="text-center">{{ row.month|trans }}</td>
+                                        <td class="text-center">
+                                            <a class="link-white" href="{{ path('app_front_device_monthly', {'device': device.name, 'date': row.month_iso}) }}">
+                                                {{ row.month|trans }}
+                                            </a>
+                                        </td>
                                         <td class="text-center d-none d-md-block align-middle">
                                             {{ row.inclusions }}
                                         </td>
