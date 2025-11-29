@@ -6,5 +6,5 @@ final class SwitchboardBottomSupply extends Location implements LocationInterfac
 {
     public const NAME        = 'rozdzielnica-dol-zasilanie';
     public const GROUP       = ['underfloor-heating'];
-    public const CHART_COLOR = '#1877F2';
+    public const CHART_COLOR = '#f018bd';
 }

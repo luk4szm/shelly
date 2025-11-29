@@ -6,5 +6,5 @@ final class SwitchboardBottomReturn extends Location implements LocationInterfac
 {
     public const NAME        = 'rozdzielnica-dol-powrot';
     public const GROUP       = ['underfloor-heating'];
-    public const CHART_COLOR = '#1877F2';
+    public const CHART_COLOR = '#ed34c2';
 }
