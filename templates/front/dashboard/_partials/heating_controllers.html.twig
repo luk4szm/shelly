@@ -6,9 +6,9 @@
                     <div class="col-auto">
                         <span class="{{ heatingPump.supply.active ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
                     </div>
-                    <div class="col">
-                        <div class="fw-bolder fs-3">{{ heatingPump.supply.power }} W</div>
-                        <div class="text-secondary text-capitalize fw-bold">
+                    <div class="col ps-0">
+                        <div class="fw-bolder fs-3 text-nowrap">{{ heatingPump.supply.power }} W</div>
+                        <div class="text-secondary text-capitalize fw-bold fs-5">
                             <a href="{{ path('app_front_device_daily', {'device': 'pompa-zasilanie'}) }}" class="text-secondary">
                                 Zasilanie
                             </a>
@@ -16,26 +16,60 @@
                     </div>
                 </div>
             </div>
-            <div class="col-auto">
-                <div class="d-inline-grid fs-base text-center" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
+            <div class="col-auto mx-0 px-1">
+                <div class="d-inline-grid fs-base" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
                     <div>
                         <span class="text-secondary">{% include '_icons/trening-up-icon.svg.twig' %}</span>
                         <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorSupply::CHART_COLOR') }}">
-                            {{ heatingTemps.supply.value|number_format(1) }}
+                            {{ heatingTemps.supplyTop.value|number_format(1) }}
                         </span>
-                        <span class="text-secondary">°C</span>
                     </div>
                     <div>
                         <span class="text-secondary">{% include '_icons/u-turn-left-icon.svg.twig' %}</span>
-                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnRecirculation::CHART_COLOR') }}">
-                            {{ heatingTemps.recirculation.value|number_format(1) }}
-                        </span>
-                        <span class="text-secondary">°C</span>
+                        <span class="fw-bold"></span>
                     </div>
                     <div>
                         <span class="text-secondary">{% include '_icons/trening-down-icon.svg.twig' %}</span>
                         <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnBuffer::CHART_COLOR') }}">
+                            {{ heatingTemps.returnTop.value|number_format(1) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto mx-0 px-1">
+                <div class="d-inline-grid fs-base text-center" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
+                    <div>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorSupply::CHART_COLOR') }}">
+                            {{ heatingTemps.supply.value|number_format(1) }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnRecirculation::CHART_COLOR') }}">
+                            {{ heatingTemps.recirculation.value|number_format(1) }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnBuffer::CHART_COLOR') }}">
                             {{ heatingTemps.return.value|number_format(1) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto mx-0 px-1">
+                <div class="d-inline-grid fs-base text-end" {{ heatingPump.supply.active ?: 'style="opacity: 0.3"' }}>
+                    <div>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorSupply::CHART_COLOR') }}">
+                            {{ heatingTemps.supplyBottom.value|number_format(1) }}
+                        </span>
+                        <span class="text-secondary">°C</span>
+                    </div>
+                    <div>
+                        <span class="fw-bold"></span>
+                        <span class="text-secondary">°C</span>
+                    </div>
+                    <div>
+                        <span class="fw-bold" style="{{ heatingPump.supply.active ? 'color: ' ~ constant('App\\Model\\Location\\FloorReturnBuffer::CHART_COLOR') }}">
+                            {{ heatingTemps.returnBottom.value|number_format(1) }}
                         </span>
                         <span class="text-secondary">°C</span>
                     </div>
@@ -43,9 +77,9 @@
             </div>
             <div class="col">
                 <div class="row align-items-center my-2">
-                    <div class="col text-end">
-                        <div class="fw-bolder fs-3">{{heatingPump.return.power }} W</div>
-                        <div class="text-secondary text-capitalize fw-bold">
+                    <div class="col text-end pe-0">
+                        <div class="fw-bolder fs-3 text-nowrap">{{heatingPump.return.power }} W</div>
+                        <div class="text-secondary text-capitalize fw-bold fs-5">
                             <a href="{{ path('app_front_device_daily', {'device': 'pompa-powrot'}) }}" class="text-secondary">
                                 Powrót
                             </a>
