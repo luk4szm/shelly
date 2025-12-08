@@ -33,11 +33,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        let minX, maxX;
+        let minX, maxX, daysInMonth;
         if (dateParam && /^\d{4}-\d{2}$/.test(dateParam)) {
             const [year, month] = dateParam.split('-').map(Number);
             minX = new Date(year, month - 1, 1).getTime();
             maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+            daysInMonth = new Date(year, month, 0).getDate();
         }
 
         const options = {
@@ -45,9 +46,15 @@ document.addEventListener('DOMContentLoaded', function () {
             series: [{ name, type: 'candlestick', data }],
             xaxis: {
                 type: 'datetime',
-                labels: { format: 'dd MMM', datetimeUTC: false },
                 min: minX,
-                max: maxX
+                max: maxX,
+                tickAmount: daysInMonth || 30,
+                labels: {
+                    datetimeUTC: false,
+                    formatter: function (val, timestamp) {
+                        return new Date(timestamp).getDate();
+                    }
+                }
             },
             yaxis: {
                 tooltip: { enabled: true },

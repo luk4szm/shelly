@@ -73,13 +73,14 @@ document.addEventListener('DOMContentLoaded', function () {
     monthlyData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     // Obliczanie zakresu min/max dla osi X (pełen miesiąc)
-    let minX, maxX;
+    let minX, maxX, daysInMonth;
     if (dateInput && dateInput.value) {
         const [year, month] = dateInput.value.split('-').map(Number);
         // Pierwszy dzień miesiąca
         minX = new Date(year, month - 1, 1).getTime();
         // Ostatni dzień miesiąca
         maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+        daysInMonth = new Date(year, month, 0).getDate();
     }
 
     // Przetwarzanie danych na format wymagany przez ApexCharts
@@ -178,12 +179,18 @@ document.addEventListener('DOMContentLoaded', function () {
             categories: categories,
             min: minX,
             max: maxX,
+            tickAmount: daysInMonth || 30, // Wymuś liczbę znaczników równą liczbie dni
             labels: {
                 datetimeUTC: false, // Ważne dla poprawnego wyświetlania dat
-                format: 'dd MMM'
+                formatter: function (val, timestamp) {
+                    return new Date(timestamp).getDate();
+                },
             },
             title: {
                 text: 'Dzień miesiąca'
+            },
+            tooltip: {
+                enabled: false // Wyłączamy tooltip na osi X, bo mamy główny tooltip
             }
         },
         yaxis: yaxis,

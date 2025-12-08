@@ -105,11 +105,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        let minX, maxX;
-        if (dateParam && /^\d{4}-\d{2}$/.test(dateParam)) {
-            const [year, month] = dateParam.split('-').map(Number);
+        let minX, maxX, daysInMonth;
+        if (dateStr && /^\d{4}-\d{2}$/.test(dateStr)) {
+            const [year, month] = dateStr.split('-').map(Number);
             minX = new Date(year, month - 1, 1).getTime();
             maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+            daysInMonth = new Date(year, month, 0).getDate();
         }
 
         const options = {
@@ -120,9 +121,18 @@ document.addEventListener('DOMContentLoaded', function () {
             markers: {size: 0},
             xaxis: {
                 type: 'datetime',
-                labels: {format: 'dd MMM', datetimeUTC: false},
                 min: minX,
-                max: maxX
+                max: maxX,
+                tickAmount: daysInMonth || 30,
+                labels: {
+                    datetimeUTC: false,
+                    formatter: function (val, timestamp) {
+                        return new Date(timestamp).getDate();
+                    }
+                },
+                tooltip: {
+                    enabled: true
+                }
             },
             yaxis: {
                 min: 0,
