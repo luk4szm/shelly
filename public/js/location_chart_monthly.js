@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // 5. Renderowanie wykresów
-    const renderChart = (element, instance, dataSeries, title, unit) => {
+    const renderChart = (element, instance, dataSeries, title, unit, dateStr) => {
         if (!element) return null;
 
         const hasData = dataSeries.length > 0;
@@ -144,6 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             element.innerHTML = '<div class="text-center p-4 text-muted">Brak danych dla wybranego miesiąca.</div>';
             return null;
+        }
+
+        let minX, maxX;
+        if (dateStr && /^\d{4}-\d{2}$/.test(dateStr)) {
+            const [year, month] = dateStr.split('-').map(Number);
+            minX = new Date(year, month - 1, 1).getTime();
+            maxX = new Date(year, month, 0, 23, 59, 59).getTime();
         }
 
         const options = {
@@ -166,8 +173,11 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             xaxis: {
                 type: 'datetime',
+                min: minX,
+                max: maxX,
                 labels: {
-                    format: 'dd MMM' // np. 01 Oct
+                    format: 'dd MMM', // np. 01 Oct
+                    datetimeUTC: false
                 },
                 tooltip: {
                     enabled: true
@@ -263,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
             transformToCandle(tempData),
             'Temperatura',
             '°C',
+            dateStr
         );
 
         // Renderowanie Wilgotności
@@ -273,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
             transformToCandle(humData),
             'Wilgotność',
             '%',
+            dateStr
         );
     };
 

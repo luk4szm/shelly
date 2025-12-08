@@ -94,25 +94,41 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     };
 
-    const renderAir = ({ series }) => {
+    const renderAir = ({series}, dateParam) => {
         const hasData = series.some(s => s.data.some(p => p.y != null));
         if (!hasData) {
-            if (airChart) { airChart.destroy(); airChart = null; }
+            if (airChart) {
+                airChart.destroy();
+                airChart = null;
+            }
             elAir.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
+
+        let minX, maxX;
+        if (dateParam && /^\d{4}-\d{2}$/.test(dateParam)) {
+            const [year, month] = dateParam.split('-').map(Number);
+            minX = new Date(year, month - 1, 1).getTime();
+            maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+        }
+
         const options = {
-            chart: { type: 'line', height: 355, toolbar: { show: false } },
+            chart: {type: 'line', height: 355, toolbar: {show: false}},
             series,
-            stroke: { curve: 'smooth', width: 2 },
-            dataLabels: { enabled: false },
-            markers: { size: 0 },
-            xaxis: { type: 'datetime', labels: { format: 'dd MMM', datetimeUTC: false } },
+            stroke: {curve: 'smooth', width: 2},
+            dataLabels: {enabled: false},
+            markers: {size: 0},
+            xaxis: {
+                type: 'datetime',
+                labels: {format: 'dd MMM', datetimeUTC: false},
+                min: minX,
+                max: maxX
+            },
             yaxis: {
                 min: 0,
                 forceNiceScale: true,
-                labels: { formatter: (v) => (v == null ? '' : Math.round(v).toString()) },
-                title: { text: 'µg/m³' }
+                labels: {formatter: (v) => (v == null ? '' : Math.round(v).toString())},
+                title: {text: 'µg/m³'}
             },
             tooltip: {
                 shared: true, intersect: false, theme: 'dark',
@@ -152,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             elAir.innerHTML = '<div class="text-center p-4">Ładowanie…</div>';
             const raw = await fetchAirQualityMonthlyAvg(dateParam || '');
-            renderAir(transformAir(raw || []));
+            renderAir(transformAir(raw || []), dateParam);
         } catch {
             elAir.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';
         }

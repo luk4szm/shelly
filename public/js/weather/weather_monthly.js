@@ -24,17 +24,31 @@ document.addEventListener('DOMContentLoaded', function () {
         return await res.json();
     };
 
-    const renderSingleCandle = (el, chartRef, name, data, yTitle, height = 300) => {
+    const renderSingleCandle = (el, chartRef, name, data, yTitle, dateParam, height = 300) => {
         const hasData = Array.isArray(data) && data.length > 0;
+
         if (!hasData) {
             if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
             el.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
+
+        let minX, maxX;
+        if (dateParam && /^\d{4}-\d{2}$/.test(dateParam)) {
+            const [year, month] = dateParam.split('-').map(Number);
+            minX = new Date(year, month - 1, 1).getTime();
+            maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+        }
+
         const options = {
             chart: { type: 'candlestick', height, toolbar: { show: false } },
             series: [{ name, type: 'candlestick', data }],
-            xaxis: { type: 'datetime', labels: { format: 'dd MMM', datetimeUTC: false } },
+            xaxis: {
+                type: 'datetime',
+                labels: { format: 'dd MMM', datetimeUTC: false },
+                min: minX,
+                max: maxX
+            },
             yaxis: {
                 tooltip: { enabled: true },
                 title: { text: yTitle },
@@ -59,9 +73,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const raw = await fetchAtmosphereCandles(dateParam || '');
 
-            renderSingleCandle(elTemp, { get current() { return tempChart; }, set current(v) { tempChart = v; } }, 'Temperatura', raw?.temperature || [], '°C');
-            renderSingleCandle(elPress, { get current() { return pressChart; }, set current(v) { pressChart = v; } }, 'Ciśnienie (SLP)', raw?.seaLevelPressure || [], 'hPa');
-            renderSingleCandle(elHum, { get current() { return humChart; }, set current(v) { humChart = v; } }, 'Wilgotność', raw?.humidity || [], '%');
+            renderSingleCandle(elTemp, { get current() { return tempChart; }, set current(v) { tempChart = v; } }, 'Temperatura', raw?.temperature || [], '°C', dateParam);
+            renderSingleCandle(elPress, { get current() { return pressChart; }, set current(v) { pressChart = v; } }, 'Ciśnienie (SLP)', raw?.seaLevelPressure || [], 'hPa', dateParam);
+            renderSingleCandle(elHum, { get current() { return humChart; }, set current(v) { humChart = v; } }, 'Wilgotność', raw?.humidity || [], '%', dateParam);
         } catch {
             elTemp.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';
             elPress.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';

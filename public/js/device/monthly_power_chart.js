@@ -72,6 +72,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     monthlyData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    // Obliczanie zakresu min/max dla osi X (pełen miesiąc)
+    let minX, maxX;
+    if (dateInput && dateInput.value) {
+        const [year, month] = dateInput.value.split('-').map(Number);
+        // Pierwszy dzień miesiąca
+        minX = new Date(year, month - 1, 1).getTime();
+        // Ostatni dzień miesiąca
+        maxX = new Date(year, month, 0, 23, 59, 59).getTime();
+    }
+
     // Przetwarzanie danych na format wymagany przez ApexCharts
     const categories = monthlyData.map(d => d.date);
     const energyData = monthlyData.map(d => parseFloat((d.energy / 1000).toFixed(2))); // Konwersja Wh -> kWh
@@ -166,6 +176,8 @@ document.addEventListener('DOMContentLoaded', function () {
         xaxis: {
             type: 'datetime',
             categories: categories,
+            min: minX,
+            max: maxX,
             labels: {
                 datetimeUTC: false, // Ważne dla poprawnego wyświetlania dat
                 format: 'dd MMM'
