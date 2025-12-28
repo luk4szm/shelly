@@ -2,7 +2,6 @@
 
 namespace App\Service\Processable\Condition\DateSunInfo;
 
-use App\Model\DateSunTime;
 use App\Service\Date\DateSunInfo;
 
 class IsDarkOutsideCondition extends DateSunCondition
@@ -16,18 +15,6 @@ class IsDarkOutsideCondition extends DateSunCondition
      */
     public function isSatisfied(): bool
     {
-        $now  = new \DateTime();
-        $dawn = DateSunInfo::get($now, DateSunTime::CIVIL_TWILIGHT_BEGIN);
-        $dusk = DateSunInfo::get($now, DateSunTime::CIVIL_TWILIGHT_END);
-
-        // It is dark when:
-        // A) The current time is before dawn (morning)
-        $isBeforeDawn = $now < $dawn;
-
-        // OR
-        // B) The current time is after dusk (evening)
-        $isAfterDusk = $now > $dusk;
-
-        return $isBeforeDawn || $isAfterDusk;
+        return DateSunInfo::isDarkOutside();
     }
 }

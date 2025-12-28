@@ -16,4 +16,21 @@ class DateSunInfo
 
         return (new \DateTime())->setTimestamp($dateSunInfo[$time->value]);
     }
+
+    public static function isDarkOutside(): bool
+    {
+        $now  = new \DateTime();
+        $dawn = DateSunInfo::get($now, DateSunTime::CIVIL_TWILIGHT_BEGIN);
+        $dusk = DateSunInfo::get($now, DateSunTime::CIVIL_TWILIGHT_END);
+
+        // It is dark when:
+        // A) The current time is before dawn (morning)
+        $isBeforeDawn = $now < $dawn;
+
+        // OR
+        // B) The current time is after dusk (evening)
+        $isAfterDusk = $now > $dusk;
+
+        return $isBeforeDawn || $isAfterDusk;
+    }
 }

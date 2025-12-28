@@ -7,9 +7,8 @@ use App\Model\Device\Tv;
 use App\Model\Device\TvLedsBoard;
 use App\Model\Device\TvLedsCabinet;
 use App\Model\Device\TvLedsMonitor;
+use App\Service\Date\DateSunInfo;
 use App\Service\Shelly\Light\ShellyLightService;
-use Psr\Cache\CacheItemInterface;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
@@ -72,12 +71,21 @@ class TvHookSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            // Turn off lights sequence
-            $this->shellyLightService->turnOff(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL);
-            sleep(1);
-            $this->shellyLightService->turnOff(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL);
-            sleep(1);
-            $this->shellyLightService->turnOff(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL);
+            if (DateSunInfo::isDarkOutside()) {
+                // Sequence of turning on the mood light
+                $this->shellyLightService->turnOn(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL, 15);
+                sleep(1);
+                $this->shellyLightService->turnOn(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL, 10);
+                sleep(1);
+                $this->shellyLightService->turnOn(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL, 5);
+            } else {
+                // Turn off lights sequence
+                $this->shellyLightService->turnOff(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL);
+                sleep(1);
+                $this->shellyLightService->turnOff(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL);
+                sleep(1);
+                $this->shellyLightService->turnOff(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL);
+            }
 
             // Remove cache entry
             $this->cache->deleteItem(self::TV_ON_CACHE_KEY);
