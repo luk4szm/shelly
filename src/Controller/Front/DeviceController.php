@@ -159,7 +159,12 @@ class DeviceController extends AbstractController
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
     ): Response {
-        $date = new \DateTime($request->query->get('date', ''));
+        $dateParam = $request->query->get('date');
+
+        $date = ($dateParam && ctype_digit((string)$dateParam) && strlen((string)$dateParam) === 4)
+            ? (new \DateTime())->setDate((int)$dateParam, 1, 1)->setTime(0, 0)
+            : new \DateTime($dateParam ?? 'now');
+
         $year = (int)$date->format('Y');
 
         /** @var DeviceStatusHelperInterface $helper */
