@@ -110,4 +110,19 @@ class ShellyCloudCurlRequest extends Curl
             ]
         );
     }
+
+    /**
+     * @param string $sceneId
+     * @return array
+     */
+    public function scene(string $sceneId): array
+    {
+        return $this->request(
+            self::METHOD,
+            sprintf("%s/scene/manual_run?auth_key=%s", str_replace('/v2/devices/api', '', self::URL), $_ENV['SHELLY_AUTH_KEY']),
+            [
+                "id" => $sceneId,
+            ]
+        );
+    }
 }

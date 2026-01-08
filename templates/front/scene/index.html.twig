@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}Sceny{% endblock %}
+{% block pagePreTitle %}{% endblock %}
+
+{% block pageTitleActions %}{% endblock %}
+
+{% block pageBody %}
+    <style>
+        .font-tabular-nums {
+            font-feature-settings: "tnum";
+        }
+        .switch-icon {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+    </style>
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-md-9 col-12">
+                <div class="card">
+                    <div class="list-group card-list-group">
+                        {% for scene in scenes %}
+                            <div class="list-group-item">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto fs-3 ps-0 mx-2">{{ loop.index }}</div>
+                                    <div class="col ms-1">
+                                        <span class="scene-name">{{ scene.name }}</span>
+                                        <div class="text-muted">{{ scene.shellyId }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button class="switch-icon" data-bs-toggle="switch-icon" data-shelly-id="{{ scene.id }}">
+                                            <span class="switch-icon-a text-muted">
+                                                {{ include('_icons/player-play-icon.svg.twig') }}
+                                            </span>
+                                            <span class="switch-icon-b text-green">
+                                                {{ include('_icons/player-play-filled-icon.svg.twig') }}
+                                            </span>
+                                        </button>
+                                    </div>
+{#                                    <div class="col-auto lh-1">#}
+{#                                        <div class="dropdown">#}
+{#                                            <a href="#" class="link-secondary" data-bs-toggle="dropdown">#}
+{#                                                <!-- Download SVG icon from http://tabler.io/icons/icon/dots -->#}
+{#                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"#}
+{#                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"#}
+{#                                                     stroke-linejoin="round" class="icon icon-1">#}
+{#                                                    <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>#}
+{#                                                    <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>#}
+{#                                                    <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>#}
+{#                                                </svg>#}
+{#                                            </a>#}
+{#                                            <div class="dropdown-menu dropdown-menu-end">#}
+{#                                                <a class="dropdown-item" href="#"> Usuń  </a>#}
+{#                                                <a class="dropdown-item" href="#"> Another action </a>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Dodaj nową scenę</h3>
+                    </div>
+                    <div class="card-body">
+                        {#                        {{ form_start(form) }} #}
+                        {#                        <div class="mb-3"> #}
+                        {#                            <div> #}
+                        {#                                {{ form_errors(form.indication) }} #}
+                        {#                                {{ form_widget(form.indication) }} #}
+                        {#                                <small class="form-hint">{{ form_help(form.indication) }}</small> #}
+                        {#                            </div> #}
+                        {#                        </div> #}
+                        {#                        <div class="text-end"> #}
+                        {#                            <button type="submit" class="btn btn-primary">Zapisz</button> #}
+                        {#                        </div> #}
+                        {#                        {{ form_end(form) }} #}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/scene_runner.js') }}"></script>
+{% endblock pagejs %}
