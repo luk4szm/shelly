@@ -3,7 +3,9 @@
 namespace App\Controller\Hook;
 
 use App\Entity\Hook;
+use App\Event\Hook\BoilerHookEvent;
 use App\Event\Hook\CoHookEvent;
+use App\Event\Hook\FireplaceHookEvent;
 use App\Event\Hook\TvHookEvent;
 use App\Event\SuplaGateOpenEvent;
 use App\Repository\HookRepository;
@@ -90,8 +92,10 @@ final class HookController extends AbstractController
         $repository->save($hook);
 
         match ($device) {
-            'tv'    => $dispatcher->dispatch(new TvHookEvent($hook)),
-            'co'    => $dispatcher->dispatch(new CoHookEvent($hook)),
+            'tv'      => $dispatcher->dispatch(new TvHookEvent($hook)),
+            'co'      => $dispatcher->dispatch(new CoHookEvent($hook)),
+            'kominek' => $dispatcher->dispatch(new FireplaceHookEvent($hook)),
+            'piec'    => $dispatcher->dispatch(new BoilerHookEvent($hook)),
             default => null,
         };
 
