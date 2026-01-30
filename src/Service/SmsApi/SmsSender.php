@@ -31,9 +31,11 @@ readonly final class SmsSender
         if ($trigger !== null && $interval !== null) {
             $previousSms = $this->smsRepository->findPreviousSmsForTrigger($trigger);
 
+            dump($previousSms);
+
             if (
-                $previousSms === null
-                || $previousSms->getCreatedAt()->getTimestamp() + ($interval * 60) > time()
+                $previousSms !== null
+                && $previousSms->getCreatedAt()->getTimestamp() + ($interval * 60) > time()
             ) {
                 return;
             }
@@ -54,6 +56,8 @@ readonly final class SmsSender
             ->setCost($response->points)
             ->setIsTest($_ENV['APP_ENV'] === 'dev')
             ->setRaport([$response]);
+
+        dump($sms);
 
         $this->smsRepository->save($sms);
     }

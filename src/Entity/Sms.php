@@ -20,7 +20,7 @@ class Sms
     #[ORM\Column(length: 255)]
     private ?string $message = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     private ?string $developer = null;
 
     #[ORM\Column]
@@ -75,7 +75,7 @@ class Sms
         return $this->developer;
     }
 
-    public function setDeveloper(?string $developer): static
+    public function setDeveloper(string $developer): static
     {
         $this->developer = $developer;
 
