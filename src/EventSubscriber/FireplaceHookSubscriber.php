@@ -5,6 +5,7 @@ namespace App\EventSubscriber;
 use App\Event\Hook\FireplaceHookEvent;
 use App\Model\Device\Boiler;
 use App\Repository\HookRepository;
+use App\Repository\UserRepository;
 use App\Service\Device\FireplacePumpService;
 use App\Service\SmsApi\SmsSender;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -15,6 +16,7 @@ readonly class FireplaceHookSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private HookRepository       $hookRepository,
+        private UserRepository       $userRepository,
         private FireplacePumpService $fireplacePumpService,
         private SmsSender            $smsSender,
     ) {
@@ -42,9 +44,9 @@ readonly class FireplaceHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($fireplaceTemp > 70) {
+        if ($fireplaceTemp > 65) {
             $this->smsSender->sendMessage(
-                606339643, // TODO: change to var from .env
+                $this->userRepository->findAdmin()->getPhoneNumber(),
                 sprintf('Wysoka temperatura (%d) w kominku!', $fireplaceTemp)
             );
         }
@@ -54,8 +56,7 @@ readonly class FireplaceHookSubscriber implements EventSubscriberInterface
 
         if ($fireplacePumpsStatus['active'] === true) {
             // fireplace pumps are already on
-            if ($bufferTemp->getValue() > ($fireplaceTemp + self::TEMP_HANDICAP))
-            {
+            if ($bufferTemp->getValue() > ($fireplaceTemp + self::TEMP_HANDICAP)) {
                 // temperature in the buffer has dropped below the fireplace power -> turn off pumps
                 $this->fireplacePumpService->setHeatingPumpState(false);
             }
@@ -63,13 +64,11 @@ readonly class FireplaceHookSubscriber implements EventSubscriberInterface
 
         if ($fireplacePumpsStatus['active'] === false) {
             // fireplace pumps are already off
-            if ($bufferTemp->getValue() < ($fireplaceTemp + self::TEMP_HANDICAP))
-            {
+            if ($bufferTemp->getValue() < ($fireplaceTemp + self::TEMP_HANDICAP)) {
                 // temperature in the fireplace has risen enough to heat the buffer
                 $boilerPowerHook = $this->hookRepository->findLastDevicePowerHook(Boiler::NAME);
 
-                if ($boilerPowerHook->getValue() >= Boiler::BOUNDARY_POWER)
-                {
+                if ($boilerPowerHook->getValue() >= Boiler::BOUNDARY_POWER) {
                     // the boiler is running
                     // we cannot turn on the pump until it switches off
                     return;
