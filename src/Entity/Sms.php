@@ -20,6 +20,9 @@ class Sms
     #[ORM\Column(length: 255)]
     private ?string $message = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $developer = null;
+
     #[ORM\Column]
     private ?float $cost = null;
 
@@ -63,6 +66,18 @@ class Sms
     public function setMessage(string $message): static
     {
         $this->message = $message;
+
+        return $this;
+    }
+
+    public function getDeveloper(): ?string
+    {
+        return $this->developer;
+    }
+
+    public function setDeveloper(?string $developer): static
+    {
+        $this->developer = $developer;
 
         return $this;
     }

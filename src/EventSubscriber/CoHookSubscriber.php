@@ -40,7 +40,9 @@ readonly class CoHookSubscriber implements EventSubscriberInterface
         foreach ($this->userRepository->findInmates() as $user) {
             $this->smsSender->sendMessage(
                 $user->getPhoneNumber(),
-                sprintf("Extremely high pressure (%s bar) in the system CO", number_format($hook->getValue() / 100, 1))
+                sprintf("Extremely high pressure (%s bar) in the system CO", number_format($hook->getValue() / 100, 1)),
+                __CLASS__,
+                30
             );
         }
     }

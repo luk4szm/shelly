@@ -57,7 +57,8 @@ readonly class SuplaGateSubscriber implements EventSubscriberInterface
     {
         $this->smsSender->sendMessage(
             $recipient->getPhoneNumber(),
-            sprintf('Użytkownik %s właśnie otworzył bramę!', $userIdentifier)
+            sprintf('Użytkownik %s właśnie otworzył bramę!', $userIdentifier),
+            __CLASS__
         );
     }
 

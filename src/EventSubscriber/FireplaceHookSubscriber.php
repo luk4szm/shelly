@@ -44,10 +44,12 @@ readonly class FireplaceHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($fireplaceTemp > 65) {
+        if ($fireplaceTemp > 60) {
             $this->smsSender->sendMessage(
                 $this->userRepository->findAdmin()->getPhoneNumber(),
-                sprintf('Wysoka temperatura (%d) w kominku!', $fireplaceTemp)
+                sprintf('Wysoka temperatura (%d) w kominku!', $fireplaceTemp),
+                __CLASS__,
+                15
             );
         }
 
