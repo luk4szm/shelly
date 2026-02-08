@@ -11,6 +11,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 class TurnOnBedLightsProcess extends AbstractRecurringProcess implements AbstractProcessableInterface, RecurringProcessInterface
 {
+    public const NAME = 'turn-on-bed-lights';
+
     public function __construct(
         #[AutowireIterator('app.shelly.process_condition')] iterable $processConditions,
         private readonly ProcessRepository                           $processRepository,
@@ -18,8 +20,6 @@ class TurnOnBedLightsProcess extends AbstractRecurringProcess implements Abstrac
     ) {
         parent::__construct($processConditions);
     }
-
-    public const NAME = 'turn-on-bed-lights';
 
     /**
      * @param RecurringProcess $process

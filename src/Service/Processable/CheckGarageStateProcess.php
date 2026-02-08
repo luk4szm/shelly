@@ -9,12 +9,15 @@ use App\Repository\UserRepository;
 use App\Service\LogReader\GarageLogReader;
 use App\Service\Shelly\Cover\ShellyGarageService;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 class CheckGarageStateProcess extends AbstractRecurringProcess implements AbstractProcessableInterface, RecurringProcessInterface
 {
+    public const NAME = 'check-garage-cover-state';
+
     public function __construct(
         #[AutowireIterator('app.shelly.process_condition')] iterable $processConditions,
         private readonly ProcessRepository                           $processRepository,
@@ -26,11 +29,10 @@ class CheckGarageStateProcess extends AbstractRecurringProcess implements Abstra
         parent::__construct($processConditions);
     }
 
-    public const NAME = 'check-garage-cover-state';
-
     /**
      * @param RecurringProcess $process
      * @return void
+     * @throws TransportExceptionInterface
      */
     public function process(Process $process): void
     {
