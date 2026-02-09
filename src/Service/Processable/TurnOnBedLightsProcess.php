@@ -27,7 +27,7 @@ class TurnOnBedLightsProcess extends AbstractRecurringProcess implements Abstrac
      */
     public function process(Process $process): void
     {
-        $this->lightService->turnOn(BedLeds::DEVICE_ID, BedLeds::CHANNEL, 15);
+        $this->lightService->turnOn(new BedLeds(), 5);
 
         $process->setLastRunAt(new \DateTime());
 

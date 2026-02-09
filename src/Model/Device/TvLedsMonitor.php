@@ -2,9 +2,10 @@
 
 namespace App\Model\Device;
 
-final class TvLedsMonitor extends Device implements DeviceInterface
+final class TvLedsMonitor extends LightDevice implements DeviceInterface
 {
-    public const NAME           = 'tv_leds_board';
-    public const DEVICE_ID      = 'ecc9ff4dc3f4';
-    public const CHANNEL        = 2;
+    public const NAME      = 'tv_leds_board';
+    public const TYPE      = 'white';
+    public const DEVICE_ID = 'ecc9ff4dc3f4';
+    public const CHANNEL   = 2;
 }

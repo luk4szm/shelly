@@ -2,17 +2,18 @@
 
 namespace App\Service\Shelly\Light;
 
+use App\Model\Device\LightDevice;
 use App\Service\Shelly\ShellyDeviceService;
 
 readonly class ShellyLightService extends ShellyDeviceService
 {
-    public function turnOn(string $deviceId, int $channel, int $brightness): array
+    public function turnOn(LightDevice $device, int $brightness = null, int $white = null, array $colors = []): array
     {
-        return $this->curlRequest->light($deviceId, 'on', $channel, $brightness);
+        return $this->curlRequest->light($device, 'on', $brightness, $white, $colors);
     }
 
-    public function turnOff(string $deviceId, int $channel): array
+    public function turnOff(LightDevice $device): array
     {
-        return $this->curlRequest->light($deviceId, 'off', $channel);
+        return $this->curlRequest->light($device, 'off');
     }
 }

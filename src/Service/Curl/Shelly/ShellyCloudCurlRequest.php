@@ -2,6 +2,7 @@
 
 namespace App\Service\Curl\Shelly;
 
+use App\Model\Device\LightDevice;
 use App\Service\Curl\Curl;
 
 class ShellyCloudCurlRequest extends Curl
@@ -73,24 +74,41 @@ class ShellyCloudCurlRequest extends Curl
     }
 
     /**
-     * @param string $deviceId
-     * @param string $mode
-     * @param int    $channel
-     * @param int    $brightness
+     * Control of led light devices
+     *
+     * @param LightDevice                                           $device
+     * @param string{"on"|"off"}                                    $action
+     * @param int                                                   $brightness
+     * @param int                                                   $white
+     * @param array{"red": string, "blue": string, "green": string} $colors
      * @return array
      */
-    public function light(string $deviceId, string $mode, int $channel, int $brightness = 0): array
+    public function light(LightDevice $device, string $action, int $brightness = 0, int $white = 0, array $colors = []): array
     {
+        $parameters = [
+            "id"         => $device::DEVICE_ID,
+            "channel"    => $device::CHANNEL,
+            "on"         => $action === 'on',
+//            "toggle_after" => 5, // Number of seconds before stopping the position change
+        ];
+
+        $parameters['brightness'] = $device->getType() === 'white' ? $white : $brightness;
+
+        if (!empty($colors)) {
+            $parameters['red']   = $colors[0];
+            $parameters['green'] = $colors[1];
+            $parameters['blue']  = $colors[2];
+        }
+
+        if ($device->getType() === 'rgbw' && $white > 0)
+        {
+            $parameters['white'] = $white;
+        }
+
         return $this->request(
             self::METHOD,
             sprintf("%s/set/light?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
-            json: [
-                "id"         => $deviceId,
-                "channel"    => $channel,
-                "on"         => $mode === 'on',
-                "brightness" => $brightness,
-//                "toggle_after" => 5, // Number of seconds before stopping the position change
-            ]
+            json: $parameters
         );
     }
 

@@ -48,11 +48,11 @@ class TvHookSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            $this->shellyLightService->turnOn(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL, 60);
+            $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 60);
             sleep(1);
-            $this->shellyLightService->turnOn(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL, 40);
+            $this->shellyLightService->turnOn(new TvLedsBoard(), white: 40);
             sleep(1);
-            $this->shellyLightService->turnOn(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL, 10);
+            $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 10);
 
             // Mark in cache that lights are on
             $lightsStatusCache->set(true);
@@ -73,18 +73,18 @@ class TvHookSubscriber implements EventSubscriberInterface
 
             if (DateSunInfo::isDarkOutside()) {
                 // Sequence of turning on the mood light
-                $this->shellyLightService->turnOn(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL, 15);
+                $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
                 sleep(1);
-                $this->shellyLightService->turnOn(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL, 10);
+                $this->shellyLightService->turnOn(new TvLedsBoard(), white: 10);
                 sleep(1);
-                $this->shellyLightService->turnOn(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL, 5);
+                $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 5);
             } else {
                 // Turn off lights sequence
-                $this->shellyLightService->turnOff(TvLedsMonitor::DEVICE_ID, TvLedsMonitor::CHANNEL);
+                $this->shellyLightService->turnOff(new TvLedsMonitor());
                 sleep(1);
-                $this->shellyLightService->turnOff(TvLedsBoard::DEVICE_ID, TvLedsBoard::CHANNEL);
+                $this->shellyLightService->turnOff(new TvLedsBoard());
                 sleep(1);
-                $this->shellyLightService->turnOff(TvLedsCabinet::DEVICE_ID, TvLedsCabinet::CHANNEL);
+                $this->shellyLightService->turnOff(new TvLedsCabinet());
             }
 
             // Remove cache entry
