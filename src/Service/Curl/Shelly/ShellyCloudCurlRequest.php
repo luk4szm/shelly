@@ -76,14 +76,14 @@ class ShellyCloudCurlRequest extends Curl
     /**
      * Control of led light devices
      *
-     * @param LightDevice                                           $device
-     * @param string{"on"|"off"}                                    $action
-     * @param int                                                   $brightness
-     * @param int                                                   $white
-     * @param array{"red": string, "blue": string, "green": string} $colors
+     * @param LightDevice                                       $device the shelly device id
+     * @param string{"on"|"off"}                                $action
+     * @param int|null                                          $brightness 0 to 100 included
+     * @param int|null                                          $white 0 to 255 included
+     * @param array{"red": int, "blue": int, "green": int}|null $colors
      * @return array
      */
-    public function light(LightDevice $device, string $action, int $brightness = 0, int $white = 0, array $colors = []): array
+    public function light(LightDevice $device, string $action, ?int $brightness = 20, ?int $white = 0, ?array $colors = []): array
     {
         $parameters = [
             "id"         => $device::DEVICE_ID,
@@ -92,7 +92,9 @@ class ShellyCloudCurlRequest extends Curl
 //            "toggle_after" => 5, // Number of seconds before stopping the position change
         ];
 
-        $parameters['brightness'] = $device->getType() === 'white' ? $white : $brightness;
+        $parameters['brightness'] = $device->getType() === 'white'
+            ? $white
+            : (!empty($colors) ? $brightness : 0);
 
         if (!empty($colors)) {
             $parameters['red']   = $colors[0];
