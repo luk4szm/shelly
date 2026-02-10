@@ -53,6 +53,12 @@ class DateSunInfo
         return $isAfterDawn && $isBeforeDusk;
     }
 
+    /**
+     * Checks whether the current time falls within a 5-minute window of the specified time
+     *
+     * @param DateSunTime $sunTime
+     * @return bool
+     */
     public static function isTimeWindow(DateSunTime $sunTime): bool
     {
         $now        = new \DateTime();
@@ -63,13 +69,12 @@ class DateSunInfo
             return false;
         }
 
-        // Calculate time window: 2.5 minutes before and after target time
-        $timeWindowMinutes = 2.5;
-        $windowStart       = clone $targetTime;
-        $windowStart->modify("-{$timeWindowMinutes} minutes");
+        // Calculate time window: 2 and half minutes before and after target time
+        $windowStart = clone $targetTime;
+        $windowStart->modify("-2 minutes -30 seconds");
 
         $windowEnd = clone $targetTime;
-        $windowEnd->modify("+{$timeWindowMinutes} minutes");
+        $windowEnd->modify("2 minutes 30 seconds");
 
         // Check if current time is within the time window
         return $now >= $windowStart && $now <= $windowEnd;
