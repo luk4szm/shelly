@@ -6,189 +6,192 @@
 
 {% block pageBody %}
     {% set isToday = (date|date('Y-m-d')) == ('now'|date('Y-m-d')) %}
+    {% set isForecast = (date|date('Y-m-d')) > ('now'|date('Y-m-d')) %}
     <div data-role-date="{{ date }}"></div>
     <div class="container-xl">
-        <div class="row row-cards" id="air_quality_data_cards" style="min-height: 99px">
-            <div class="col-md col-12">
-                <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.temperature : airQuality.daily.temperature %}
-                    {% set temperatureExtraClass = referalValue >= 30 ? 'bg-danger-lt' : (
-                        referalValue >= 25 ? 'bg-warning-lt' : (
-                            referalValue <= 0 ? 'bg-info-lt' : ''
-                        )
-                    ) %}
-                    <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
-                        <div class="row">
-                            <div class="col">
-                                <div class="d-flex align-items-center">
-                                    <div class="subheader">
-                                        Temperature
+        {% if isForecast == false %}
+            <div class="row row-cards" id="air_quality_data_cards" style="min-height: 99px">
+                <div class="col-md col-12">
+                    <div class="card">
+                        {% set referalValue = isToday ? airQuality.actual.temperature : airQuality.daily.temperature %}
+                        {% set temperatureExtraClass = referalValue >= 30 ? 'bg-danger-lt' : (
+                            referalValue >= 25 ? 'bg-warning-lt' : (
+                                referalValue <= 0 ? 'bg-info-lt' : ''
+                            )
+                        ) %}
+                        <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">
+                                            Temperature
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline">
+                                        <div class="h1 mb-0 text-nowrap">
+                                            {{ isToday ? airQuality.actual.temperature : airQuality.daily.temperature|number_format(2) }}
+                                            <small>°C</small>
+                                        </div>
+                                        {% set referalValue = isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature %}
+                                        {% set perceivedTemperatureExtraClass = referalValue >= 30 ? 'text-danger-emphasis' : (
+                                            referalValue >= 25 ? 'text-warning' : (
+                                                referalValue <= 0 ? 'text-info-emphasis' : ''
+                                            )
+                                        ) %}
+                                        <div class="h4 ms-2 mb-0 text-nowrap {{ perceivedTemperatureExtraClass }}" title="real feel temp">
+                                            {{ isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature|number_format(2) }}
+                                            <small>°C</small>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-baseline">
-                                    <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.temperature : airQuality.daily.temperature|number_format(2) }}
-                                        <small>°C</small>
-                                    </div>
-                                    {% set referalValue = isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature %}
-                                    {% set perceivedTemperatureExtraClass = referalValue >= 30 ? 'text-danger-emphasis' : (
-                                        referalValue >= 25 ? 'text-warning' : (
-                                            referalValue <= 0 ? 'text-info-emphasis' : ''
-                                        )
-                                    ) %}
-                                    <div class="h4 ms-2 mb-0 text-nowrap {{ perceivedTemperatureExtraClass }}" title="real feel temp">
-                                        {{ isToday ? airQuality.actual.perceivedTemperature : airQuality.daily.perceivedTemperature|number_format(2) }}
-                                        <small>°C</small>
+                                <div class="col">
+                                    <div class="d-inline align-items-baseline text-end">
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_min|number_format(2) }} <small>°C</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_max|number_format(2) }} <small>°C</small></div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_min|number_format(2) }} <small>°C</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature|number_format(2) }} <small>°C</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.temperature_max|number_format(2) }} <small>°C</small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-12">
+                    <div class="card">
+                        {% set referalValue = isToday ? airQuality.actual.seaLevelPressure : airQuality.daily.seaLevelPressure %}
+                        {% set airPressureExtraClass = referalValue >= 1030 ? 'bg-danger-lt' : (
+                            referalValue >= 1020 ? 'bg-warning-lt' : (
+                                referalValue <= 1000 ? 'bg-info-lt' : ''
+                            )
+                        ) %}
+                        <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">
+                                            Pressure
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline justify-content-between">
+                                        <div class="h1 mb-0 text-nowrap">
+                                            {{ isToday ? airQuality.actual.seaLevelPressure|number_format(1, '.', '') : airQuality.daily.seaLevelPressure|number_format(1, '.', '') }}
+                                            <small>kPa</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-inline align-items-baseline text-end">
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-12">
+                    <div class="card">
+                        <div class="card-body px-xl-3">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">
+                                            Humidity
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline justify-content-between">
+                                        <div class="h1 mb-0 text-nowrap">
+                                            {{ isToday ? airQuality.actual.humidity|number_format(1) : airQuality.daily.humidity|number_format(1) }}
+                                            <small>%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-inline align-items-baseline text-end">
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_min|number_format(1) }} <small>%</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_max|number_format(1) }} <small>%</small></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-12">
+                    <div class="card">
+                        {% set referalValue = isToday ? airQuality.actual.pm25 : airQuality.daily.pm25 %}
+                        {% set airQuality25ExtraClass = referalValue >= 15 ? 'bg-danger-lt' : (
+                            referalValue >= 5 ? 'bg-warning-lt' : ''
+                        ) %}
+                        <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">
+                                            PM2.5
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline justify-content-between">
+                                        <div class="h1 mb-0 text-nowrap">
+                                            {{ isToday ? airQuality.actual.pm25 : airQuality.daily.pm25|number_format(2) }}
+                                            <small>µg/m³</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-inline align-items-baseline text-end">
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_min|number_format(2) }} <small>µg/m³</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25|number_format(2) }} <small>µg/m³</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_max|number_format(2) }} <small>µg/m³</small></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-12">
+                    <div class="card">
+                        {% set referalValue = isToday ? airQuality.actual.pm10 : airQuality.daily.pm10 %}
+                        {% set airQuality10ExtraClass = referalValue >= 45 ? 'bg-danger-lt' : (
+                            referalValue >= 15 ? 'bg-warning-lt' : ''
+                        ) %}
+                        <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="subheader">
+                                            PM10
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-baseline justify-content-between">
+                                        <div class="h1 mb-0 text-nowrap">
+                                            {{ isToday ? airQuality.actual.pm10 : airQuality.daily.pm10|number_format(2) }}
+                                            <small>µg/m³</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-inline align-items-baseline text-end">
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_min|number_format(2) }} <small>µg/m³</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10|number_format(2) }} <small>µg/m³</small></div>
+                                        <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_max|number_format(2) }} <small>µg/m³</small></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md col-12">
-                <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.seaLevelPressure : airQuality.daily.seaLevelPressure %}
-                    {% set airPressureExtraClass = referalValue >= 1030 ? 'bg-danger-lt' : (
-                        referalValue >= 1020 ? 'bg-warning-lt' : (
-                            referalValue <= 1000 ? 'bg-info-lt' : ''
-                        )
-                    ) %}
-                    <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
-                        <div class="row">
-                            <div class="col">
-                                <div class="d-flex align-items-center">
-                                    <div class="subheader">
-                                        Pressure
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
-                                    <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.seaLevelPressure|number_format(1, '.', '') : airQuality.daily.seaLevelPressure|number_format(1, '.', '') }}
-                                        <small>kPa</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
-                                </div>
-                            </div>
+            <div class="row row-cards mt-1">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="chart-air-quality" class="position-relative" style="min-height: 355px"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md col-12">
-                <div class="card">
-                    <div class="card-body px-xl-3">
-                        <div class="row">
-                            <div class="col">
-                                <div class="d-flex align-items-center">
-                                    <div class="subheader">
-                                        Humidity
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
-                                    <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.humidity|number_format(1) : airQuality.daily.humidity|number_format(1) }}
-                                        <small>%</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_min|number_format(1) }} <small>%</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity|number_format(1) }} <small>%</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.humidity_max|number_format(1) }} <small>%</small></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md col-12">
-                <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.pm25 : airQuality.daily.pm25 %}
-                    {% set airQuality25ExtraClass = referalValue >= 15 ? 'bg-danger-lt' : (
-                        referalValue >= 5 ? 'bg-warning-lt' : ''
-                    ) %}
-                    <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
-                        <div class="row">
-                            <div class="col">
-                                <div class="d-flex align-items-center">
-                                    <div class="subheader">
-                                        PM2.5
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
-                                    <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.pm25 : airQuality.daily.pm25|number_format(2) }}
-                                        <small>µg/m³</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_min|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm25_max|number_format(2) }} <small>µg/m³</small></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md col-12">
-                <div class="card">
-                    {% set referalValue = isToday ? airQuality.actual.pm10 : airQuality.daily.pm10 %}
-                    {% set airQuality10ExtraClass = referalValue >= 45 ? 'bg-danger-lt' : (
-                        referalValue >= 15 ? 'bg-warning-lt' : ''
-                    ) %}
-                    <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
-                        <div class="row">
-                            <div class="col">
-                                <div class="d-flex align-items-center">
-                                    <div class="subheader">
-                                        PM10
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-baseline justify-content-between">
-                                    <div class="h1 mb-0 text-nowrap">
-                                        {{ isToday ? airQuality.actual.pm10 : airQuality.daily.pm10|number_format(2) }}
-                                        <small>µg/m³</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="d-inline align-items-baseline text-end">
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_min|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10|number_format(2) }} <small>µg/m³</small></div>
-                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.daily.pm10_max|number_format(2) }} <small>µg/m³</small></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row row-cards mt-1">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div id="chart-air-quality" class="position-relative" style="min-height: 355px"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% endif %}
         <div class="row row-cards mt-1">
             <div class="col-12">
                 <div class="card">
