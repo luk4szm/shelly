@@ -1,0 +1,226 @@
+{% extends 'front/weather/index.html.twig' %}
+
+{% block dateInput %}
+    <input
+        type="year"
+        class="form-control"
+        id="wheater_date"
+        value=""
+        min="2025"
+        max="{{ 'now'|date('Y') }}"
+        placeholder="Wybierz rok"
+    >
+{% endblock %}
+
+{% block pageBody %}
+    <div data-role-date="{{ date }}"></div>
+    <div class="container-xl">
+        <div class="row row-cards" id="air_quality_data_cards" style="min-height: 99px">
+            <div class="col-md col-12">
+                <div class="card">
+                    {% set temperatureExtraClass = airQuality.yearly.temperature >= 30 ? 'bg-danger-lt' : (
+                        airQuality.yearly.temperature >= 25 ? 'bg-warning-lt' : (
+                            airQuality.yearly.temperature <= 0 ? 'bg-info-lt' : ''
+                        )
+                    ) %}
+                    <div class="card-body px-xl-3 {{ temperatureExtraClass }}">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Temperature
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline">
+                                    <div class="h1 mb-0 text-nowrap">
+                                        {{ airQuality.yearly.temperature|number_format(2) }}
+                                        <small>°C</small>
+                                    </div>
+                                    {% set perceivedTemperatureExtraClass = airQuality.yearly.perceivedTemperature >= 30 ? 'text-danger-emphasis' : (
+                                        airQuality.yearly.perceivedTemperature >= 25 ? 'text-warning' : (
+                                            airQuality.yearly.perceivedTemperature <= 0 ? 'text-info-emphasis' : ''
+                                        )
+                                    ) %}
+                                    <div class="h4 ms-2 mb-0 text-nowrap {{ perceivedTemperatureExtraClass }}" title="real feel temp">
+                                        {{ airQuality.yearly.perceivedTemperature|number_format(2) }}
+                                        <small>°C</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.temperature_min|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.temperature|number_format(2) }} <small>°C</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.temperature_max|number_format(2) }} <small>°C</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
+                <div class="card">
+                    {% set airPressureExtraClass = airQuality.yearly.seaLevelPressure >= 1030 ? 'bg-danger-lt' : (
+                        airQuality.yearly.seaLevelPressure >= 1020 ? 'bg-warning-lt' : (
+                            airQuality.yearly.seaLevelPressure <= 1000 ? 'bg-info-lt' : ''
+                        )
+                    ) %}
+                    <div class="card-body px-xl-3 {{ airPressureExtraClass }}">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Pressure
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">
+                                        {{ airQuality.yearly.seaLevelPressure|number_format(1, '.', '') }}
+                                        <small>kPa</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.seaLevelPressure_min|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.seaLevelPressure|number_format(1, '.', '') }} <small>kPa</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.seaLevelPressure_max|number_format(1, '.', '') }} <small>kPa</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
+                <div class="card">
+                    <div class="card-body px-xl-3">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        Humidity
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">
+                                        {{ airQuality.yearly.humidity|number_format(1) }}
+                                        <small>%</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.humidity_min|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.humidity|number_format(1) }} <small>%</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.humidity_max|number_format(1) }} <small>%</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
+                <div class="card">
+                    {% set airQuality25ExtraClass = airQuality.yearly.pm25 >= 15 ? 'bg-danger-lt' : (
+                        airQuality.yearly.pm25 >= 5 ? 'bg-warning-lt' : ''
+                    ) %}
+                    <div class="card-body px-xl-3 {{ airQuality25ExtraClass }}">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        PM2.5
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">
+                                        {{ airQuality.yearly.pm25|number_format(2) }}
+                                        <small>µg/m³</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm25_min|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm25|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm25_max|number_format(2) }} <small>µg/m³</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md col-12">
+                <div class="card">
+                    {% set airQuality10ExtraClass = airQuality.yearly.pm10 >= 45 ? 'bg-danger-lt' : (
+                        airQuality.yearly.pm10 >= 15 ? 'bg-warning-lt' : ''
+                    ) %}
+                    <div class="card-body px-xl-3 {{ airQuality10ExtraClass }}">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex align-items-center">
+                                    <div class="subheader">
+                                        PM10
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-baseline justify-content-between">
+                                    <div class="h1 mb-0 text-nowrap">
+                                        {{ airQuality.yearly.pm10|number_format(2) }}
+                                        <small>µg/m³</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-inline align-items-baseline text-end">
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm10_min|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm10|number_format(2) }} <small>µg/m³</small></div>
+                                    <div class="h4 mb-0 text-nowrap text-muted lh-sm">{{ airQuality.yearly.pm10_max|number_format(2) }} <small>µg/m³</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Wykresy świeczkowe dla roku #}
+        <div class="row row-cards mt-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-air-quality" class="position-relative" style="min-height: 355px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row row-cards mt-1">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather-temperature" class="position-relative" style="min-height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather-pressure" class="position-relative" style="min-height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="chart-weather-humidity" class="position-relative" style="min-height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/weather/date_input_handler.js') }}"></script>
+    <script src="{{ asset('js/weather/air_quality_yearly.js') }}"></script>
+    <script src="{{ asset('js/weather/weather_yearly.js') }}"></script>
+{% endblock %}

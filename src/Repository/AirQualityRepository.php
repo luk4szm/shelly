@@ -67,6 +67,25 @@ class AirQualityRepository extends CrudRepository
     }
 
     /**
+     * Średnie i skrajne wartości dla całego roku (na karty).
+     */
+    public function findAverageForYear(\DateTimeInterface $date): ?array
+    {
+        $from = (clone $date)->modify('first day of January')->setTime(0, 0, 0);
+        $to   = (clone $date)->modify('last day of December')->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('aq')
+            ->select('AVG(aq.pm25) as pm25', 'AVG(aq.pm10) as pm10', 'AVG(aq.temperature) as temperature', 'AVG(aq.perceivedTemperature) as perceivedTemperature', 'AVG(aq.humidity) as humidity', 'AVG(aq.seaLevelPressure) as seaLevelPressure')
+            ->addSelect('MAX(aq.pm25) as pm25_max', 'MAX(aq.pm10) as pm10_max', 'MAX(aq.temperature) as temperature_max', 'MAX(aq.perceivedTemperature) as perceivedTemperature_max', 'MAX(aq.humidity) as humidity_max', 'MAX(aq.seaLevelPressure) as seaLevelPressure_max')
+            ->addSelect('MIN(aq.pm25) as pm25_min', 'MIN(aq.pm10) as pm10_min', 'MIN(aq.temperature) as temperature_min', 'MIN(aq.perceivedTemperature) as perceivedTemperature_min', 'MIN(aq.humidity) as humidity_min', 'MIN(aq.seaLevelPressure) as seaLevelPressure_min')
+            ->where('aq.measuredAt BETWEEN :from AND :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Dobowe średnie (PM2.5, PM10) dla wskazanego miesiąca.
      * Zwraca: day (YYYY-MM-DD), pm25_avg, pm10_avg.
      */
@@ -98,7 +117,7 @@ SQL;
      * Dane świeczkowe (open/high/low/close) dla parametrów atmosferycznych w rozbiciu dziennym.
      * Zwraca rekordy po dniach dla: temperature, humidity, sea_level_pressure.
      */
-    public function findAtmosphereCandlesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
+    public function findAtmosphereDailyCandlesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
@@ -159,6 +178,71 @@ ORDER BY day ASC;
 SQL;
 
         $stmt   = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'from' => $from->format('Y-m-d H:i:s'),
+            'to'   => $to->format('Y-m-d H:i:s'),
+        ]);
+
+        return $result->fetchAllAssociative();
+    }
+
+    /**
+     * Dane świeczkowe (open/high/low/close) dla parametrów atmosferycznych w rozbiciu miesięcznym.
+     * Zwraca rekordy po dniach dla: temperature, humidity, sea_level_pressure.
+     */
+    public function findAtmosphereMonthlyCandlesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = <<<SQL
+SELECT
+    -- Pierwszy dzień miesiąca jako klucz czasu
+    DATE_FORMAT(aq.measured_at, '%Y-%m-01') AS month_start,
+
+    -- Temperature
+    aq_open.temperature AS temperature_open,
+    aq_close.temperature AS temperature_close,
+    MIN(aq.temperature) AS temperature_low,
+    MAX(aq.temperature) AS temperature_high,
+
+    -- Humidity
+    aq_open.humidity AS humidity_open,
+    aq_close.humidity AS humidity_close,
+    MIN(aq.humidity) AS humidity_low,
+    MAX(aq.humidity) AS humidity_high,
+
+    -- Sea level pressure
+    aq_open.sea_level_pressure AS seaLevelPressure_open,
+    aq_close.sea_level_pressure AS seaLevelPressure_close,
+    MIN(aq.sea_level_pressure) AS seaLevelPressure_low,
+    MAX(aq.sea_level_pressure) AS seaLevelPressure_high
+
+FROM air_quality aq
+
+-- Podzapytanie do znalezienia pierwszego i ostatniego pomiaru w miesiącu
+JOIN (
+    SELECT
+        DATE_FORMAT(measured_at, '%Y-%m') AS month_key,
+        MIN(measured_at) AS min_time,
+        MAX(measured_at) AS max_time
+    FROM air_quality
+    WHERE measured_at >= :from AND measured_at <= :to
+    GROUP BY month_key
+) AS monthly_times
+    ON DATE_FORMAT(aq.measured_at, '%Y-%m') = monthly_times.month_key
+
+LEFT JOIN air_quality aq_open ON aq_open.measured_at = monthly_times.min_time
+LEFT JOIN air_quality aq_close ON aq_close.measured_at = monthly_times.max_time
+
+GROUP BY
+    month_start,
+    aq_open.temperature, aq_close.temperature,
+    aq_open.humidity, aq_close.humidity,
+    aq_open.sea_level_pressure, aq_close.sea_level_pressure
+ORDER BY month_start ASC;
+SQL;
+
+        $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
             'from' => $from->format('Y-m-d H:i:s'),
             'to'   => $to->format('Y-m-d H:i:s'),

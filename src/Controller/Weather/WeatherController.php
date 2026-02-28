@@ -54,6 +54,22 @@ class WeatherController extends AbstractController
         ]);
     }
 
+    #[Route('/yearly', name: 'yearly', methods: ['GET'])]
+    public function yearly(
+        Request              $request,
+        AirQualityRepository $airQualityRepository,
+    ): Response
+    {
+        $date = new \DateTime($request->query->get('date', 'now'));
+
+        return $this->render('front/weather/yearly.html.twig', [
+            'date' => $date->format('Y-m-d'),
+            'airQuality' => [
+                'yearly'  => $airQualityRepository->findAverageForYear($date),
+            ],
+        ]);
+    }
+
     #[Route('/get-air-quality', name: 'air_quality_data', methods: ['GET'])]
     public function getAirQualityData(Request $request, AirQualityRepository $airQualityRepository): Response
     {
@@ -93,6 +109,35 @@ class WeatherController extends AbstractController
         return $this->json($out);
     }
 
+    #[Route('/get-air-quality-yearly-avg', name: 'air_quality_yearly_avg', methods: ['GET'])]
+    public function getAirQualityYearlyAvg(Request $request, AirQualityRepository $airQualityRepository): Response
+    {
+        $dateParam = $request->query->get('date');
+
+        if ($dateParam && preg_match('/^\d{4}$/', $dateParam)) {
+            $from = new \DateTime($dateParam . '-01-01 00:00:00');
+            $to   = (clone $from)->modify('last day of December')->setTime(23, 59, 59);
+            $rows = $airQualityRepository->findDailyAveragesForRange($from, $to);
+        } else {
+            // Pełne ostatnie 12 miesięcy (np. od 1-go dnia miesiąca rok temu do ostatniego dnia poprzedniego miesiąca)
+            $to   = new \DateTime('last day of this month 23:59:59');
+            $from = (new \DateTime('first day of this month 00:00:00'))->modify('-11 months');
+
+            $rows = $airQualityRepository->findDailyAveragesForRange($from, $to);
+        }
+
+        foreach ($rows as $r) {
+            $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
+            $out[] = [
+                'x' => $ts,
+                'pm25' => $r['pm25_avg'] !== null ? (float)$r['pm25_avg'] : null,
+                'pm10' => $r['pm10_avg'] !== null ? (float)$r['pm10_avg'] : null,
+            ];
+        }
+
+        return $this->json($out ?? []);
+    }
+
     #[Route('/get-atmosphere-monthly-candles', name: 'atmosphere_monthly_candles', methods: ['GET'])]
     public function getAtmosphereMonthlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
     {
@@ -101,12 +146,12 @@ class WeatherController extends AbstractController
         if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
             $from = new \DateTime($dateParam . '-01');
             $to   = (clone $from)->modify('last day of this month')->setTime(23, 59, 59);
-            $rows = $airQualityRepository->findAtmosphereCandlesForRange($from, $to);
+            $rows = $airQualityRepository->findAtmosphereDailyCandlesForRange($from, $to);
         } else {
             // ostatnie 30 dni (bez parametru date)
             $to = new \DateTime('today 23:59:59');
             $from = (clone $to)->modify('-29 days')->setTime(0, 0, 0);
-            $rows = $airQualityRepository->findAtmosphereCandlesForRange($from, $to);
+            $rows = $airQualityRepository->findAtmosphereDailyCandlesForRange($from, $to);
         }
 
         $out = [
@@ -117,6 +162,39 @@ class WeatherController extends AbstractController
 
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
+
+            $out['temperature'][] = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
+            $out['humidity'][] = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
+            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+        }
+
+        return $this->json($out);
+    }
+
+    #[Route('/get-atmosphere-yearly-candles', name: 'atmosphere_yearly_candles', methods: ['GET'])]
+    public function getAtmosphereYearlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
+    {
+        $dateParam = $request->query->get('date');
+
+        if ($dateParam && preg_match('/^\d{4}$/', $dateParam)) {
+            $from = new \DateTime($dateParam . '-01-01 00:00:00');
+            $to   = (clone $from)->modify('last day of December')->setTime(23, 59, 59);
+            $rows = $airQualityRepository->findAtmosphereMonthlyCandlesForRange($from, $to);
+        } else {
+            // cały bieżący rok
+            $to   = new \DateTime('last day of this month 23:59:59');
+            $from = (new \DateTime('first day of this month 00:00:00'))->modify('-11 months');
+            $rows = $airQualityRepository->findAtmosphereMonthlyCandlesForRange($from, $to);
+        }
+
+        $out = [
+            'temperature'      => [],
+            'humidity'         => [],
+            'seaLevelPressure' => [],
+        ];
+
+        foreach ($rows as $r) {
+            $ts = (new \DateTime($r['month_start']))->getTimestamp() * 1000;
 
             $out['temperature'][] = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
             $out['humidity'][] = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
