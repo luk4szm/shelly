@@ -1,15 +1,13 @@
 {% extends 'front/weather/index.html.twig' %}
 
 {% block dateInput %}
-    <input
-        type="year"
-        class="form-control"
-        id="wheater_date"
-        value=""
-        min="2025"
-        max="{{ 'now'|date('Y') }}"
-        placeholder="Wybierz rok"
-    >
+    <div class="btn-group me-2" role="group" id="chart-type-toggle">
+        <input type="radio" class="btn-check" name="chart-type" id="type-weeks" value="weeks" checked>
+        <label class="btn" for="type-weeks">t</label>
+        <input type="radio" class="btn-check" name="chart-type" id="type-months" value="months">
+        <label class="btn" for="type-months">mc</label>
+    </div>
+    <input type="number" class="form-control" id="wheater_date" value="" min="2025" max="{{ "now"|date("Y") }}">
 {% endblock %}
 
 {% block pageBody %}

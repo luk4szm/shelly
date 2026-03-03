@@ -218,6 +218,37 @@ class WeatherController extends AbstractController
         return $this->json($out);
     }
 
+    #[Route('/get-atmosphere-yearly-weeks', name: 'atmosphere_yearly_weeks', methods: ['GET'])]
+    public function getAtmosphereYearlyWeeks(Request $request, AirQualityRepository $airQualityRepository): Response
+    {
+        $dateParam = $request->query->get('date');
+        if ($dateParam && preg_match('/^\d{4}$/', $dateParam)) {
+            $from = new \DateTime($dateParam . '-01-01 00:00:00');
+            $to   = (clone $from)->modify('last day of December')->setTime(23, 59, 59);
+        } else {
+            $to   = new \DateTime('last day of this month 23:59:59');
+            $from = (new \DateTime('first day of this month 00:00:00'))->modify('-11 months');
+        }
+
+        $rows = $airQualityRepository->findAtmosphereWeeklyCandlesForRange($from, $to);
+
+        $out = [
+            'temperature'      => [],
+            'humidity'         => [],
+            'seaLevelPressure' => [],
+        ];
+
+        foreach ($rows as $r) {
+            $ts = (new \DateTime($r['week_start']))->getTimestamp() * 1000;
+
+            $out['temperature'][]      = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
+            $out['humidity'][]         = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
+            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+        }
+
+        return $this->json($out);
+    }
+
     #[Route('/get-weather-data', name: 'weather_data', methods: ['GET'])]
     public function getWeatherData(
         Request                   $request,
@@ -240,5 +271,16 @@ class WeatherController extends AbstractController
         }, $forecastRepository->findForestForRestOfDay(new \DateTime($date)));
 
         return $this->json(array_merge($airQualityInfo, $forecastData));
+    }
+
+    private function calcBox(array $data): ?array {
+        if (empty($data)) return null;
+        sort($data);
+        return [
+            $data[0], // open (placeholder as min)
+            max($data), // high
+            min($data), // low
+            $data[count($data)-1] // close (placeholder as max)
+        ];
     }
 }

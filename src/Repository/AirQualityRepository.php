@@ -203,6 +203,70 @@ SQL;
     }
 
     /**
+     * Dane świeczkowe (open/high/low/close) dla parametrów atmosferycznych w rozbiciu tygodniowym.
+     */
+    public function findAtmosphereWeeklyCandlesForRange(\DateTimeInterface $from, \DateTimeInterface $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = <<<SQL
+SELECT
+    -- Poniedziałek danego tygodnia jako znacznik czasu
+    DATE_SUB(DATE(aq.measured_at), INTERVAL WEEKDAY(aq.measured_at) DAY) AS week_start,
+
+    -- Temperature
+    aq_open.temperature AS temperature_open,
+    aq_close.temperature AS temperature_close,
+    MIN(aq.temperature) AS temperature_low,
+    MAX(aq.temperature) AS temperature_high,
+
+    -- Humidity
+    aq_open.humidity AS humidity_open,
+    aq_close.humidity AS humidity_close,
+    MIN(aq.humidity) AS humidity_low,
+    MAX(aq.humidity) AS humidity_high,
+
+    -- Sea level pressure
+    aq_open.sea_level_pressure AS seaLevelPressure_open,
+    aq_close.sea_level_pressure AS seaLevelPressure_close,
+    MIN(aq.sea_level_pressure) AS seaLevelPressure_low,
+    MAX(aq.sea_level_pressure) AS seaLevelPressure_high
+
+FROM air_quality aq
+
+JOIN (
+    SELECT
+        YEARWEEK(measured_at, 3) AS week_key,
+        MIN(measured_at) AS min_time,
+        MAX(measured_at) AS max_time
+    FROM air_quality
+    WHERE measured_at >= :from AND measured_at <= :to
+    GROUP BY week_key
+) AS weekly_times
+    ON YEARWEEK(aq.measured_at, 3) = weekly_times.week_key
+
+LEFT JOIN air_quality aq_open ON aq_open.measured_at = weekly_times.min_time
+LEFT JOIN air_quality aq_close ON aq_close.measured_at = weekly_times.max_time
+
+GROUP BY
+    week_start,
+    aq_open.temperature, aq_close.temperature,
+    aq_open.humidity, aq_close.humidity,
+    aq_open.sea_level_pressure, aq_close.sea_level_pressure
+ORDER BY week_start ASC;
+SQL;
+
+        $stmt   = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'from' => $from->format('Y-m-d H:i:s'),
+            'to'   => $to->format('Y-m-d H:i:s'),
+        ]);
+
+        return $result->fetchAllAssociative();
+    }
+
+
+    /**
      * Dane świeczkowe (open/high/low/close) dla parametrów atmosferycznych w rozbiciu miesięcznym.
      * Zwraca rekordy po dniach dla: temperature, humidity, sea_level_pressure.
      */

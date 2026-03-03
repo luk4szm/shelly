@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.ApexCharts) return;
 
     const dateInput = document.getElementById('wheater_date'); // type="number" lub "text" dla roku
+    const chartToggle = document.getElementById('chart-type-toggle');
     const elTemp = document.getElementById('chart-weather-temperature');
     const elPress = document.getElementById('chart-weather-pressure');
     const elHum = document.getElementById('chart-weather-humidity');
@@ -13,13 +14,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let tempChart = null;
     let pressChart = null;
     let humChart = null;
+    let currentType = 'weeks'; // Tygodniowy ma być default
 
     const isValidYearStr = (s) => /^\d{4}$/.test(s);
 
-    const fetchAtmosphereCandles = async (dateParam) => {
-        const url = new URL('/weather/get-atmosphere-yearly-candles', window.location.origin);
+    const fetchAtmosphereCandles = async (dateParam, type) => {
+        const endpoint = type === 'weeks' ? '/weather/get-atmosphere-yearly-weeks' : '/weather/get-atmosphere-yearly-candles';
+        const url = new URL(endpoint, window.location.origin);
         if (dateParam) url.searchParams.set('date', dateParam);
-        const res = await fetch(url.toString(), { cache: 'no-store' });
+        const res = await fetch(url.toString(), {cache: 'no-store'});
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json();
     };
@@ -49,23 +52,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const options = {
-            chart: { type: 'candlestick', height, toolbar: { show: false } },
-            series: [{ name, type: 'candlestick', data }],
+            chart: {type: 'candlestick', height, toolbar: {show: false}},
+            series: [{name, data}],
             xaxis: {
                 type: 'datetime',
                 labels: {
-                    format: 'MMM yyyy', // Dodanie roku do etykiety pomoże odróżnić miesiące z różnych lat
-                    datetimeUTC: false
+                    datetimeUTC: false,
+                    rotate: currentType === 'weeks' ? -45 : 0,
+                    datetimeFormatter: {
+                        year: 'yyyy',
+                        month: 'MMM yyyy',
+                        day: 'dd MMM', // To wymusza datę dzienną dla tygodni
+                        hour: 'HH:mm'
+                    },
+                    style: {
+                        fontSize: '10px'
+                    }
                 },
+                tooltip: {enabled: false},
                 min: minX,
                 max: maxX,
-                range: maxX - minX, // WYMUSZA, by widoczny zakres zawsze wynosił dokładnie 12 miesięcy
-                tickAmount: 12,
-                tickPlacement: 'between'
+                tickAmount: currentType === 'weeks' ? 26 : 12,
+                tickPlacement: 'on'
             },
             yaxis: {
-                tooltip: { enabled: true },
-                title: { text: yTitle },
+                tooltip: {enabled: true},
+                title: {text: yTitle},
                 labels: {
                     formatter: (val) => Number.isFinite(val) ? Math.round(val).toString() : ''
                 }
@@ -81,11 +93,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const loadWeather = async (dateParam) => {
         try {
-            elTemp.innerHTML = '<div class="text-center p-4">Ładowanie danych rocznych…</div>';
-            elPress.innerHTML = '<div class="text-center p-4">Ładowanie danych rocznych…</div>';
-            elHum.innerHTML = '<div class="text-center p-4">Ładowanie danych rocznych…</div>';
+            elTemp.innerHTML = '<div class="text-center p-4">Ładowanie danych…</div>';
+            // ... (analogicznie dla elPress i elHum)
 
-            const raw = await fetchAtmosphereCandles(dateParam || '');
+            const raw = await fetchAtmosphereCandles(dateParam || '', currentType);
 
             renderSingleCandle(elTemp, { get current() { return tempChart; }, set current(v) { tempChart = v; } }, 'Temperatura', raw?.temperature || [], '°C', dateParam);
             renderSingleCandle(elPress, { get current() { return pressChart; }, set current(v) { pressChart = v; } }, 'Ciśnienie (SLP)', raw?.seaLevelPressure || [], 'hPa', dateParam);
@@ -102,9 +113,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const urlDate = new URL(window.location.href).searchParams.get('date');
     loadWeather(isValidYearStr(urlDate) ? urlDate : '');
 
-    // Reakcja na zmianę roku (np. z nawigacji)
-    window.addEventListener('weather:yearChanged', (e) => {
-        const val = e.detail;
+    // Reakcja na zmianę typu wykresu
+    chartToggle?.addEventListener('change', (e) => {
+        currentType = e.target.value;
+        const val = dateInput.value;
         loadWeather(isValidYearStr(val) ? val : '');
     });
 
