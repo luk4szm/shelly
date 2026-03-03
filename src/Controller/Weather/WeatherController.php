@@ -44,12 +44,19 @@ class WeatherController extends AbstractController
         AirQualityRepository $airQualityRepository,
     ): Response
     {
-        $date = new \DateTime($request->query->get('date', 'now'));
+        if ($request->query->has('date')) {
+            $date     = new \DateTime($request->query->get('date'));
+            $averages = $airQualityRepository->findAverageForMonth($date);
+        } else {
+            $to       = new \DateTime();
+            $from     = (clone $to)->modify('-1 month')->setTime(0, 0);
+            $averages = $airQualityRepository->findAverageForDateRange($from, $to);
+        }
 
         return $this->render('front/weather/monthly.html.twig', [
-            'date' => $date->format('Y-m-d'),
+            'date' => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
             'airQuality' => [
-                'monthly'  => $airQualityRepository->findAverageForMonth($date),
+                'monthly'  => $averages,
             ],
         ]);
     }
@@ -60,12 +67,19 @@ class WeatherController extends AbstractController
         AirQualityRepository $airQualityRepository,
     ): Response
     {
-        $date = new \DateTime($request->query->get('date', 'now'));
+        if ($request->query->has('date')) {
+            $date     = new \DateTime($request->query->get('date'));
+            $averages = $airQualityRepository->findAverageForYear($date);
+        } else {
+            $to       = new \DateTime();
+            $from     = (clone $to)->modify('-1 year')->setTime(0, 0);
+            $averages = $airQualityRepository->findAverageForDateRange($from, $to);
+        }
 
         return $this->render('front/weather/yearly.html.twig', [
-            'date' => $date->format('Y-m-d'),
+            'date' => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
             'airQuality' => [
-                'yearly'  => $airQualityRepository->findAverageForYear($date),
+                'yearly'  => $averages,
             ],
         ]);
     }
