@@ -89,6 +89,10 @@ class DeviceController extends AbstractController
     ): Response {
         $date = new \DateTime($request->query->get('date', ''));
 
+        if ($date->format('Y-m') === (new \DateTime())->format('Y-m')) {
+            $date = new \DateTime();
+        }
+
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
             if (!$helper->supports($device)) {
