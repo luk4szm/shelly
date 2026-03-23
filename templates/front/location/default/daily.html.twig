@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block pageBody %}
+    {{ parent() }}
     <div class="container-xl">
         <div class="row row-cards" style="min-height: 99px">
             <div class="col-md col-12">
@@ -83,5 +84,6 @@
 {% endblock %}
 
 {% block pagejs %}
+    {{ parent() }}
     <script src="{{ asset('js/location_chart_daily.js') }}"></script>
 {% endblock %}

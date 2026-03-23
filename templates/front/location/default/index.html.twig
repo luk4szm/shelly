@@ -16,3 +16,45 @@
         {% block buttons %}{% endblock %}
     </div>
 {% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row d-md-none mb-md-0 mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <select class="form-select" id="location-changer-select">
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'salon'}) }}" {{- location == 'salon' ? 'selected' -}}>Salon</option>
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'sypialnia'}) }}" {{- location == 'sypialnia' ? 'selected' -}}>Sypialnia </option>
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'stasiu'}) }}" {{- location == 'stasiu' ? 'selected' -}}>Stasiu</option>
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'dziewczynki'}) }} {{- location == 'dziewczynki' ? 'selected' -}}">Dziewczynki </option>
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'biuro'}) }}" {{- location == 'biuro' ? 'selected' -}}>Biuro</option>
+                            <option data-url="{{ path('app_front_default_location_monthly', {'location': 'garage'}) }}" {{- location == 'garage' ? 'selected' -}}>Garaż</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('location-changer-select');
+
+            if (!select) {
+                return;
+            }
+
+            select.addEventListener('change', () => {
+                const selectedOption = select.options[select.selectedIndex];
+                const url = selectedOption.dataset.url;
+
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+{% endblock pagejs %}
