@@ -1,15 +1,11 @@
 {% extends 'front/weather/index.html.twig' %}
 
 {% block dateInput %}
-    <input
-        type="month"
-        class="form-control"
-        id="wheater_date"
-        value=""
-        min="2025-10"
-        max="{{ 'now'|date('Y-m') }}"
-        placeholder="Wybierz miesiąc"
-    >
+    <div class="input-group">
+        <button class="btn" type="button" id="prev-month-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
+        <input type="month" class="form-control" id="wheater_date" value="{{ app.request.query.get('date') }}" min="2025-10" max="{{ "now"|date("Y-m") }}"/>
+        <button class="btn" type="button" id="next-month-btn" aria-label="Następny miesiąc">&#8594;</button>
+    </div>
 {% endblock %}
 
 {% block pageBody %}

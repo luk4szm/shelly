@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.ApexCharts) return;
 
     const dateInput = document.getElementById('wheater_date'); // type="month"
-    const prevBtn = document.getElementById('prev-day-btn');
-    const nextBtn = document.getElementById('next-day-btn');
+    const prevBtn = document.getElementById('prev-month-btn');
+    const nextBtn = document.getElementById('next-month-btn');
     const elAir = document.getElementById('chart-air-quality');
 
     if (!dateInput || !prevBtn || !nextBtn || !elAir) return;
@@ -21,22 +21,29 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Date(y, m - 1, 1);
     };
 
-    const updateNextButtonState = () => {
-        const lock = new Date();
-        const urlDate = new URL(window.location.href).searchParams.get('date');
-        if (!isValidMonthStr(urlDate)) { nextBtn.disabled = true; return; } // w trybie 30 dni przyciski nie mają sensu
-        const current = parseMonth(dateInput.value);
-        const lockYm = new Date(lock.getFullYear(), lock.getMonth(), 1);
-        const currYm = current ? new Date(current.getFullYear(), current.getMonth(), 1) : null;
-        nextBtn.disabled = !!currYm && currYm >= lockYm;
+    const updateButtonsState = () => {
+        const currentVal = dateInput.value;
+        if (!isValidMonthStr(currentVal)) { // "Ostatnie 30 dni"
+            prevBtn.disabled = false;
+            nextBtn.disabled = true; // Nie można przejść do przyszłości
+        } else {
+            prevBtn.disabled = currentVal <= dateInput.min;
+            nextBtn.disabled = currentVal >= dateInput.max;
+        }
     };
 
     const setUrlDateParam = (monthStr, replace = false) => {
         const url = new URL(window.location.href);
-        if (monthStr) url.searchParams.set('date', monthStr);
-        else url.searchParams.delete('date');
-        if (replace) window.history.replaceState({}, '', url.toString());
-        else window.history.pushState({}, '', url.toString());
+        if (monthStr) {
+            url.searchParams.set('date', monthStr);
+        } else {
+            url.searchParams.delete('date');
+        }
+        if (replace) {
+            window.history.replaceState({}, '', url.toString());
+        } else {
+            window.history.pushState({}, '', url.toString());
+        }
     };
 
     const dispatchMonthChanged = (monthStr) => {
@@ -44,18 +51,21 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const changeMonth = (delta) => {
-        const urlDate = new URL(window.location.href).searchParams.get('date');
-        if (!isValidMonthStr(urlDate)) return; // w trybie 30 dni nic nie zmieniamy
-        const d = parseMonth(dateInput.value);
-        if (!d) return;
+        // Jeśli tryb "30 dni", bazuj na dzisiejszej dacie. Inaczej na dacie z inputu.
+        const d = parseMonth(dateInput.value) || new Date();
         d.setMonth(d.getMonth() + delta);
-        const v = toMonthStr(d);
-        dateInput.value = v;
-        setUrlDateParam(v);
-        updateNextButtonState();
-        loadAir(v);
+        const newMonthStr = toMonthStr(d);
+
+        if (newMonthStr < dateInput.min || newMonthStr > dateInput.max) {
+            return;
+        }
+
+        dateInput.value = newMonthStr;
+        setUrlDateParam(newMonthStr);
+        updateButtonsState();
+        loadAir(newMonthStr);
         reloadCards();
-        dispatchMonthChanged(v);
+        dispatchMonthChanged(newMonthStr);
     };
 
     const fetchAirQualityMonthlyAvg = async (dateParam) => {
@@ -168,13 +178,13 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             elAir.innerHTML = '<div class="text-center p-4">Ładowanie…</div>';
             const raw = await fetchAirQualityMonthlyAvg(dateParam || '');
-            renderAir(transformAir(raw || []), dateParam);
-        } catch {
-            elAir.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';
-        }
+        renderAir(transformAir(raw || []), dateParam);
+    } catch {
+        elAir.innerHTML = '<div class="text-center p-4">Błąd ładowania.</div>';
+    }
     };
 
-    // Inicjalizacja: jeśli brak ?date= -> tryb „ostatnie 30 dni”
+    // Inicjalizacja
     const urlDate = new URL(window.location.href).searchParams.get('date');
     let initialMonth = '';
     if (isValidMonthStr(urlDate)) {
@@ -182,55 +192,34 @@ document.addEventListener('DOMContentLoaded', function () {
         dateInput.value = initialMonth;
         setUrlDateParam(initialMonth, true);
     } else {
-        // tryb 30 dni – ukryj nawigację i NIE ustawiaj wartości w input
-        const url = new URL(window.location.href);
-        url.searchParams.delete('date');
-        window.history.replaceState({}, '', url.toString());
-        dateInput.value = ''; // ważne: wyczyść input
-        prevBtn.classList.add('d-none');
-        nextBtn.classList.add('d-none');
+        dateInput.value = ''; // Wyczyść input w trybie "30 dni"
+        if (new URL(window.location.href).searchParams.has('date')) {
+            setUrlDateParam('', true);
+        }
     }
 
-    updateNextButtonState();
-    loadAir(initialMonth || '');
-
-    updateNextButtonState();
+    updateButtonsState();
     loadAir(initialMonth || '');
 
     // Zdarzenia
     prevBtn.addEventListener('click', () => changeMonth(-1));
     nextBtn.addEventListener('click', () => changeMonth(1));
+
     dateInput.addEventListener('change', (e) => {
         const val = e.target.value;
-        if (isValidMonthStr(val)) {
-            // pokaż nawigację dopiero po wyborze miesiąca
-            prevBtn.classList.remove('d-none');
-            nextBtn.classList.remove('d-none');
-            setUrlDateParam(val);
-            updateNextButtonState();
-            loadAir(val);
-            reloadCards();
-            dispatchMonthChanged(val);
-        }
+        setUrlDateParam(val); // Pusty string usunie parametr
+        updateButtonsState();
+        loadAir(val);
+        reloadCards();
+        dispatchMonthChanged(val);
     });
+
     window.addEventListener('popstate', () => {
         const d = new URL(window.location.href).searchParams.get('date');
-        if (isValidMonthStr(d)) {
-            dateInput.value = d;
-            prevBtn.classList.remove('d-none');
-            nextBtn.classList.remove('d-none');
-            updateNextButtonState();
-            loadAir(d);
-            reloadCards();
-            dispatchMonthChanged(d);
-        } else {
-            dateInput.value = '';            // ważne: nie wpisuj bieżącego miesiąca
-            prevBtn.classList.add('d-none'); // ukryj nawigację
-            nextBtn.classList.add('d-none');
-            updateNextButtonState();
-            loadAir('');
-            reloadCards();
-            dispatchMonthChanged('');
-        }
+        dateInput.value = isValidMonthStr(d) ? d : '';
+        updateButtonsState();
+        loadAir(dateInput.value);
+        reloadCards();
+        dispatchMonthChanged(dateInput.value);
     });
 });
