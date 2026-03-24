@@ -63,6 +63,27 @@
              transform: rotate(360deg);
           }
        }
+
+       /* Animacja dla przycisków powiadomień */
+       .fade-out {
+          opacity: 0;
+          transform: translateY(-10px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+       }
+
+       /* Stan przygotowania do wejścia */
+       .fade-in-init {
+          opacity: 0 !important;
+          transform: translateY(10px) !important;
+          display: block !important; /* Wymuszamy pokazanie w DOM, ale pozostaje niewidoczne przez opacity */
+       }
+
+       /* Stan końcowy animacji wejścia */
+       .fade-in-show {
+          opacity: 1 !important;
+          transform: translateY(0) !important;
+          transition: opacity 0.4s ease, transform 0.4s ease !important;
+       }
     </style>
 {% endblock %}
 
