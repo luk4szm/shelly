@@ -27,9 +27,15 @@
                         {% if is_granted("ROLE_ADMIN") %}
                             <div class="row mt-3">
                                 <div class="col-12">
-                                    <a href="#" class="btn btn-outline-azure w-100" data-bs-toggle="modal" data-bs-target="#open_notification_modal">
+                                    <a href="#" class="btn btn-outline-azure w-100" data-role="show-channels">
                                         <span>Powiadomienia</span>
                                     </a>
+                                </div>
+                                <div class="col-6 d-none">
+                                    <a href="{{ path('app_remote_gate_enable_notification', {'channel': 'sms'}) }}" class="btn btn-outline-success btn-3 w-100"> SMS </a>
+                                </div>
+                                <div class="col-6 d-none">
+                                    <a href="{{ path('app_remote_gate_enable_notification', {'channel': 'email'}) }}" class="btn btn-outline-success btn-3 w-100"> E-mail </a>
                                 </div>
                             </div>
                         {% endif %}
