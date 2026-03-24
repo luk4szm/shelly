@@ -46,7 +46,13 @@ class GateController extends AbstractController
 
         $notificationRepository->save($notify);
 
-        $this->addFlash('success', 'Notification saved.');
+        $this->addFlash(
+            'success',
+            sprintf(
+                "Powiadomienie <b>%s</b> o otwarciu bramy aktywowane",
+                (Channel::from($request->query->get('channel'))->value)
+            )
+        );
 
         return $this->redirectToRoute('app_remote_gate');
     }
