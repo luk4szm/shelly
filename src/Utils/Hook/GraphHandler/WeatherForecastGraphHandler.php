@@ -11,6 +11,7 @@ class WeatherForecastGraphHandler
         return [
             'measuredAt'  => $weatherForecast->getTime()->format('Y-m-d H:i:s'),
             'temperature' => (float)$weatherForecast->getTemperature(),
+            'pressure'    => (float)$weatherForecast->getAirPressure(),
         ];
     }
 }

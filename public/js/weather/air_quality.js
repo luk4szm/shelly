@@ -137,50 +137,46 @@ document.addEventListener('DOMContentLoaded', function () {
             .filter(Boolean)
             .sort((a, b) => a.x - b.x);
 
-        const pressure = pts.filter(p => p.pressure != null).map(p => ({ x: p.x, y: p.pressure }));
+        const pressureAll = pts.filter(p => p.pressure != null).map(p => ({ x: p.x, y: p.pressure }));
         const temperatureAll = pts.filter(p => p.temperature != null).map(p => ({ x: p.x, y: p.temperature }));
         const perceivedTemperature = pts.filter(p => p.perceivedTemperature != null).map(p => ({ x: p.x, y: p.perceivedTemperature }));
         const humidity = pts.filter(p => p.humidity != null).map(p => ({ x: p.x, y: p.humidity }));
 
-        // LOGIKA PODZIAŁU LINII TEMPERATURY
-        const cutoffTime = new Date().getTime(); // Punkt podziału: teraz
+        // LOGIKA PODZIAŁU LINII
+        const cutoffTime = new Date().getTime();
         const tempSolid = [];
         const tempDashed = [];
+        const pressureSolid = [];
+        const pressureDashed = [];
 
-        temperatureAll.forEach((pt, index) => {
-            // Do historii trafiają punkty starsze lub równe punktowi podziału
-            if (pt.x <= cutoffTime) {
-                tempSolid.push(pt);
-            }
-            // Do prognozy trafiają punkty nowsze lub równe punktowi podziału
-            if (pt.x >= cutoffTime) {
-                tempDashed.push(pt);
-            }
+        temperatureAll.forEach((pt) => {
+            if (pt.x <= cutoffTime) tempSolid.push(pt);
+            if (pt.x >= cutoffTime) tempDashed.push(pt);
         });
 
-        // Łączenie: Aby nie było przerwy, ostatni punkt solid musi być początkiem dashed
-        // (Powyższy if (>=) i if (<=) mogą już to załatwić, jeśli mamy punkt idealnie w czasie,
-        // ale dla pewności sprawdzamy ciągłość):
-        if (tempSolid.length > 0 && tempDashed.length > 0) {
-            const lastSolid = tempSolid[tempSolid.length - 1];
-            const firstDashed = tempDashed[0];
-            if (firstDashed.x > lastSolid.x) {
-                // Jeśli jest luka w danych, duplikujemy ostatni punkt historii do prognozy
-                tempDashed.unshift(lastSolid);
-            }
-        }
+        pressureAll.forEach((pt) => {
+            if (pt.x <= cutoffTime) pressureSolid.push(pt);
+            if (pt.x >= cutoffTime) pressureDashed.push(pt);
+        });
 
-        // Jeśli cała seria jest w przyszłości lub przeszłości, obsłuż przypadki brzegowe
-        if (tempSolid.length === 0 && tempDashed.length === 0 && temperatureAll.length > 0) {
-            // Fallback: przypisz wszystko do solid (jeśli np. błąd daty)
-            tempSolid.push(...temperatureAll);
-        }
+        // Ciągłość linii (łączenie punktu styku)
+        const ensureContinuity = (solid, dashed) => {
+            if (solid.length > 0 && dashed.length > 0) {
+                const lastSolid = solid[solid.length - 1];
+                const firstDashed = dashed[0];
+                if (firstDashed.x > lastSolid.x) dashed.unshift(lastSolid);
+            }
+        };
+
+        ensureContinuity(tempSolid, tempDashed);
+        ensureContinuity(pressureSolid, pressureDashed);
 
         return {
             series: [
-                { name: 'Ciśnienie', data: pressure, type: 'line' },
-                { name: 'Temperatura', data: tempSolid, type: 'area' },            // Seria 1 (Solid)
-                { name: 'Prognoza', data: tempDashed, type: 'area' },              // Seria 2 (Dashed)
+                { name: 'Ciśnienie', data: pressureSolid, type: 'line' },
+                { name: 'Prognoza ciśnienia', data: pressureDashed, type: 'line' },
+                { name: 'Temperatura', data: tempSolid, type: 'area' },
+                { name: 'Prognoza temp.', data: tempDashed, type: 'area' },
                 { name: 'Temp. odczuwalna', data: perceivedTemperature, type: 'line' },
                 { name: 'Wilgotność', data: humidity, type: 'area' }
             ]
@@ -246,48 +242,57 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // 1. WSPÓLNY ZAKRES DLA TEMPERATURY I TEMP. ODCZUWALNEJ
-        // series[1] to "Temperatura", series[2] to "Prognoza", series[3] to "Temp. odczuwalna"
-        const tempSeries = series[1] || { data: [] };
-        const forecastSeries = series[2] || { data: [] };
-        const feelsSeries = series[3] || { data: [] };
+        // Zakres osi X (cała doba)
+        const selectedDate = new Date(dateInput.value);
+        const minX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0).getTime();
+        const maxX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59).getTime();
 
+        // 1. WSPÓLNY ZAKRES DLA CIŚNIENIA
+        // series[0]: Ciśnienie, series[1]: Prognoza ciśnienia
+        const pressureValues = []
+            .concat((series[0].data || []).map(p => p.y))
+            .concat((series[1].data || []).map(p => p.y))
+            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+
+        let pressureMin = null, pressureMax = null;
+        if (pressureValues.length > 0) {
+            const rawPMin = Math.min(...pressureValues);
+            const rawPMax = Math.max(...pressureValues);
+            const pPadding = Math.max(1, (rawPMax - rawPMin) * 0.1);
+            pressureMin = Math.floor(rawPMin - pPadding);
+            pressureMax = Math.ceil(rawPMax + pPadding);
+        }
+
+        // 2. WSPÓLNY ZAKRES DLA TEMPERATURY
+        // series[2]: Temperatura, series[3]: Prognoza temp., series[4]: Odczuwalna
         const tempValues = []
-            .concat((tempSeries.data || []).map(p => p.y))
-            .concat((forecastSeries.data || []).map(p => p.y))
-            .concat((feelsSeries.data || []).map(p => p.y))
+            .concat((series[2].data || []).map(p => p.y))
+            .concat((series[3].data || []).map(p => p.y))
+            .concat((series[4].data || []).map(p => p.y))
             .filter(v => typeof v === 'number' && !Number.isNaN(v));
 
         let tempMin = null;
-        let tempMax = null;
         if (tempValues.length > 0) {
             const rawMin = Math.min(...tempValues);
             const rawMax = Math.max(...tempValues);
-
-            // Dodajemy mały margines techniczny przed zaokrągleniem,
-            // żeby punkty leżące np. równo na 10.0 nie wymuszały zakresu na styk.
             const padding = Math.max(0.5, (rawMax - rawMin) * 0.05);
-
             const valForMin = rawMin - padding;
             const valForMax = rawMax + padding;
-
-            // Zaokrąglanie w dół (min) i w górę (max) do pełnych 2
             tempMin = Math.floor(valForMin / 2) * 2;
             tempMax = Math.ceil(valForMax / 2) * 2;
         }
 
-        // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI (z limitem 0-100)
-        const humiditySeries = series[4] || { data: [] }; // "Wilgotność"
+        // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI
+        const humiditySeries = series[5] || { data: [] };
         const humValues = (humiditySeries.data || [])
             .map(p => p.y)
             .filter(v => typeof v === 'number' && !Number.isNaN(v));
 
-        let humMin = 0;
-        let humMax = 100;
+        let humMin = 0, humMax = 100;
         if (humValues.length > 0) {
             const rawHumMin = Math.min(...humValues);
             const rawHumMax = Math.max(...humValues);
-            const humPadding = Math.max(2, (rawHumMax - rawHumMin) * 0.1); // margines dla estetyki
+            const humPadding = Math.max(2, (rawHumMax - rawHumMin) * 0.1);
             humMin = Math.max(0, rawHumMin - humPadding);
             humMax = Math.min(100, rawHumMax + humPadding);
         }
@@ -301,19 +306,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 animations: { enabled: true }
             },
             series,
-            // Kolory: Ciśnienie, Temp(solid), Temp(dashed), Odczuwalna, Wilgotność
-            // Temp(solid) i Temp(dashed) mają ten sam kolor (#d90f0f)
-            colors: ['#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0'],
+            // Kolory: Ciśnienie(S), Ciśnienie(D), Temp(S), Temp(D), Odczuwalna, Wilgotność
+            colors: ['#7463f0', '#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0'],
             stroke: {
                 curve: 'smooth',
-                // Grubości: Ciśnienie(2), TempSolid(2), TempDashed(1.5), Odczuwalna(1.5), Wilgotność(2)
-                width: [2, 2, 1.5, 1.5, 2],
-                // Kreskowanie: TempDashed(5), Odczuwalna(6)
-                dashArray: [0, 0, 5, 6, 0]
+                width: [2, 1.5, 2, 1.5, 1.5, 2],
+                dashArray: [0, 5, 0, 5, 6, 0]
             },
             fill: {
-                // Typy wypełnienia muszą odpowiadać kolejności serii
-                type: ['solid', 'gradient', 'gradient', 'solid', 'gradient'],
+                type: ['solid', 'solid', 'gradient', 'gradient', 'solid', 'gradient'],
                 gradient: {
                     shadeIntensity: 0.3,
                     opacityFrom: 0.35,
@@ -325,7 +326,9 @@ document.addEventListener('DOMContentLoaded', function () {
             markers: { size: 0, hover: { sizeOffset: 2 } },
             xaxis: {
                 type: 'datetime',
-                labels: { format: 'HH:mm', datetimeUTC: false }
+                labels: { format: 'HH:mm', datetimeUTC: false },
+                min: minX,
+                max: maxX
             },
             yaxis: [
                 {
@@ -333,7 +336,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     opposite: true,
                     title: { text: 'hPa' },
                     labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) },
-                    tooltip: { enabled: true }
+                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {})
+                },
+                {
+                    seriesName: 'Prognoza ciśnienia',
+                    show: false,
+                    opposite: true,
+                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {})
                 },
                 {
                     seriesName: 'Temperatura',
@@ -343,15 +352,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
-                    seriesName: 'Prognoza', // Ukryta oś Y dla prognozy (korzysta z tej samej skali co Temperatura)
+                    seriesName: 'Prognoza temp.',
                     show: false,
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
                     seriesName: 'Temp. odczuwalna',
-                    opposite: false,
                     show: false,
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
                 },
                 {
@@ -372,8 +379,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 x: { format: 'dd MMM, HH:mm' },
                 y: [
                     {formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`)}, // Ciśnienie
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`)}, // Prognoza ciśnienia
                     {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temperatura
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Prognoza
+                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Prognoza temp.
                     {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temp. odczuwalna
                     {formatter: v => (v == null ? '' : `${v.toFixed(0)} %`)}    // Wilgotność
                 ]
