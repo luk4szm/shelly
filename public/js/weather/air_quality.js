@@ -196,6 +196,12 @@ document.addEventListener('DOMContentLoaded', function () {
             elAir.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
+
+        // Obliczanie zakresu osi X (od północy do północy wybranego dnia)
+        const selectedDate = new Date(dateInput.value);
+        const minX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0).getTime();
+        const maxX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59).getTime();
+
         const options = {
             chart: { type: 'area', height: 340, toolbar: { show: false }, animations: { enabled: true } },
             series,
@@ -211,7 +217,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 x: { format: 'dd MMM, HH:mm' },
                 y: { formatter: v => (v == null ? '' : `${v.toFixed(1)} µg/m³`) }
             },
-            xaxis: { type: 'datetime', labels: { format: 'HH:mm', datetimeUTC: false } },
+            xaxis: {
+                type: 'datetime',
+                labels: { format: 'HH:mm', datetimeUTC: false },
+                min: minX,
+                max: maxX
+            },
             yaxis: {
                 min: 0, forceNiceScale: true,
                 labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) },
