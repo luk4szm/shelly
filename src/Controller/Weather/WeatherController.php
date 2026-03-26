@@ -272,15 +272,4 @@ class WeatherController extends AbstractController
 
         return $this->json(array_merge($airQualityInfo, $forecastData));
     }
-
-    private function calcBox(array $data): ?array {
-        if (empty($data)) return null;
-        sort($data);
-        return [
-            $data[0], // open (placeholder as min)
-            max($data), // high
-            min($data), // low
-            $data[count($data)-1] // close (placeholder as max)
-        ];
-    }
 }
