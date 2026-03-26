@@ -31,7 +31,7 @@ class WeatherForecastRepository extends CrudRepository
             ? new \DateTime()
             : $date;
 
-        $end = (clone $start)->setTime(23, 59, 59);
+        $end = (clone $start)->modify("+1 day")->setTime(0, 0);
 
         return $this->createQueryBuilder('wf')
             ->where('wf.time >= :start')
