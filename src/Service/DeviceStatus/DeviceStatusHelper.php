@@ -61,6 +61,11 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return true;
     }
 
+    public function getPriority(): int
+    {
+        return 0;
+    }
+
     private function getStatus(): ?DeviceStatus
     {
         if (

@@ -27,8 +27,8 @@ final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceS
         return (float)$hook->getValue() > Hydrophore::BOUNDARY_POWER;
     }
 
-    public function showOnDashboard(): bool
+    public function getPriority(): int
     {
-        return false;
+        return 40;
     }
 }

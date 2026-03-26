@@ -1,6 +1,6 @@
 {% for device in devices %}
     {% set isDeviceActive = device.history[0].status == constant('App\\Model\\Status::ACTIVE') %}
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6 col-xl-3">
         <div class="card card-sm">
             <div class="card-body py-2">
                 <div class="row align-items-center">

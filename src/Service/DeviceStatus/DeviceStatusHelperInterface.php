@@ -17,4 +17,6 @@ interface DeviceStatusHelperInterface
     public function isActive(Hook $hook): bool;
 
     public function showOnDashboard(): bool;
+
+    public function getPriority(): int;
 }

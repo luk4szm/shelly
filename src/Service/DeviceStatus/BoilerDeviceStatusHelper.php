@@ -26,4 +26,9 @@ final class BoilerDeviceStatusHelper extends DeviceStatusHelper implements Devic
     {
         return (float)$hook->getValue() > Boiler::BOUNDARY_POWER;
     }
+
+    public function getPriority(): int
+    {
+        return 100;
+    }
 }

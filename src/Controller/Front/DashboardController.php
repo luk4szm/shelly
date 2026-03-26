@@ -30,8 +30,12 @@ final class DashboardController extends AbstractController
         AirQualityRepository                                            $airQualityRepository,
         WeatherForecastRepository                                       $weatherRepository,
     ): Response {
-        /** @var DeviceStatusHelperInterface $helper */
-        foreach ($statusHelpers as $i => $helper) {
+        $devices = [];
+        $helpers = iterator_to_array($statusHelpers);
+
+        usort($helpers, fn(DeviceStatusHelperInterface $a, DeviceStatusHelperInterface $b) => $b->getPriority() <=> $a->getPriority());
+
+        foreach ($helpers as $i => $helper) {
             if (!$helper->showOnDashboard()) {
                 continue;
             }

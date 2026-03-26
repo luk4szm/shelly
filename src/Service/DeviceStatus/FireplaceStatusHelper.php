@@ -26,4 +26,9 @@ final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceSt
     {
         return (float)$hook->getValue() > Fireplace::BOUNDARY_POWER;
     }
+
+    public function getPriority(): int
+    {
+        return 80;
+    }
 }
