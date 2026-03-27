@@ -27,6 +27,11 @@ final class SolarsStatusHelper extends DeviceStatusHelper implements DeviceStatu
         return (float)$hook->getValue() > Solars::BOUNDARY_POWER;
     }
 
+    public function isHeatingAppliance(): bool
+    {
+        return true;
+    }
+
     public function getPriority(): int
     {
         return 60;

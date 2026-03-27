@@ -61,6 +61,11 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         return true;
     }
 
+    public function isHeatingAppliance(): bool
+    {
+        return false;
+    }
+
     public function getPriority(): int
     {
         return 0;

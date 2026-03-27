@@ -80,7 +80,7 @@ final class HeatingController extends AbstractController
 
         /** @var DeviceStatusHelperInterface $helper */
         foreach ($statusHelpers as $helper) {
-            if (!$helper->showOnDashboard()) {
+            if (!$helper->isHeatingAppliance()) {
                 continue;
             }
 

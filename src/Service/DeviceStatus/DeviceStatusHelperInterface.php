@@ -18,5 +18,7 @@ interface DeviceStatusHelperInterface
 
     public function showOnDashboard(): bool;
 
+    public function isHeatingAppliance(): bool;
+
     public function getPriority(): int;
 }
