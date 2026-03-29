@@ -2,6 +2,7 @@
 
 namespace App\Service\Curl\Shelly;
 
+use App\Model\Device\Hydration\ValveDevice;
 use App\Model\Device\LightDevice;
 use App\Service\Curl\Curl;
 
@@ -105,6 +106,34 @@ class ShellyCloudCurlRequest extends Curl
         if ($device->getType() === 'rgbw' && $white > 0)
         {
             $parameters['white'] = $white;
+        }
+
+        return $this->request(
+            self::METHOD,
+            sprintf("%s/set/light?auth_key=%s", self::URL, $_ENV['SHELLY_AUTH_KEY']),
+            json: $parameters
+        );
+    }
+
+    /**
+     * Controlling the solenoid electrovalve using Shelly RGBW LED drivers
+     *
+     * @param ValveDevice        $device
+     * @param string{"on"|"off"} $action
+     * @param int                $toggleAfter
+     * @return array
+     */
+    public function valve(ValveDevice $device, string $action, int $toggleAfter = 0): array
+    {
+        $parameters = [
+            "id"      => $device->getDeviceId(),
+            "channel" => $device->getChannel(),
+            "on"      => $action === 'on',
+        ];
+
+        if ($action === 'on' && $toggleAfter > 0)
+        {
+            $parameters['toggle_after'] = $toggleAfter;
         }
 
         return $this->request(
