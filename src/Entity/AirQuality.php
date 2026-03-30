@@ -39,6 +39,9 @@ class AirQuality
     #[ORM\Column(nullable: true)]
     private ?float $humidity = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?float $insolation = null;
+
     #[ORM\Column]
     private ?\DateTime $measuredAt = null;
 
@@ -140,6 +143,54 @@ class AirQuality
         return $this;
     }
 
+    public function getHumidity(): ?float
+    {
+        return $this->humidity;
+    }
+
+    public function setHumidity(?float $humidity): static
+    {
+        $this->humidity = $humidity;
+
+        return $this;
+    }
+
+    public function getInsolation(): ?float
+    {
+        return $this->insolation;
+    }
+
+    public function setInsolation(?float $insolation): static
+    {
+        $this->insolation = $insolation;
+
+        return $this;
+    }
+
+    public function getMeasuredAt(): ?\DateTime
+    {
+        return $this->measuredAt;
+    }
+
+    public function setMeasuredAt(\DateTime $measuredAt): static
+    {
+        $this->measuredAt = $measuredAt;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
     public function calculateSeaLevelPressure(int $altitude): void
     {
         if ($this->pressure === null) {
@@ -171,41 +222,5 @@ class AirQuality
 
         // Round the result for typical meteorological precision (two decimal places)
         $this->seaLevelPressure = round($seaLevelPressure, 2);
-    }
-
-    public function getHumidity(): ?float
-    {
-        return $this->humidity;
-    }
-
-    public function setHumidity(?float $humidity): static
-    {
-        $this->humidity = $humidity;
-
-        return $this;
-    }
-
-    public function getMeasuredAt(): ?\DateTime
-    {
-        return $this->measuredAt;
-    }
-
-    public function setMeasuredAt(\DateTime $measuredAt): static
-    {
-        $this->measuredAt = $measuredAt;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
     }
 }

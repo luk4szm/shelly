@@ -33,6 +33,30 @@ class AirQualityRepository extends CrudRepository
             ->getResult();
     }
 
+    /**
+     * @return array{AirQuality[]}
+     */
+    public function findToFillWithInsolation(): array
+    {
+        return $this->createQueryBuilder('aq')
+            ->where('aq.insolation IS NULL')
+            ->andWhere('aq.createdAt >= :from')
+            ->setParameter('from', new \DateTime('2026-03-31')) // date of installation of the insolation sensor
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findLastInsolationReading(): float
+    {
+        return $this->createQueryBuilder('aq')
+            ->select('aq.insolation')
+            ->where('aq.insolation IS NOT NULL')
+            ->orderBy('aq.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findAverageForDate(\DateTimeInterface $date): ?array
     {
         return $this->createQueryBuilder('aq')
