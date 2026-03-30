@@ -72,6 +72,8 @@ final class DashboardController extends AbstractController
             ];
         }
 
+        $airQuality = $airQualityRepository->findLast();
+
         return $this->render('front/dashboard/index.html.twig', [
             'buffer'      => [
                 'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
@@ -91,7 +93,10 @@ final class DashboardController extends AbstractController
                 'returnTop'     => $hookRepository->findActualTempForLocation('rozdzielnica-gora-powrot'),
                 'returnBottom'  => $hookRepository->findActualTempForLocation('rozdzielnica-dol-powrot'),
             ],
-            'airQuality'  => $airQualityRepository->findLast(),
+            'airQuality'  => $airQuality,
+            'insolation'  => $airQuality->getInsolation() === null
+                ? $airQualityRepository->findLastInsolationReading()
+                : $airQuality->getInsolation(),
             'devices'     => $devices ?? [],
             'rooms'       => $rooms ?? [],
             'weather'     => $weatherRepository->findForecastForDate(),
