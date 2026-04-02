@@ -1,7 +1,11 @@
 {% extends 'front/weather/index.html.twig' %}
 
 {% block dateInput %}
-    <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16">
+    <div class="input-group">
+        <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni miesiąc">&#8592;</button>
+        <input type="date" class="form-control" id="wheater_date" value="{{ date|default("now")|date("Y-m-d") }}" min="2025-10-16">
+        <button class="btn" type="button" id="next-day-btn" aria-label="Następny miesiąc">&#8594;</button>
+    </div>
 {% endblock %}
 
 {% block pageBody %}

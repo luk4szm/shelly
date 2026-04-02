@@ -13,10 +13,6 @@
             <input type="radio" class="btn-check" name="btn-radio-basic" id="btn-radio-basic-3" autocomplete="off" {% if app.current_route == 'app_weather_yearly' %}checked="checked"{% endif %}">
             <label for="btn-radio-basic-3" type="button" class="btn" onclick="location.href='{{ path('app_weather_yearly') }}'">rok</label>
         </div>
-        <div class="input-group">
-            <button class="btn" type="button" id="prev-day-btn" aria-label="Poprzedni dzień">&#8592;</button>
-            {% block dateInput %}{% endblock %}
-            <button class="btn" type="button" id="next-day-btn" aria-label="Następny dzień">&#8594;</button>
-        </div>
+        {% block dateInput %}{% endblock %}
     </div>
 {% endblock %}

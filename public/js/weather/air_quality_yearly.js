@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.ApexCharts) return;
 
     const dateInput = document.getElementById('wheater_date'); // oczekuje roku YYYY
-    const prevBtn = document.getElementById('prev-day-btn');
-    const nextBtn = document.getElementById('next-day-btn');
+    const prevBtn = document.getElementById('prev-year-btn');
+    const nextBtn = document.getElementById('next-year-btn');
     const elAir = document.getElementById('chart-air-quality');
 
     if (!dateInput || !prevBtn || !nextBtn || !elAir) return;
@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', function () {
         let y = parseInt(dateInput.value, 10);
         if (isNaN(y)) y = new Date().getFullYear();
         const newVal = (y + delta).toString();
+
+        const min = parseInt(dateInput.min, 10) || 2025;
+        const max = parseInt(dateInput.max, 10) || new Date().getFullYear();
+
+        if (parseInt(newVal, 10) < min || parseInt(newVal, 10) > max) return;
 
         dateInput.value = newVal;
         setUrlDateParam(newVal);
@@ -184,6 +189,12 @@ document.addEventListener('DOMContentLoaded', function () {
             loadAir(val);
             reloadCards();
             dispatchYearChanged(val);
+        } else if (val === '') {
+            setUrlDateParam('');
+            updateNextButtonState();
+            loadAir('');
+            reloadCards();
+            dispatchYearChanged('');
         }
     });
 });

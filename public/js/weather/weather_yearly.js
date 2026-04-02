@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const loadWeather = async (dateParam) => {
         try {
             elTemp.innerHTML = '<div class="text-center p-4">Ładowanie danych…</div>';
-            // ... (analogicznie dla elPress i elHum)
+            elPress.innerHTML = '<div class="text-center p-4">Ładowanie danych…</div>';
+            elHum.innerHTML = '<div class="text-center p-4">Ładowanie danych…</div>';
 
             const raw = await fetchAtmosphereCandles(dateParam || '', currentType);
 
@@ -120,8 +121,16 @@ document.addEventListener('DOMContentLoaded', function () {
         loadWeather(isValidYearStr(val) ? val : '');
     });
 
+    // Nasłuchiwanie na zmiany roku z air_quality_yearly.js
+    window.addEventListener('weather:yearChanged', (e) => {
+        const year = e.detail;
+        loadWeather(year);
+    });
+
     dateInput.addEventListener('change', (e) => {
         const val = e.target.value;
-        loadWeather(isValidYearStr(val) ? val : '');
+        if (isValidYearStr(val) || val === '') {
+            loadWeather(val);
+        }
     });
 });

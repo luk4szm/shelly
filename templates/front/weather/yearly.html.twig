@@ -7,7 +7,11 @@
         <input type="radio" class="btn-check" name="chart-type" id="type-months" value="months">
         <label class="btn" for="type-months">mc</label>
     </div>
-    <input type="number" class="form-control" id="wheater_date" value="" min="2025" max="{{ "now"|date("Y") }}">
+    <div class="input-group">
+        <button class="btn" type="button" id="prev-year-btn" aria-label="Poprzedni rok">&#8592;</button>
+        <input type="number" class="form-control" id="wheater_date" value="" min="2025" max="{{ "now"|date("Y") }}" />
+        <button class="btn" type="button" id="next-year-btn" aria-label="Następny rok">&#8594;</button>
+    </div>
 {% endblock %}
 
 {% block pageBody %}
@@ -218,7 +222,6 @@
 {% endblock %}
 
 {% block pagejs %}
-    <script src="{{ asset('js/weather/date_input_handler.js') }}"></script>
     <script src="{{ asset('js/weather/air_quality_yearly.js') }}"></script>
     <script src="{{ asset('js/weather/weather_yearly.js') }}"></script>
 {% endblock %}
