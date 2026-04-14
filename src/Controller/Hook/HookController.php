@@ -11,6 +11,7 @@ use App\Event\SuplaGateOpenEvent;
 use App\Repository\HookRepository;
 use App\Service\AirQuality\AirQualityService;
 use App\Service\Gate\SuplaGateOpener;
+use App\Service\Hydration\HydrationLogger;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,6 +45,17 @@ final class HookController extends AbstractController
         }
 
         $airQualityService->saveData($data->sensordatavalues);
+
+        return $this->json([]);
+    }
+
+    #[Route('/hook/hydration/{valve}/{action}', name: 'app_hoke_hydration_save')]
+    public function hydration(string $valve, string $action, HydrationLogger $hydrationLogger): Response
+    {
+        match ($action) {
+            'start' => $hydrationLogger->start($valve),
+            'stop'  => $hydrationLogger->stop($valve),
+        };
 
         return $this->json([]);
     }

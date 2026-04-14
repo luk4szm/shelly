@@ -22,4 +22,9 @@ class TimeUtils
     {
         return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
     }
+
+    public static function diffInSeconds(\DateTimeImmutable $start, \DateTimeImmutable $end): int
+    {
+        return $end->getTimestamp() - $start->getTimestamp();
+    }
 }
