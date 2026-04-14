@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Process\RecurringProcess;
 use App\Entity\Process\ScheduledProcess;
+use App\Repository\Process\HydrationProcessRepository;
 use App\Repository\Process\RecurringProcessRepository;
 use App\Repository\Process\ScheduledProcessRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -20,13 +21,13 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 class ShellyProcessConsumeCommand extends Command
 {
     public function __construct(
-        #[AutowireIterator('app.shelly.processable.recurring')]
-        private readonly iterable                   $recurringProcessable,
-        #[AutowireIterator('app.shelly.processable.scheduled')]
-        private readonly iterable                   $scheduledProcessable,
-        private readonly RecurringProcessRepository $recurringRepository,
-        private readonly ScheduledProcessRepository $scheduledRepository,
-        private int                                 $executedProcesses = 0,
+        #[AutowireIterator('app.shelly.processable.recurring')] private readonly iterable $recurringProcessable,
+        #[AutowireIterator('app.shelly.processable.scheduled')] private readonly iterable $scheduledProcessable,
+        #[AutowireIterator('app.shelly.processable.hydration')] private readonly iterable $hydrationProcessable,
+        private readonly RecurringProcessRepository                                       $recurringRepository,
+        private readonly ScheduledProcessRepository                                       $scheduledRepository,
+        private readonly HydrationProcessRepository                                       $hydrationRepository,
+        private int                                                                       $executedProcesses = 0,
     ) {
         parent::__construct();
     }
@@ -35,8 +36,9 @@ class ShellyProcessConsumeCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $this->executeScheduledProcesses();
+        $this->executeHydrationProcesses();
         $this->executeRecurringProcesses();
+        $this->executeScheduledProcesses();
 
         if ($this->executedProcesses > 0) {
             $io->success(sprintf('Executed %d process(es).', $this->executedProcesses));
@@ -47,15 +49,16 @@ class ShellyProcessConsumeCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function executeScheduledProcesses(): void
+    private function executeHydrationProcesses(): void
     {
-        $processes = $this->scheduledRepository->findProcessToExecute();
+        $processes = $this->hydrationRepository->findProcessToExecute();
+
         if (empty($processes)) {
             return;
         }
 
         /** @var ScheduledProcess $process */
-        $this->handleProcesses($processes, $this->scheduledProcessable);
+        $this->handleProcesses($processes, $this->hydrationProcessable);
     }
 
     private function executeRecurringProcesses(): void
@@ -67,6 +70,17 @@ class ShellyProcessConsumeCommand extends Command
 
         /** @var RecurringProcess $process */
         $this->handleProcesses($processes, $this->recurringProcessable);
+    }
+
+    private function executeScheduledProcesses(): void
+    {
+        $processes = $this->scheduledRepository->findProcessToExecute();
+        if (empty($processes)) {
+            return;
+        }
+
+        /** @var ScheduledProcess $process */
+        $this->handleProcesses($processes, $this->scheduledProcessable);
     }
 
     /**
@@ -90,6 +104,9 @@ class ShellyProcessConsumeCommand extends Command
                     $consumer->process($process);
 
                     $this->executedProcesses++;
+
+                    // jic to avoid shelly's 429 error
+                    sleep(1);
                 }
 
                 break;

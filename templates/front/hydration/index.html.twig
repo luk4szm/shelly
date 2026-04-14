@@ -10,10 +10,28 @@
             <div class="col-12 col-md-3">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Title</h3>
+                        <h3 class="card-title">Szybkie nawadnianie</h3>
                     </div>
                     <div class="card-body">
-                        Body
+                        <form id="valve_quick_run" method="post" action="{{ path('app_front_hydration_save_schedule') }}">
+                            {% for valve in valves %}
+                                <div class="row mb-1">
+                                    <label for="{{ valve.name }}_duration" class="col d-flex align-items-center">
+                                        {{ valve.name|trans }}
+                                    </label>
+                                    <div class="col-auto">
+                                        <input id="{{ valve.name }}_duration"
+                                               name="{{ valve.name }}"
+                                               type="time"
+                                               class="form-control"
+                                               step="60"
+                                               value="{{ valve.name == 'hydration_valve_rotating' ? '00:30:00' : '00:10:00' }}"
+                                        />
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-azure w-100 mt-2">Uruchom sekwencję</button>
+                        </form>
                     </div>
                 </div>
             </div>

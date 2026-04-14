@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\DiscriminatorMap([
     'scheduled' => ScheduledProcess::class,
     'recurring' => RecurringProcess::class,
+    'hydration' => HydrationProcess::class,
 ])]
 #[ORM\HasLifecycleCallbacks]
 abstract class Process
