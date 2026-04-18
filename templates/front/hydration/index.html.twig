@@ -22,12 +22,18 @@
                                     <div class="col-auto">
                                         <div class="input-group">
                                             <button class="btn" type="button" id="{{ valve.name }}_less" aria-label="Skróć czas podlewania">&#8592;</button>
-                                            <input type="text" class="form-control text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" value="15" min="2" max="60" style="width: 45px"/>
+                                            <input type="text" class="form-control text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" value="15" min="0" max="60" style="width: 45px"/>
                                             <button class="btn" type="button" id="{{ valve.name }}_more" aria-label="Wydłuż czas podlewania">&#8594;</button>
                                         </div>
                                     </div>
                                 </div>
                             {% endfor %}
+                            <div class="mb-3 mt-3 row">
+                                <label class="col-3 col-form-label" for="hydration_start_time">Start</label>
+                                <div class="col">
+                                    <input type="datetime-local" class="form-control text-center" id="hydration_start_time" name="hydration_start_time" min="{{ "now"|date('Y-m-d H:i') }}"/>
+                                </div>
+                            </div>
                             <button type="submit" class="btn btn-azure w-100 mt-2">Uruchom sekwencję</button>
                         </form>
                     </div>

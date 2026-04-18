@@ -22,8 +22,11 @@ readonly class HydrationScheduleCreator
     public function create(array $durations): void
     {
         $i                = 0;
-        $currentTimePoint = new \DateTimeImmutable();
+        $startAt          = !empty($durations['hydration_start_time']) ? new \DateTimeImmutable($durations['hydration_start_time']) : null;
+        $currentTimePoint = $startAt ?? new \DateTimeImmutable();
         $processes        = new ArrayCollection();
+
+        unset($durations['hydration_start_time']);
 
         foreach ($durations as $valveName => $duration) {
             if ($duration === '0' || $duration === 0) {
@@ -34,13 +37,14 @@ readonly class HydrationScheduleCreator
             $seconds = $this->calculateDurationInSeconds($currentTimePoint, $duration);
             $valve   = $this->hydrationDeviceFinder->getByName($valveName);
 
-            if ($i === 0) {
-                // First valve starts immediately
+            if ($i === 0 && $startAt === null) {
+                // First valve starts immediately only if start time was not provided
                 $this->hydrationValveService->start($valve, $seconds);
             }
 
             // Future valves should be scheduled at $currentTimePoint for $seconds duration
-            $process = $this->scheduleProcess($valve, $currentTimePoint, $seconds, $i === 0);
+            // If $startAt is provided, the first valve (i === 0) is also just scheduled, not marked as executed
+            $process = $this->scheduleProcess($valve, $currentTimePoint, $seconds, ($i === 0 && $startAt === null));
 
             $processes->add($process);
 
