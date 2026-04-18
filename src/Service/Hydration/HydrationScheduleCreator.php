@@ -26,7 +26,7 @@ readonly class HydrationScheduleCreator
         $processes        = new ArrayCollection();
 
         foreach ($durations as $valveName => $duration) {
-            if ($duration === '00:00' || $duration === '00:00:00') {
+            if ($duration === '0' || $duration === 0) {
                 continue;
             }
 
@@ -58,14 +58,9 @@ readonly class HydrationScheduleCreator
 
     private function calculateDurationInSeconds(\DateTimeImmutable $startTime, string $durationString): int
     {
-        // Split the duration string (format 00:15:00) into parts
-        $parts   = explode(':', $durationString);
-        $hours   = (int)($parts[0] ?? 0);
-        $minutes = (int)($parts[1] ?? 0);
-        $seconds = (int)($parts[2] ?? 0);
-
-        // Calculate base duration in seconds from form input
-        $baseDurationSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+        // Duration is provided as a string representing minutes (e.g., "15")
+        // Calculate base duration in seconds
+        $baseDurationSeconds = (int)$durationString * 60;
 
         // Determine theoretical end time based on provided start time
         $theoreticalEndTime = $startTime->add(new \DateInterval("PT{$baseDurationSeconds}S"));

@@ -20,13 +20,11 @@
                                         {{ valve.name|trans }}
                                     </label>
                                     <div class="col-auto">
-                                        <input id="{{ valve.name }}_duration"
-                                               name="{{ valve.name }}"
-                                               type="time"
-                                               class="form-control"
-                                               step="60"
-                                               value="{{ valve.name == 'hydration_valve_rotating' ? '00:30:00' : '00:10:00' }}"
-                                        />
+                                        <div class="input-group">
+                                            <button class="btn" type="button" id="{{ valve.name }}_less" aria-label="Skróć czas podlewania">&#8592;</button>
+                                            <input type="text" class="form-control text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" value="15" min="2" max="60" style="width: 45px"/>
+                                            <button class="btn" type="button" id="{{ valve.name }}_more" aria-label="Wydłuż czas podlewania">&#8594;</button>
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -47,4 +45,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{{ asset('js/hydration/hydration-quick-run.js') }}"></script>
 {% endblock %}
