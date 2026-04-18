@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (input) {
                     let val = parseInt(input.value) || 0;
-                    const min = parseInt(input.min) || 0;
-                    const max = parseInt(input.max) || 100;
+                    const min = 0;
+                    const max = 60;
 
                     // Increment or decrement
                     val = isLess ? val - 1 : val + 1;
