@@ -33,8 +33,8 @@ readonly class HydrationScheduleCreator
                 continue;
             }
 
-            // Calculate duration for current valve based on starting point
-            $seconds = $this->calculateDurationInSeconds($currentTimePoint, $duration);
+            // Calculate duration to always end at the 55th second of a minute
+            $seconds = $this->calculateDurationInSeconds($currentTimePoint, (string)$duration);
             $valve   = $this->hydrationDeviceFinder->getByName($valveName);
 
             if ($i === 0 && $startAt === null) {
@@ -49,7 +49,7 @@ readonly class HydrationScheduleCreator
             $processes->add($process);
 
             // Move the starting point for the next valve
-            // Current duration + 5 seconds gap to start exactly at the beginning of the next minute (XX:XX:00)
+            // End at 55s + 5s gap = start exactly at XX:XX:00
             $currentTimePoint = $currentTimePoint
                 ->add(new \DateInterval("PT{$seconds}S"))
                 ->add(new \DateInterval("PT5S"));
@@ -62,22 +62,34 @@ readonly class HydrationScheduleCreator
 
     private function calculateDurationInSeconds(\DateTimeImmutable $startTime, string $durationString): int
     {
-        // Duration is provided as a string representing minutes (e.g., "15")
-        // Calculate base duration in seconds
-        $baseDurationSeconds = (int)$durationString * 60;
+        // Planned duration in seconds (e.g., 15 min = 900s)
+        $plannedDurationSeconds = (int)$durationString * 60;
 
-        // Determine theoretical end time based on provided start time
-        $theoreticalEndTime = $startTime->add(new \DateInterval("PT{$baseDurationSeconds}S"));
+        // Theoretical end time (e.g., 14:30:35 + 15min = 14:45:35)
+        $theoreticalEndTime = $startTime->add(new \DateInterval("PT{$plannedDurationSeconds}S"));
 
-        // Get the second of the minute when it would theoretically end (0-59)
+        // Check at which second it ends (0-59)
         $theoreticalEndSecond = (int)$theoreticalEndTime->format('s');
 
-        // Calculate adjustment to ensure it always ends at the 55th second of the minute
-        // If it ends at 56s, adjustment is -1. If it ends at 10s, adjustment is +45.
+        // We want to end at the 55th second of the minute.
+        // Calculate the adjustment needed to reach the 55th second.
         $adjustment = 55 - $theoreticalEndSecond;
 
-        // Return final duration, ensuring it's not negative
-        return max(0, $baseDurationSeconds + $adjustment);
+        // If the adjustment is positive (e.g., ends at :35, needs +20s to reach :55),
+        // it would exceed the requested duration.
+        // We subtract 60 seconds to ensure the final duration is slightly less than requested,
+        // providing a buffer before the next full minute.
+        if ($adjustment > 0) {
+            $adjustment -= 60;
+        }
+
+        // Example: Start at 14:30:35, Plan 15 min (900s).
+        // Theoretical end: 14:45:35. Adjustment: 55 - 35 = 20.
+        // Since 20 > 0, adjustment becomes 20 - 60 = -40.
+        // Final duration: 900 - 40 = 860s (14min 20s).
+        // 14:30:35 + 14:20 = 14:44:55. PERFECT.
+
+        return max(0, $plannedDurationSeconds + $adjustment);
     }
 
     private function scheduleProcess(
