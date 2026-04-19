@@ -3,12 +3,12 @@
 namespace App\Service\Hydration;
 
 use App\Model\Device\Hydration\ValveDevice;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class HydrationDeviceFinder
 {
     public function __construct(
-        #[TaggedIterator('app.shelly.devices.valve')] private iterable $valveDevices,
+        #[AutowireIterator('app.shelly.devices.valve')] private iterable $valveDevices,
     ) {}
 
     public function getValves(): iterable
