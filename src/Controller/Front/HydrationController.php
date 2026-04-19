@@ -6,6 +6,7 @@ namespace App\Controller\Front;
 
 use App\Service\Hydration\HydrationDeviceFinder;
 use App\Service\Hydration\HydrationScheduleCreator;
+use App\Service\Hydration\HydrationScheduleProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,10 +16,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HydrationController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(HydrationDeviceFinder $deviceFinder): Response
+    public function index(HydrationDeviceFinder $deviceFinder, HydrationScheduleProvider $hydrationScheduleProvider): Response
     {
         return $this->render('front/hydration/index.html.twig', [
-            'valves' => $deviceFinder->getValves(),
+            'valves'        => $deviceFinder->getValves(),
+            'hydrationPlan' => $hydrationScheduleProvider->getPlan(),
         ]);
     }
 

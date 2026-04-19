@@ -25,4 +25,12 @@ class HydrationLogRepository extends CrudRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findActiveLogs(): array
+    {
+        return $this->createQueryBuilder('hl')
+            ->andWhere('hl.endsAt IS NULL')
+            ->getQuery()
+            ->getResult();
+    }
 }

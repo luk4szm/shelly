@@ -23,7 +23,7 @@
                                         <div class="input-group">
                                             <button class="btn" type="button" id="{{ valve.name }}_less" title="Skróć czas podlewania" style="width: 20px">&#8592;</button>
                                             <select class="form-select text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" style="width: 45px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 0.5rem; padding-left: 0.5rem;">
-                                               {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 40 : 15) %}
+                                                {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 40 : 15) %}
                                                 {% for i in 0..60 %}
                                                     <option value="{{ i }}" {{ i == defaultValue ? 'selected' : '' }}>{{ i }}</option>
                                                 {% endfor %}
@@ -47,11 +47,65 @@
             <div class="col-md-9 col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Title</h3>
+                        <h3 class="card-title">Aktualny plan nawadniania</h3>
                     </div>
-                    <div class="card-body">
-                        Body
-                    </div>
+                    {% if hydrationPlan is not empty %}
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                <tr>
+                                    <th class="w-1">Strefa</th>
+                                    <th class="w-100">Progress</th>
+                                    <th class="text-center">Start</th>
+                                    <th class="text-center">Czas</th>
+                                    <th class="text-center">Koniec</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for state in hydrationPlan %}
+                                    <tr>
+                                        <td class="text-nowrap">
+                                            {{ state.valve|trans }}
+                                        </td>
+                                        <td class="text-secondary">
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                     style="width: {{ state.calculateActualProgress > 0
+                                                         ? (state.calculateActualProgress / state.duration) * 100
+                                                         : 0
+                                                     }}%"
+                                                     data-start-time="{{ (state.startsAt ?? state.scheduledStartAt)|date('c') }}"
+                                                     data-end-time="{{ state.scheduledEndAt ? state.scheduledEndAt|date('c') }}"
+                                                     data-duration="{{ state.duration }}"
+                                                     data-actual-progress="{{ state.calculateActualProgress }}"
+                                                ></div>
+                                            </div>
+                                        </td>
+                                        <td class="text-secondary text-center">
+                                            {{ (state.startsAt ?? state.scheduledStartAt)|date('d.m.Y') }}
+                                            {{ (state.startsAt ?? state.scheduledStartAt)|date('H:i:s') }}
+                                        </td>
+                                        <td class="text-secondary text-center text-nowrap">
+                                                <span class="progress-text">
+                                                    0%<br>
+                                                    {{ (state.duration // 60) }}:{{ (state.duration % 60)|format('%02d') }}
+                                                </span>
+                                        </td>
+                                        <td class="text-secondary text-center">
+                                            {{ state.scheduledEndAt ? state.scheduledEndAt|date('H:i:s') }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="card-body">
+                            <p class="text-secondary">
+                                Nie ma żadnych bieżących ani planowanych nawodnień.
+                            </p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -60,4 +114,5 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/hydration/hydration-quick-run.js') }}"></script>
+    <script src="{{ asset('js/hydration/hydration-schedule.js') }}"></script>
 {% endblock %}

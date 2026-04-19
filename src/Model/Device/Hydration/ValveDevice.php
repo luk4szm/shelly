@@ -8,6 +8,11 @@ use App\Model\Device\ValveDeviceInterface;
 
 abstract class ValveDevice extends Device implements DeviceInterface, ValveDeviceInterface
 {
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
+
     public function getDeviceId(): string
     {
         return $this::DEVICE_ID;

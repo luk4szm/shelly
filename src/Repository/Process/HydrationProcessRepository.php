@@ -4,6 +4,7 @@ namespace App\Repository\Process;
 
 use App\Entity\Process\HydrationProcess;
 use App\Repository\Abstraction\CrudRepository;
+use App\Service\Processable\StartHydrationProcess;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,6 +23,21 @@ class HydrationProcessRepository extends CrudRepository
             ->where('p.scheduledAt <= :now')
             ->andWhere('p.executedAt IS NULL')
             ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findScheduledProcess(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.name = :name')
+            ->andWhere('
+                (p.executedAt IS NULL AND p.scheduledAt > :now)
+                OR
+                (p.executedAt IS NOT NULL AND DATE_ADD(p.executedAt, p.duration, \'SECOND\') > :now)
+            ')
+            ->setParameter('now', new \DateTime())
+            ->setParameter('name', StartHydrationProcess::NAME)
             ->getQuery()
             ->getResult();
     }
