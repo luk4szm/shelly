@@ -41,4 +41,20 @@ class HydrationProcessRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByValveAndStartMinute(string $valve, \DateTimeInterface $startsAt): ?HydrationProcess
+    {
+        $start = (clone $startsAt)->format('Y-m-d H:i:00');
+        $end   = (clone $startsAt)->format('Y-m-d H:i:59');
+
+        return $this->createQueryBuilder('p')
+            ->where('p.valve = :valve')
+            ->andWhere('p.scheduledAt BETWEEN :start AND :end')
+            ->setParameter('valve', $valve)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

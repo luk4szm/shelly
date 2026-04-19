@@ -23,21 +23,46 @@ class HydrationScheduleProvider
 
     public function getPlan(): ArrayCollection
     {
-//        $this->getCurrentStatuses();
+        $this->getPreviousRuns();
+        $this->getActiveRuns();
         $this->getScheduledProcesses();
 
         return $this->plan;
     }
 
-    public function getCurrentStatuses(): void
+    public function getPreviousRuns(): void
     {
-        $currentStatuses = $this->logRepository->findActiveLogs();
+        $previousRuns = $this->logRepository->findPreviousRuns(new \DateTime());
 
         /** @var HydrationLog $currentStatus */
-        foreach ($currentStatuses as $currentStatus) {
-            $valve = $this->deviceFinder->getByName($currentStatus->getValve());
+        foreach ($previousRuns as $log) {
+            $valve = $this->deviceFinder->getByName($log->getValve());
             $plan  = (new HydrationPlanDto($valve))
-                ->setStartsAt($currentStatus->getStartsAt());
+                ->setStartsAt($log->getStartsAt())
+                ->setDuration($log->getDuration())
+                ->setEndsAt($log->getEndsAt());
+
+            $this->plan->add($plan);
+        }
+    }
+
+    public function getActiveRuns(): void
+    {
+        $activeRuns = $this->logRepository->findActiveLogs();
+
+        /** @var HydrationLog $log */
+        foreach ($activeRuns as $log) {
+            $valve = $this->deviceFinder->getByName($log->getValve());
+            $plan  = (new HydrationPlanDto($valve))->setStartsAt($log->getStartsAt());
+
+            $scheduledProcess = $this->processRepository->findByValveAndStartMinute($log->getValve(), $log->getStartsAt());
+
+            if ($scheduledProcess) {
+                $duration = $scheduledProcess->getDuration();
+                $endsAt   = (clone $log->getStartsAt())->modify("+{$duration} seconds");
+
+                $plan->setDuration($duration)->setScheduledEndAt($endsAt);
+            }
 
             $this->plan->add($plan);
         }

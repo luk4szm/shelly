@@ -33,4 +33,23 @@ class HydrationLogRepository extends CrudRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPreviousRuns(\DateTimeInterface $dateTime = null): array
+    {
+        if ($dateTime) {
+            $start = (clone $dateTime)->setTime(0, 0);
+            $end   = (clone $dateTime)->setTime(23, 59, 59);
+        } else {
+            $end   = new \DateTime();
+            $start = (clone $end)->modify('-24 hours');
+        }
+
+        return $this->createQueryBuilder('hl')
+            ->where('hl.endsAt IS NOT NULL')
+            ->andWhere('hl.createdAt BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+    }
 }
