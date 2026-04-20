@@ -16,6 +16,19 @@
         .cursor-grab:active {
             cursor: grabbing;
         }
+
+        .remove-valve {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .remove-valve svg {
+            margin: 0 !important;
+        }
     </style>
 {% endblock %}
 
@@ -83,6 +96,11 @@
                                                 </select>
                                                 <button class="btn" type="button" id="{{ valve.name }}_more" title="Wydłuż czas podlewania" style="width: 20px">&#8594;</button>
                                             </div>
+                                        </div>
+                                        <div class="col-auto px-0">
+                                            <button type="button" class="btn btn-action remove-valve" title="Usuń sekcję">
+                                                {{ include('_icons/x-icon.svg.twig') }}
+                                            </button>
                                         </div>
                                     </div>
                                 {% endfor %}

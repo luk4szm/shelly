@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (form) {
         form.addEventListener('click', function (e) {
+            // Check if clicked element is (or is inside) the remove button
+            const removeBtn = e.target.closest('.remove-valve');
+
+            if (removeBtn) {
+                e.preventDefault();
+                const row = removeBtn.closest('.valve-row');
+                if (row) {
+                    row.remove();
+                }
+                return;
+            }
+
             // Check if clicked element is a "less" or "more" button
             const btn = e.target.closest('button');
             if (!btn || !btn.id) return;
