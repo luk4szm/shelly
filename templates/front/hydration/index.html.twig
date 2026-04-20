@@ -4,6 +4,21 @@
 {% block pagePreTitle %}{% endblock %}
 {% block pageTitleActions %}{% endblock %}
 
+{% block customCss %}
+    <style>
+        .sortable-ghost {
+            background-color: var(--tblr-bg-surface-light) !important;
+            opacity: 0.6;
+        }
+        .cursor-grab {
+            cursor: grab;
+        }
+        .cursor-grab:active {
+            cursor: grabbing;
+        }
+    </style>
+{% endblock %}
+
 {% block pageBody %}
     <div class="container-xl">
         <div class="row row-cards">
@@ -50,29 +65,33 @@
                     </div>
                     <div class="card-body">
                         <form id="valve_quick_run" method="post" action="{{ path('app_front_hydration_save_schedule') }}">
-                            {% for valve in valves %}
-                                <div class="row mb-1">
-                                    <label for="{{ valve.name }}_duration" class="col d-flex align-items-center">
-                                        {{ valve.name|trans }}
-                                    </label>
-                                    <div class="col-auto">
-                                        <div class="input-group">
-                                            <button class="btn" type="button" id="{{ valve.name }}_less" title="Skróć czas podlewania" style="width: 20px">&#8592;</button>
-                                            <select class="form-select text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" style="width: 45px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 0.5rem; padding-left: 0.5rem;">
-                                                {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 40 : 15) %}
-                                                {% for i in 0..60 %}
-                                                    <option value="{{ i }}" {{ i == defaultValue ? 'selected' : '' }}>{{ i }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button class="btn" type="button" id="{{ valve.name }}_more" title="Wydłuż czas podlewania" style="width: 20px">&#8594;</button>
+                            <div id="valves-sortable">
+                                {% for valve in valves %}
+                                    <div class="row mb-1 valve-row cursor-grab">
+                                        <label for="{{ valve.name }}_duration" class="col d-flex align-items-center">
+                                            <span class="me-2 text-muted">☰</span>
+                                            {{ valve.name|trans }}
+                                        </label>
+                                        <div class="col-auto">
+                                            <div class="input-group">
+                                                <button class="btn" type="button" id="{{ valve.name }}_less" title="Skróć czas podlewania" style="width: 20px">&#8592;</button>
+                                                <select class="form-select text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" style="width: 45px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 0.5rem; padding-left: 0.5rem;">
+                                                    {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 40 : 15) %}
+                                                    {% for i in 0..60 %}
+                                                        <option value="{{ i }}" {{ i == defaultValue ? 'selected' : '' }}>{{ i }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button class="btn" type="button" id="{{ valve.name }}_more" title="Wydłuż czas podlewania" style="width: 20px">&#8594;</button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                             <div class="mb-3 mt-3 row">
                                 <label class="col-3 col-form-label" for="hydration_start_time">Start</label>
                                 <div class="col">
-                                    <input type="datetime-local" class="form-control text-center" id="hydration_start_time" name="hydration_start_time" min="{{ "now"|date('Y-m-d H:i') }}"/>
+                                    <input type="datetime-local" class="form-control text-center" id="hydration_start_time"
+                                           name="hydration_start_time" min="{{ "now"|date('Y-m-d H:i') }}"/>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-azure w-100 mt-2">Uruchom sekwencję</button>
@@ -171,6 +190,7 @@
 {% endmacro %}
 
 {% block pagejs %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="{{ asset('js/hydration/hydration-quick-run.js') }}"></script>
     <script src="{{ asset('js/hydration/hydration-schedule.js') }}"></script>
 {% endblock %}

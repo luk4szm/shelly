@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('valve_quick_run');
+    const sortableEl = document.getElementById('valves-sortable');
+
+    if (sortableEl) {
+        new Sortable(sortableEl, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            handle: '.valve-row'
+        });
+    }
 
     if (form) {
         form.addEventListener('click', function (e) {
