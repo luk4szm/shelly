@@ -29,6 +29,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const endTimeStr = progressBar.getAttribute('data-end-time');
 
             const startTime = new Date(startTimeStr).getTime();
+
+            // Obsługa trybu ręcznego (brak duration)
+            if (!durationSeconds || durationSeconds === 0) {
+                if (now >= startTime) {
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    if (progressText) {
+                        progressText.innerHTML = `${formatTime(elapsedSeconds)}`;
+                    }
+                }
+                return;
+            }
+
             const totalMs = durationSeconds * 1000;
             const endTime = endTimeStr ? new Date(endTimeStr).getTime() : startTime + totalMs;
 

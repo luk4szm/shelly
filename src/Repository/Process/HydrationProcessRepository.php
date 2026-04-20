@@ -31,11 +31,7 @@ class HydrationProcessRepository extends CrudRepository
     {
         return $this->createQueryBuilder('p')
             ->where('p.name = :name')
-            ->andWhere('
-                (p.executedAt IS NULL AND p.scheduledAt > :now)
-                OR
-                (p.executedAt IS NOT NULL AND DATE_ADD(p.executedAt, p.duration, \'SECOND\') > :now)
-            ')
+            ->andWhere('p.executedAt IS NULL AND p.scheduledAt > :now')
             ->setParameter('now', new \DateTime())
             ->setParameter('name', StartHydrationProcess::NAME)
             ->getQuery()

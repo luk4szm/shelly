@@ -103,10 +103,14 @@
                                             {{ startDateTime|date('H:i:s') }}
                                         </td>
                                         <td class="text-secondary text-center text-nowrap">
-                                                <span class="progress-text">
-                                                    0%<br>
+                                            <span class="progress-text">
+                                                0%<br>
+                                                {% if state.duration %}
                                                     {{ (state.duration // 60) }}:{{ (state.duration % 60)|format('%02d') }}
-                                                </span>
+                                                {% else %}
+                                                    --:--
+                                                {% endif %}
+                                            </span>
                                         </td>
                                         <td class="text-secondary text-center">
                                             {% set endDateTime = (state.endsAt ?? state.scheduledEndAt) %}
@@ -134,16 +138,16 @@
 {% endblock %}
 
 {% macro progress_bar(state) %}
-    <div class="progress-bar progress-bar-striped progress-bar-animated"
-         {% if state.duration %}
-             style="width: {{ state.calculateActualProgress > 0
-                 ? (state.calculateActualProgress / state.duration) * 100
-                 : 0
-             }}%"
+    <div class="progress-bar {% if state.duration %}progress-bar-striped progress-bar-animated{% else %}progress-bar-indeterminate{% endif %}"
+        {% if state.duration %}
+            style="width: {{ state.calculateActualProgress > 0
+                ? (state.calculateActualProgress / state.duration) * 100
+                : 0
+            }}%"
          {% endif %}
          data-start-time="{{ (state.startsAt ?? state.scheduledStartAt)|date('c') }}"
          data-end-time="{{ state.scheduledEndAt ? state.scheduledEndAt|date('c') }}"
-         data-duration="{{ state.duration }}"
+         data-duration="{{ state.duration ?? 0 }}"
          data-actual-progress="{{ state.calculateActualProgress }}"
     ></div>
 {% endmacro %}
