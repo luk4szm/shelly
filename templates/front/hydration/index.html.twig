@@ -82,7 +82,7 @@
                                 {% for valve in valves %}
                                     <div class="row mb-1 valve-row cursor-grab">
                                         <label for="{{ valve.name }}_duration" class="col d-flex align-items-center">
-                                            <span class="me-2 text-muted">☰</span>
+                                            <span class="me-2 text-muted drag-handle" style="cursor: move;">☰</span>
                                             {{ valve.name|trans }}
                                         </label>
                                         <div class="col-auto">

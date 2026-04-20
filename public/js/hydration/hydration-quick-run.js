@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
         new Sortable(sortableEl, {
             animation: 150,
             ghostClass: 'sortable-ghost',
-            handle: '.valve-row'
+            handle: '.drag-handle', // Zmienione z .valve-row na .drag-handle
+            filter: '.btn, .btn-action, .form-select', // Ignoruj te elementy przy próbie przeciągania
+            preventOnFilter: false // Pozwól na normalne zdarzenia (kliknięcia) na przefiltrowanych elementach
         });
     }
 
