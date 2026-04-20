@@ -30,9 +30,9 @@ class HydrationScheduleProvider
         return $this->plan;
     }
 
-    public function getPreviousRuns(): void
+    private function getPreviousRuns(): void
     {
-        $previousRuns = $this->logRepository->findPreviousRuns(new \DateTime());
+        $previousRuns = $this->logRepository->findPreviousRuns();
 
         /** @var HydrationLog $currentStatus */
         foreach ($previousRuns as $log) {
@@ -46,7 +46,7 @@ class HydrationScheduleProvider
         }
     }
 
-    public function getActiveRuns(): void
+    private function getActiveRuns(): void
     {
         $activeRuns = $this->logRepository->findActiveLogs();
 
@@ -68,7 +68,7 @@ class HydrationScheduleProvider
         }
     }
 
-    public function getScheduledProcesses(): void
+    private function getScheduledProcesses(): void
     {
         $scheduledProcesses = $this->processRepository->findScheduledProcess();
 

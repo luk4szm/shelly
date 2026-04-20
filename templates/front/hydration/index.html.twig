@@ -24,6 +24,24 @@
                                 <div class="h1 mb-0">{{ soil.humidity.value|number_format(1) }} %</div>
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <div class="subheader mb-2">
+                                    <span class="text-secondary">Opad 24h</span>
+                                </div>
+                                <div class="h1 mb-0 {{ precipitation.last24h ? 'text-azure' : 'text-muted' }}">
+                                    {{ precipitation.last24h|number_format(1) }} mm
+                                </div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="subheader mb-2">
+                                    <span class="text-secondary">Opad prognoza</span>
+                                </div>
+                                <div class="h1 mb-0 {{ precipitation.forecast ? 'text-azure' : 'text-muted' }}">
+                                    {{ precipitation.forecast|number_format(1) }} mm
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">

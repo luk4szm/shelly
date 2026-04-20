@@ -52,4 +52,31 @@ class WeatherForecastRepository extends CrudRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function getSumRainfallSince(?\DateTimeImmutable $date = null): float
+    {
+        $since = $date ?? new \DateTimeImmutable('-24 hours');
+
+        return (float) $this->createQueryBuilder('wf')
+            ->select('SUM(wf.precipitation)')
+            ->where('wf.time >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getForecastedRainfallNext24h(): float
+    {
+        $start = (new \DateTimeImmutable())->setTime((int)date('H'), 0);
+        $end   = $start->modify('+24 hours');
+
+        return (float) $this->createQueryBuilder('wf')
+            ->select('SUM(wf.precipitation)')
+            ->where('wf.time >= :start')
+            ->andWhere('wf.time < :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

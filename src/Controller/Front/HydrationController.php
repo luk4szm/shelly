@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Front;
 
 use App\Repository\HookRepository;
+use App\Repository\WeatherForecastRepository;
 use App\Service\Hydration\HydrationDeviceFinder;
 use App\Service\Hydration\HydrationScheduleCreator;
 use App\Service\Hydration\HydrationScheduleProvider;
@@ -21,14 +22,19 @@ final class HydrationController extends AbstractController
         HydrationDeviceFinder     $deviceFinder,
         HydrationScheduleProvider $hydrationScheduleProvider,
         HookRepository            $hookRepository,
+        WeatherForecastRepository $weatherForecastRepository,
     ): Response
     {
         return $this->render('front/hydration/index.html.twig', [
             'valves'        => $deviceFinder->getValves(),
             'hydrationPlan' => $hydrationScheduleProvider->getPlan(),
-            'soil'         => [
+            'soil'          => [
                 'temp'     => $hookRepository->findActualTempForLocation('ogrod'),
                 'humidity' => $hookRepository->findActualHumidityForLocation('ogrod'),
+            ],
+            'precipitation' => [
+                'last24h'  => $weatherForecastRepository->getSumRainfallSince(),
+                'forecast' => $weatherForecastRepository->getForecastedRainfallNext24h(),
             ],
         ]);
     }
