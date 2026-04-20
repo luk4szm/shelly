@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Front;
 
+use App\Repository\HookRepository;
 use App\Service\Hydration\HydrationDeviceFinder;
 use App\Service\Hydration\HydrationScheduleCreator;
 use App\Service\Hydration\HydrationScheduleProvider;
@@ -16,11 +17,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HydrationController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(HydrationDeviceFinder $deviceFinder, HydrationScheduleProvider $hydrationScheduleProvider): Response
+    public function index(
+        HydrationDeviceFinder     $deviceFinder,
+        HydrationScheduleProvider $hydrationScheduleProvider,
+        HookRepository            $hookRepository,
+    ): Response
     {
         return $this->render('front/hydration/index.html.twig', [
             'valves'        => $deviceFinder->getValves(),
             'hydrationPlan' => $hydrationScheduleProvider->getPlan(),
+            'soil'         => [
+                'temp'     => $hookRepository->findActualTempForLocation('ogrod'),
+                'humidity' => $hookRepository->findActualHumidityForLocation('ogrod'),
+            ],
         ]);
     }
 

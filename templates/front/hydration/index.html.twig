@@ -8,6 +8,24 @@
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="subheader mb-2">
+                                    <span class="text-secondary">Temperatura</span>
+                                </div>
+                                <div class="h1 mb-0">{{ soil.temp.value|number_format(1) }} °C</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="subheader mb-2">
+                                    <span class="text-secondary">Wilgotność</span>
+                                </div>
+                                <div class="h1 mb-0">{{ soil.humidity.value|number_format(1) }} %</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Szybkie nawadnianie</h3>
