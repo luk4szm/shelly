@@ -27,7 +27,11 @@ class HydrationProcessRepository extends CrudRepository
             ->getResult();
     }
 
-    public function findScheduledProcess(): array
+    /**
+     * Finds processes that are either waiting to be executed or are currently running
+     * based on their scheduled start time and duration.
+     */
+    public function findPendingAndActiveProcesses(): array
     {
         return $this->createQueryBuilder('p')
             ->where('p.name = :name')

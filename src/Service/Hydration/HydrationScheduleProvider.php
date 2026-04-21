@@ -25,7 +25,9 @@ class HydrationScheduleProvider
     {
         $this->getPreviousRuns();
         $this->getActiveRuns();
-        $this->getScheduledProcesses();
+        $this->getQueueRuns();
+
+        $this->mergePlans();
 
         return $this->plan;
     }
@@ -68,9 +70,13 @@ class HydrationScheduleProvider
         }
     }
 
-    private function getScheduledProcesses(): void
+    /**
+     * Fetches processes from the hydration_process table (the queue).
+     * These can be both future (pending) and current (active) processes.
+     */
+    private function getQueueRuns(): void
     {
-        $scheduledProcesses = $this->processRepository->findScheduledProcess();
+        $scheduledProcesses = $this->processRepository->findPendingAndActiveProcesses();
 
         /** @var HydrationProcess $scheduledProcess */
         foreach ($scheduledProcesses as $scheduledProcess) {
@@ -78,9 +84,47 @@ class HydrationScheduleProvider
             $plan  = (new HydrationPlanDto($valve))
                 ->setScheduledStartAt($scheduledProcess->getScheduledAt())
                 ->setDuration($scheduledProcess->getDuration())
-                ->setScheduledEndAt($scheduledProcess->getScheduledAt()->modify("+{$scheduledProcess->getDuration()} seconds"));
+                ->setScheduledEndAt(
+                    (clone $scheduledProcess->getScheduledAt())
+                        ->modify("+{$scheduledProcess->getDuration()} seconds")
+                );
 
             $this->plan->add($plan);
         }
+    }
+
+    private function mergePlans(): void
+    {
+        $uniquePlans = [];
+
+        foreach ($this->plan as $plan) {
+            /** @var HydrationPlanDto $plan */
+            $valveName = $plan->getValve()->getName();
+
+            // The key is the valve name and the rounded start time (actual or scheduled).
+            // Rounding to the minute avoids issues with a few seconds difference between DB and Shelly hook.
+            $startTime = $plan->getStartsAt() ?? $plan->getScheduledStartAt();
+            $key       = $valveName . '_' . $startTime->format('Y-m-d_H:i');
+
+            if (!isset($uniquePlans[$key])) {
+                $uniquePlans[$key] = $plan;
+                continue;
+            }
+
+            // If a duplicate is found, prefer the one that already has an actual start date (startsAt).
+            // This means it's an entry from logs (confirmed by the device hook).
+            if ($plan->getStartsAt() !== null) {
+                $uniquePlans[$key] = $plan;
+            }
+        }
+
+        // Sort by start time
+        usort($uniquePlans, function (HydrationPlanDto $a, HydrationPlanDto $b) {
+            $dateA = $a->getStartsAt() ?? $a->getScheduledStartAt();
+            $dateB = $b->getStartsAt() ?? $b->getScheduledStartAt();
+            return $dateA <=> $dateB;
+        });
+
+        $this->plan = new ArrayCollection($uniquePlans);
     }
 }
