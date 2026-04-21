@@ -53,30 +53,52 @@ class WeatherForecastRepository extends CrudRepository
             ->getOneOrNullResult();
     }
 
-    public function getSumRainfallSince(?\DateTimeImmutable $date = null): float
+    /**
+     * @return array{sum: float, lastAt: \DateTimeImmutable|null}
+     * @throws \Exception
+     */
+    public function getSumRainfallSince(?\DateTimeImmutable $date = null): array
     {
         $since = $date ?? new \DateTimeImmutable('-24 hours');
 
-        return (float) $this->createQueryBuilder('wf')
-            ->select('SUM(wf.precipitation)')
+        $result = $this->createQueryBuilder('wf')
+            ->select('SUM(wf.precipitation) as total_rainfall')
+            ->addSelect('MAX(CASE WHEN wf.precipitation > 0 THEN wf.time ELSE :null END) as last_rain_at')
             ->where('wf.time >= :since')
             ->setParameter('since', $since)
+            ->setParameter('null', null)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleResult();
+
+        return [
+            'sum'    => (float)($result['total_rainfall'] ?? 0),
+            'lastAt' => $result['last_rain_at'] ? new \DateTimeImmutable($result['last_rain_at']) : null,
+        ];
     }
 
-    public function getForecastedRainfallNext24h(): float
+    /**
+     * @return array{sum: float, startAt: \DateTimeImmutable|null}
+     * @throws \Exception
+     */
+    public function getForecastedRainfallNext24h(): array
     {
         $start = (new \DateTimeImmutable())->setTime((int)date('H'), 0);
         $end   = $start->modify('+24 hours');
 
-        return (float) $this->createQueryBuilder('wf')
-            ->select('SUM(wf.precipitation)')
+        $result = $this->createQueryBuilder('wf')
+            ->select('SUM(wf.precipitation) as total_rainfall')
+            ->addSelect('MIN(CASE WHEN wf.precipitation > 0 THEN wf.time ELSE :null END) as first_rain_at')
             ->where('wf.time >= :start')
             ->andWhere('wf.time < :end')
             ->setParameter('start', $start)
             ->setParameter('end', $end)
+            ->setParameter('null', null)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleResult();
+
+        return [
+            'sum'     => (float) ($result['total_rainfall'] ?? 0),
+            'startAt' => $result['first_rain_at'] ? new \DateTimeImmutable($result['first_rain_at']) : null,
+        ];
     }
 }
