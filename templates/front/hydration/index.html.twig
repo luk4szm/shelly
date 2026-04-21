@@ -43,13 +43,19 @@
                                 <div class="subheader mb-2">
                                     <span class="text-secondary">Temperatura</span>
                                 </div>
-                                <div class="h1 mb-0">{{ soil.temp.value|number_format(1) }} °C</div>
+                                <a class="h1 mb-0 text-reset text-decoration-none"
+                                   href="{{ path('app_front_default_location_daily', {'location': 'ogrod'}) }}">
+                                    {{ soil.temp.value|number_format(1) }} °C
+                                </a>
                             </div>
                             <div class="col-6 text-end">
                                 <div class="subheader mb-2">
                                     <span class="text-secondary">Wilgotność</span>
                                 </div>
-                                <div class="h1 mb-0">{{ soil.humidity.value|number_format(1) }} %</div>
+                                <a class="h1 mb-0 text-reset text-decoration-none"
+                                   href="{{ path('app_front_default_location_daily', {'location': 'ogrod'}) }}">
+                                    {{ soil.humidity.value|number_format(1) }} %
+                                </a>
                             </div>
                         </div>
                         <div class="row mt-3">
