@@ -33,11 +33,20 @@ class HydrationProcessRepository extends CrudRepository
      */
     public function findPendingAndActiveProcesses(): array
     {
+        $now    = new \DateTime();
+        $buffer = (clone $now)->modify('-5 seconds');
+
         return $this->createQueryBuilder('p')
             ->where('p.name = :name')
-            ->andWhere('p.executedAt IS NULL AND p.scheduledAt > :now')
-            ->setParameter('now', new \DateTime())
+            ->andWhere('
+                (p.executedAt IS NULL AND p.scheduledAt >= :buffer)
+                OR
+                (p.executedAt IS NOT NULL AND DATE_ADD(p.executedAt, p.duration, \'SECOND\') > :now)
+            ')
+            ->setParameter('now', $now)
+            ->setParameter('buffer', $buffer)
             ->setParameter('name', StartHydrationProcess::NAME)
+            ->orderBy('p.scheduledAt', 'ASC')
             ->getQuery()
             ->getResult();
     }
