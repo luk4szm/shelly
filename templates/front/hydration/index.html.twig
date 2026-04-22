@@ -130,79 +130,113 @@
                 </div>
             </div>
             <div class="col-md-9 col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Plan nawodnień</h3>
+                <div class="card-tabs">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a href="#tab-planned" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">
+                                Zaplanowane
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#tab-history" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                                Historia
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tab-planned" class="card tab-pane active show" role="tabpanel">
+                            <div class="card-body">
+                                {% if hydrationPlan is not empty %}
+                                    {{ _self.hydrationPlan(hydrationPlan) }}
+                                {% else %}
+                                    <div class="card-body">
+                                        <div class="empty">
+                                            <p class="empty-title">Brak planu nawodnień</p>
+                                            <p class="empty-subtitle text-secondary">Nie znaleziono żadnych bieżących ani planowanych nawodnień.</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="tab-history" class="card tab-pane" role="tabpanel">
+                            <div class="card-body">
+                                {% if hydrationHistory is not empty %}
+                                    {{ _self.hydrationPlan(hydrationHistory) }}
+                                {% else %}
+                                    <div class="card-body">
+                                        <div class="empty">
+                                            <p class="empty-title">Brak historii nawodnień</p>
+                                            <p class="empty-subtitle text-secondary">Nic nie było podlewane dziś :-(</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    {% if hydrationPlan is not empty %}
-                        <div class="table-responsive">
-                            <table class="table table-vcenter card-table">
-                                <thead>
-                                <tr>
-                                    <th class="w-1">Strefa</th>
-                                    <th class="w-100 d-none d-md-table-cell">Progress</th>
-                                    <th class="text-center">Start</th>
-                                    <th class="text-center">Czas</th>
-                                    <th class="text-center">Koniec</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for state in hydrationPlan %}
-                                    <tr style="position: relative;">
-                                        <td class="text-nowrap">
-                                            {{ state.valve|trans }}
-                                            {# Progress bar widoczny TYLKO na mobile, jako cienka linia pod wierszem #}
-                                            <div class="progress progress-sm d-md-none"
-                                                 style="position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; border-radius: 0; background: transparent;">
-                                                {{ _self.progress_bar(state) }}
-                                            </div>
-                                        </td>
-                                        <td class="text-secondary d-none d-md-table-cell">
-                                            <div class="progress">
-                                                {{ _self.progress_bar(state) }}
-                                            </div>
-                                        </td>
-                                        <td class="text-secondary text-center">
-                                            {% set startDateTime = (state.startsAt ?? state.scheduledStartAt) %}
-                                            {% if startDateTime|date('Y-m-d') != "now"|date('Y-m-d') %}
-                                                {{ startDateTime|date('d.m.Y') }}<br>
-                                            {% endif %}
-                                            {{ startDateTime|date('H:i:s') }}
-                                        </td>
-                                        <td class="text-secondary text-center text-nowrap">
-                                            <span class="progress-text">
-                                                0%<br>
-                                                {% if state.duration %}
-                                                    {{ (state.duration // 60) }}:{{ (state.duration % 60)|format('%02d') }}
-                                                {% else %}
-                                                    --:--
-                                                {% endif %}
-                                            </span>
-                                        </td>
-                                        <td class="text-secondary text-center">
-                                            {% set endDateTime = (state.endsAt ?? state.scheduledEndAt) %}
-                                            {% if endDateTime and endDateTime|date('Y-m-d') != "now"|date('Y-m-d') %}
-                                                {{ endDateTime|date('d.m.Y') }}<br>
-                                            {% endif %}
-                                            {{ endDateTime ? endDateTime|date('H:i:s') : '' }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="card-body">
-                            <p class="text-secondary text-center">
-                                Nie znaleziono żadnych bieżących, planowanych, ani zakończonych w ostatnich 24 godzinach nawodnień.
-                            </p>
-                        </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 {% endblock %}
+
+{% macro hydrationPlan(plan) %}
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+            <tr>
+                <th class="w-1">Strefa</th>
+                <th class="w-100 d-none d-md-table-cell">Progress</th>
+                <th class="text-center">Start</th>
+                <th class="text-center">Czas</th>
+                <th class="text-center">Koniec</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for state in plan %}
+                <tr style="position: relative;">
+                    <td class="text-nowrap">
+                        {{ state.valve|trans }}
+                        {# Progress bar widoczny TYLKO na mobile, jako cienka linia pod wierszem #}
+                        <div class="progress progress-sm d-md-none"
+                             style="position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; border-radius: 0; background: transparent;">
+                            {{ _self.progress_bar(state) }}
+                        </div>
+                    </td>
+                    <td class="text-secondary d-none d-md-table-cell">
+                        <div class="progress">
+                            {{ _self.progress_bar(state) }}
+                        </div>
+                    </td>
+                    <td class="text-secondary text-center">
+                        {% set startDateTime = (state.startsAt ?? state.scheduledStartAt) %}
+                        {% if startDateTime|date('Y-m-d') != "now"|date('Y-m-d') %}
+                            {{ startDateTime|date('d.m.Y') }}<br>
+                        {% endif %}
+                        {{ startDateTime|date('H:i:s') }}
+                    </td>
+                    <td class="text-secondary text-center text-nowrap">
+                        <span class="progress-text">
+                            0%<br>
+                            {% if state.duration %}
+                                {{ (state.duration // 60) }}:{{ (state.duration % 60)|format('%02d') }}
+                            {% else %}
+                                --:--
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="text-secondary text-center">
+                        {% set endDateTime = (state.endsAt ?? state.scheduledEndAt) %}
+                        {% if endDateTime and endDateTime|date('Y-m-d') != "now"|date('Y-m-d') %}
+                            {{ endDateTime|date('d.m.Y') }}<br>
+                        {% endif %}
+                        {{ endDateTime ? endDateTime|date('H:i:s') : '' }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
 
 {% macro progress_bar(state) %}
     <div class="progress-bar {% if state.duration %}progress-bar-striped progress-bar-animated{% else %}progress-bar-indeterminate{% endif %}"

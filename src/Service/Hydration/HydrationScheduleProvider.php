@@ -23,11 +23,17 @@ class HydrationScheduleProvider
 
     public function getPlan(): ArrayCollection
     {
-        $this->getPreviousRuns();
         $this->getActiveRuns();
         $this->getQueueRuns();
 
         $this->mergePlans();
+
+        return $this->plan;
+    }
+
+    public function getHistory(): ArrayCollection
+    {
+        $this->getPreviousRuns();
 
         return $this->plan;
     }
