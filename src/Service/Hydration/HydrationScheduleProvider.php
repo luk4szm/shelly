@@ -17,12 +17,12 @@ class HydrationScheduleProvider
         private readonly HydrationLogRepository     $logRepository,
         private readonly HydrationProcessRepository $processRepository,
         private readonly HydrationDeviceFinder      $deviceFinder,
-    ) {
-        $this->plan = new ArrayCollection();
-    }
+    ) {}
 
     public function getPlan(): ArrayCollection
     {
+        $this->plan = new ArrayCollection();
+
         $this->getActiveRuns();
         $this->getQueueRuns();
 
@@ -33,6 +33,8 @@ class HydrationScheduleProvider
 
     public function getHistory(): ArrayCollection
     {
+        $this->plan = new ArrayCollection();
+
         $this->getPreviousRuns();
 
         return $this->plan;

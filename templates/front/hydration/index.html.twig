@@ -145,32 +145,28 @@
                     </ul>
                     <div class="tab-content">
                         <div id="tab-planned" class="card tab-pane active show" role="tabpanel">
-                            <div class="card-body">
-                                {% if hydrationPlan is not empty %}
-                                    {{ _self.hydrationPlan(hydrationPlan) }}
-                                {% else %}
-                                    <div class="card-body">
-                                        <div class="empty">
-                                            <p class="empty-title">Brak planu nawodnień</p>
-                                            <p class="empty-subtitle text-secondary">Nie znaleziono żadnych bieżących ani planowanych nawodnień.</p>
-                                        </div>
+                            {% if hydrationPlan is not empty %}
+                                {{ _self.hydrationPlan(hydrationPlan) }}
+                            {% else %}
+                                <div class="card-body">
+                                    <div class="empty">
+                                        <p class="empty-title">Brak planu nawodnień</p>
+                                        <p class="empty-subtitle text-secondary">Nie znaleziono żadnych bieżących ani planowanych nawodnień.</p>
                                     </div>
-                                {% endif %}
-                            </div>
+                                </div>
+                            {% endif %}
                         </div>
                         <div id="tab-history" class="card tab-pane" role="tabpanel">
-                            <div class="card-body">
-                                {% if hydrationHistory is not empty %}
-                                    {{ _self.hydrationPlan(hydrationHistory) }}
-                                {% else %}
-                                    <div class="card-body">
-                                        <div class="empty">
-                                            <p class="empty-title">Brak historii nawodnień</p>
-                                            <p class="empty-subtitle text-secondary">Nic nie było podlewane dziś :-(</p>
-                                        </div>
+                            {% if hydrationHistory is not empty %}
+                                {{ _self.hydrationPlan(hydrationHistory) }}
+                            {% else %}
+                                <div class="card-body">
+                                    <div class="empty">
+                                        <p class="empty-title">Brak historii nawodnień</p>
+                                        <p class="empty-subtitle text-secondary">Nic nie było podlewane dziś :-(</p>
                                     </div>
-                                {% endif %}
-                            </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
