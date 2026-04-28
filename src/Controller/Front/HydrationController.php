@@ -28,7 +28,7 @@ final class HydrationController extends AbstractController
         return $this->render('front/hydration/index.html.twig', [
             'valves'           => $deviceFinder->getValves(),
             'hydrationPlan'    => $hydrationScheduleProvider->getPlan(),
-            'hydrationHistory' => $hydrationScheduleProvider->getHistory(),
+            'hydrationHistory' => $hydrationScheduleProvider->getHistory(new \DateTime()),
             'soil'             => [
                 'temp'     => $hookRepository->findActualTempForLocation('ogrod'),
                 'humidity' => $hookRepository->findActualHumidityForLocation('ogrod'),

@@ -31,16 +31,16 @@ class HydrationScheduleProvider
         return $this->plan;
     }
 
-    public function getHistory(): ArrayCollection
+    public function getHistory(\DateTimeInterface $date = null): ArrayCollection
     {
         $this->plan = new ArrayCollection();
 
-        $this->getPreviousRuns();
+        $this->getPreviousRuns($date);
 
         return $this->plan;
     }
 
-    private function getPreviousRuns(): void
+    private function getPreviousRuns(?\DateTimeInterface $date = null): void
     {
         $previousRuns = $this->logRepository->findPreviousRuns();
 
