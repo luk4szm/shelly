@@ -22,4 +22,14 @@ abstract class ValveDevice extends Device implements DeviceInterface, ValveDevic
     {
         return $this::CHANNEL;
     }
+
+    public function getDefaultDuration(): int
+    {
+        return static::DEFAULT_DURATION;
+    }
+
+    public static function getPriority(): int
+    {
+        return static::PRIORITY;
+    }
 }

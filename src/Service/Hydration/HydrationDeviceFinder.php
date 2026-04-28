@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 readonly class HydrationDeviceFinder
 {
     public function __construct(
-        #[AutowireIterator('app.shelly.devices.valve')] private iterable $valveDevices,
+        #[AutowireIterator('app.shelly.devices.valve', defaultPriorityMethod: 'getPriority')] private iterable $valveDevices,
     ) {}
 
     public function getValves(): iterable
