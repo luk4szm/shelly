@@ -23,38 +23,42 @@ readonly class HydrationScheduleCreator
     {
         $i                = 0;
         $startAt          = !empty($durations['hydration_start_time']) ? new \DateTimeImmutable($durations['hydration_start_time']) : null;
+        $multiplicity     = (int)$durations['multiplicity'];
         $currentTimePoint = $startAt ?? new \DateTimeImmutable();
         $processes        = new ArrayCollection();
 
         unset($durations['hydration_start_time']);
+        unset($durations['multiplicity']);
 
-        foreach ($durations as $valveName => $duration) {
-            if ($duration === '0' || $duration === 0) {
-                continue;
+        for ($m = 0; $m < $multiplicity; $m++) {
+            foreach ($durations as $valveName => $duration) {
+                if ($duration === '0' || $duration === 0) {
+                    continue;
+                }
+
+                // Calculate duration to always end at the 55th second of a minute
+                $seconds = $this->calculateDurationInSeconds($currentTimePoint, (string)$duration);
+                $valve   = $this->hydrationDeviceFinder->getByName($valveName);
+
+                if ($i === 0 && $startAt === null) {
+                    // First valve starts immediately only if start time was not provided
+                    $this->hydrationValveService->start($valve, $seconds);
+                }
+
+                // Future valves should be scheduled at $currentTimePoint for $seconds duration
+                // If $startAt is provided, the first valve (i === 0) is also just scheduled, not marked as executed
+                $process = $this->scheduleProcess($valve, $currentTimePoint, $seconds, ($i === 0 && $startAt === null));
+
+                $processes->add($process);
+
+                // Move the starting point for the next valve
+                // End at 55s + 5s gap = start exactly at XX:XX:00
+                $currentTimePoint = $currentTimePoint
+                    ->add(new \DateInterval("PT{$seconds}S"))
+                    ->add(new \DateInterval("PT5S"));
+
+                $i++;
             }
-
-            // Calculate duration to always end at the 55th second of a minute
-            $seconds = $this->calculateDurationInSeconds($currentTimePoint, (string)$duration);
-            $valve   = $this->hydrationDeviceFinder->getByName($valveName);
-
-            if ($i === 0 && $startAt === null) {
-                // First valve starts immediately only if start time was not provided
-                $this->hydrationValveService->start($valve, $seconds);
-            }
-
-            // Future valves should be scheduled at $currentTimePoint for $seconds duration
-            // If $startAt is provided, the first valve (i === 0) is also just scheduled, not marked as executed
-            $process = $this->scheduleProcess($valve, $currentTimePoint, $seconds, ($i === 0 && $startAt === null));
-
-            $processes->add($process);
-
-            // Move the starting point for the next valve
-            // End at 55s + 5s gap = start exactly at XX:XX:00
-            $currentTimePoint = $currentTimePoint
-                ->add(new \DateInterval("PT{$seconds}S"))
-                ->add(new \DateInterval("PT5S"));
-
-            $i++;
         }
 
         $this->hydrationProcessRepository->save($processes);

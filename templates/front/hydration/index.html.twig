@@ -101,7 +101,7 @@
                                             <div class="input-group">
                                                 <button class="btn" type="button" id="{{ valve.name }}_less" title="Skróć czas podlewania" style="width: 20px">&#8592;</button>
                                                 <select class="form-select text-center" id="{{ valve.name }}_duration" name="{{ valve.name }}" style="width: 45px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 0.5rem; padding-left: 0.5rem;">
-                                                    {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 40 : 15) %}
+                                                    {% set defaultValue = (valve.name == 'hydration_valve_rotating' ? 20 : 5) %}
                                                     {% for i in 0..60 %}
                                                         <option value="{{ i }}" {{ i == defaultValue ? 'selected' : '' }}>{{ i }}</option>
                                                     {% endfor %}
@@ -117,7 +117,32 @@
                                     </div>
                                 {% endfor %}
                             </div>
-                            <div class="mb-3 mt-3 row">
+                            <div class="my-2 row">
+                                <label class="col-6 col-form-label" for="multiplicity">Krotność</label>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <button class="btn" type="button" id="multiplicity_less" title="Skróć czas podlewania" style="width: 20px">
+                                            &#8592;
+                                        </button>
+                                        <select class="form-select text-center" id="multiplicity" name="multiplicity"
+                                                style="width: 45px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 0.5rem; padding-left: 0.5rem;">
+                                            {% for i in 1..10 %}
+                                                <option value="{{ i }}">{{ i }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn" type="button" id="multiplicity_more" title="Wydłuż czas podlewania" style="width: 20px">
+                                            &#8594;
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="my-2 row">
+                                <label class="col-8 col-form-label" for="hydration_start_time">Czas podlewania</label>
+                                <div class="col col-form-label text-end">
+                                    <span id="hydration_duration"></span>
+                                </div>
+                            </div>
+                            <div class="my-2 row">
                                 <label class="col-3 col-form-label" for="hydration_start_time">Start</label>
                                 <div class="col">
                                     <input type="datetime-local" class="form-control text-center" id="hydration_start_time"
