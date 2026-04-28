@@ -93,8 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 strokeDashArray: 4
             },
             legend: {
-                show: true,
-                position: 'bottom'
+                show: false,
             },
             markers: { size: 0, hover: { sizeOffset: 2 } }
         };

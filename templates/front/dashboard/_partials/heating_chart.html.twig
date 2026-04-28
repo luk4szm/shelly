@@ -1,5 +1,30 @@
 <div class="card card-sm">
-  <div class="card-body">
-    <div id="heating_simple_chart" style="width: 100%;"></div>
-  </div>
+    <div class="card-body mb-0">
+        <div class="row">
+            <div class="col px-0">
+                <div id="heating_simple_chart" class="position-relative"></div>
+{#                <div id="chart-active-users-2" class="position-relative" style="min-height: 288px;"></div>#}
+            </div>
+            <div class="col-md-auto">
+                <div class="divide-y divide-y-fill">
+                    <div class="px-3">
+                        <div class="text-secondary"><span class="status-dot bg-primary"></span> Energia</div>
+                        <div class="h2">11,425</div>
+                    </div>
+                    <div class="px-3">
+                        <div class="text-secondary"><span class="status-dot" style="background-color: #D63939"></span> Bufor 1.5m</div>
+                        <div class="h2">{{ buffer.temperature_15m.value|number_format(1) }} °C</div>
+                    </div>
+                    <div class="px-3">
+                        <div class="text-secondary"><span class="status-dot" style="background-color: #F76707"></span> Bufor 0.5m</div>
+                        <div class="h2">{{ buffer.temperature_05m.value|number_format(1) }} °C</div>
+                    </div>
+                    <div class="px-3">
+                        <div class="text-secondary">Ciśnienie</div>
+                        <div class="h2">{{ (buffer.pressure.value/100)|number_format(2) }} bar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
