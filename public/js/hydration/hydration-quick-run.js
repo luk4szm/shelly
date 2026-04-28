@@ -2,6 +2,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('valve_quick_run');
     const sortableEl = document.getElementById('valves-sortable');
     const durationDisplay = document.getElementById('hydration_duration');
+    const startTimeInput = document.getElementById('hydration_start_time');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+    const updateSubmitButtonText = function () {
+        if (!submitBtn || !startTimeInput) return;
+
+        if (startTimeInput.value) {
+            submitBtn.textContent = 'Zaplanuj nawadnianie';
+        } else {
+            submitBtn.textContent = 'Uruchom sekwencję';
+        }
+    };
 
     const calculateTotalDuration = function () {
         if (!form || !durationDisplay) return;
@@ -93,11 +105,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 calculateTotalDuration();
             }
+
+            if (e.target === startTimeInput) {
+                updateSubmitButtonText();
+            }
         });
 
         form.addEventListener('change', function (e) {
             if (e.target.id && (e.target.id.endsWith('_duration') || e.target.id === 'multiplicity')) {
                 calculateTotalDuration();
+            }
+
+            if (e.target === startTimeInput) {
+                updateSubmitButtonText();
             }
         });
 
@@ -121,7 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, true); // Use capture phase for 'blur' event delegation
 
-        // Initial calculation on load
+        // Initial state
         calculateTotalDuration();
+        updateSubmitButtonText();
     }
 });
