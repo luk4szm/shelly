@@ -74,10 +74,16 @@ final class DashboardController extends AbstractController
 
         $airQuality = $airQualityRepository->findLast();
 
+        $temperature15m    = $hookRepository->findActualTempForLocation('bufor');
+        $temperature05m    = $hookRepository->findActualTempForLocation('bufor-solary');
+        $tempRecirculation = $hookRepository->findActualTempForLocation('podl-powrot-recyrkulacja');
+        $bufferEnergy      = 1.163 * (($temperature15m->getValue() + $temperature05m->getValue()) / 2 - $tempRecirculation->getValue());
+
         return $this->render('front/dashboard/index.html.twig', [
             'buffer'      => [
-                'temperature_15m' => $hookRepository->findActualTempForLocation('bufor'),
-                'temperature_05m' => $hookRepository->findActualTempForLocation('bufor-solary'),
+                'energy'          => $bufferEnergy,
+                'temperature_15m' => $temperature15m,
+                'temperature_05m' => $temperature05m,
                 'pressure'        => $hookRepository->findActualPressureForLocation('co'),
             ],
             'heatingPump' => [
@@ -88,7 +94,7 @@ final class DashboardController extends AbstractController
                 'supplyTop'     => $hookRepository->findActualTempForLocation('rozdzielnica-gora-zasilanie'),
                 'supplyBottom'  => $hookRepository->findActualTempForLocation('rozdzielnica-dol-zasilanie'),
                 'supply'        => $hookRepository->findActualTempForLocation('podl-zasilanie'),
-                'recirculation' => $hookRepository->findActualTempForLocation('podl-powrot-recyrkulacja'),
+                'recirculation' => $tempRecirculation,
                 'return'        => $hookRepository->findActualTempForLocation('podl-powrot-bufor'),
                 'returnTop'     => $hookRepository->findActualTempForLocation('rozdzielnica-gora-powrot'),
                 'returnBottom'  => $hookRepository->findActualTempForLocation('rozdzielnica-dol-powrot'),
