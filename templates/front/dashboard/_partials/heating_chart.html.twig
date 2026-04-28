@@ -8,9 +8,10 @@
                 <div class="divide-y divide-y-fill">
                     <div class="px-3">
                         <div class="text-secondary">Energia</div>
-                        <div class="h2">
+                        <div class="h2 mb-0">
                             {{ buffer.energy|number_format(1) }} kWh
                         </div>
+                        <div class="fs-4">equiv. {{ (buffer.energy/9.45)|number_format(1) }} m³</div>
                     </div>
                     <div class="px-3">
                         <div class="text-secondary"><span class="status-dot" style="background-color: #D63939"></span> Bufor 1.5m</div>
