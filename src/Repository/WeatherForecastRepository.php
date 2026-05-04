@@ -60,12 +60,15 @@ class WeatherForecastRepository extends CrudRepository
     public function getSumRainfallSince(?\DateTimeImmutable $date = null): array
     {
         $since = $date ?? new \DateTimeImmutable('-24 hours');
+        $now   = new \DateTimeImmutable();
 
         $result = $this->createQueryBuilder('wf')
             ->select('SUM(wf.precipitation) as total_rainfall')
             ->addSelect('MAX(CASE WHEN wf.precipitation > 0 THEN wf.time ELSE :null END) as last_rain_at')
             ->where('wf.time >= :since')
+            ->andWhere('wf.time <= :now')
             ->setParameter('since', $since)
+            ->setParameter('now', $now)
             ->setParameter('null', null)
             ->getQuery()
             ->getSingleResult();
