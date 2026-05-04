@@ -42,7 +42,7 @@ class HydrationScheduleProvider
 
     private function getPreviousRuns(?\DateTimeInterface $date = null): void
     {
-        $previousRuns = $this->logRepository->findPreviousRuns();
+        $previousRuns = $this->logRepository->findPreviousRuns($date);
 
         /** @var HydrationLog $currentStatus */
         foreach ($previousRuns as $log) {
