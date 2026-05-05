@@ -34,10 +34,30 @@ document.addEventListener('DOMContentLoaded', function () {
         const endTs = now.getTime();
         const startTs = endTs - 8 * 60 * 60 * 1000;
 
-        return series.map(s => ({
-            name: s.name,
-            data: s.data.filter(p => p.x >= startTs && p.x <= endTs)
-        }));
+        return series.map(s => {
+            let dataInRange = s.data.filter(p => p.x >= startTs && p.x <= endTs);
+
+            if (s.data.length > 0) {
+                // Przedłużenie do początku wykresu (startTs)
+                if (dataInRange.length === 0 || dataInRange[0].x > startTs) {
+                    const before = s.data.filter(p => p.x <= startTs);
+                    const startVal = before.length > 0 ? before[before.length - 1].y : s.data[0].y;
+                    dataInRange.unshift({ x: startTs, y: startVal });
+                }
+
+                // Przedłużenie do końca wykresu (endTs)
+                if (dataInRange.length === 0 || dataInRange[dataInRange.length - 1].x < endTs) {
+                    const beforeEnd = s.data.filter(p => p.x <= endTs);
+                    const endVal = beforeEnd.length > 0 ? beforeEnd[beforeEnd.length - 1].y : s.data[s.data.length - 1].y;
+                    dataInRange.push({ x: endTs, y: endVal });
+                }
+            }
+
+            return {
+                name: s.name,
+                data: dataInRange
+            };
+        });
     };
 
     const transform = (raw) => {
