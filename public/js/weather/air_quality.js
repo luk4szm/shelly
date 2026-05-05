@@ -38,6 +38,24 @@ document.addEventListener('DOMContentLoaded', function () {
         // nextBtn.disabled = currentDate >= today;
     };
 
+    const checkForecastTransition = (newDateStr, isPopstate = false) => {
+        const todayStr = formatDate(new Date());
+        const isFutureNow = newDateStr > todayStr;
+        const wasFuture = document.getElementById('air_quality_data_cards') === null;
+
+        if (isFutureNow !== wasFuture) {
+            if (isPopstate) {
+                window.location.reload();
+            } else {
+                const url = new URL(window.location.href);
+                url.searchParams.set('date', newDateStr);
+                window.location.assign(url.toString());
+            }
+            return true;
+        }
+        return false;
+    };
+
     const setUrlDateParam = (dateStr, replace = false) => {
         const url = new URL(window.location.href);
         if (dateStr) {
@@ -57,10 +75,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentDate = new Date(dateInput.value);
         currentDate.setDate(currentDate.getDate() + days);
         const newVal = formatDate(currentDate);
+
+        if (checkForecastTransition(newVal)) {
+            return;
+        }
+
         dateInput.value = newVal;
         setUrlDateParam(newVal);
         updateNextButtonState();
         loadAll(newVal);
+        reloadAirQualityCards();
     };
 
     // Odczyt daty ze znacznika data-role-date
@@ -186,7 +210,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // Renderery
     const renderAir = ({ series }) => {
         if (!elAir) return;
+
+        const selectedDateStr = dateInput.value;
+        const todayStr = formatDate(new Date());
+
+        const isFuture = selectedDateStr > todayStr;
+        const containerChart = elAir.closest('.row');
+        const containerCards = document.getElementById('air_quality_data_cards');
+
         const hasData = series.some(s => s.data.length > 0);
+
+        if (isFuture && !hasData) {
+            if (containerChart) containerChart.style.display = 'none';
+            if (containerCards) containerCards.style.display = 'none';
+        } else {
+            if (containerChart) containerChart.style.display = '';
+            if (containerCards) containerCards.style.display = '';
+        }
+
         if (!hasData) {
             if (airChart) { airChart.destroy(); airChart = null; }
             elAir.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
@@ -433,17 +474,18 @@ document.addEventListener('DOMContentLoaded', function () {
         // Handlery
         prevBtn.addEventListener('click', () => {
             changeDate(-1);
-            // Po zmianie daty przeładuj karty
-            reloadAirQualityCards();
         });
         nextBtn.addEventListener('click', () => {
             changeDate(1);
-            // Po zmianie daty przeładuj karty
-            reloadAirQualityCards();
         });
         dateInput.addEventListener('change', (e) => {
             const val = e.target.value;
             if (!isValidDateStr(val)) return;
+
+            if (checkForecastTransition(val)) {
+                return;
+            }
+
             setUrlDateParam(val);
             updateNextButtonState();
             loadAll(val);
@@ -457,6 +499,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const d = url.searchParams.get('date');
             const dateStr = isValidDateStr(d) ? d : dateInput.value;
             if (isValidDateStr(dateStr)) {
+                if (checkForecastTransition(dateStr, true)) {
+                    return;
+                }
                 dateInput.value = dateStr;
                 updateNextButtonState();
                 loadAll(dateStr);
