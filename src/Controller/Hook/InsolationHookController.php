@@ -2,8 +2,10 @@
 
 namespace App\Controller\Hook;
 
+use App\Event\Hook\InsolationHookEvent;
 use App\Service\AirQuality\InsolationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -11,9 +13,17 @@ use Symfony\Component\Routing\Attribute\Route;
 class InsolationHookController extends AbstractController
 {
     #[Route('/garage/{value}', name: 'garage', priority: 5)]
-    public function garageInsolation(InsolationService $insolationService, string $value): Response
+    public function garageInsolation(
+        string                   $value,
+        InsolationService        $insolationService,
+        EventDispatcherInterface $eventDispatcher,
+    ): Response
     {
-        $insolationService->store((float)$value);
+        $insolation = (float)$value;
+
+        $insolationService->store($insolation);
+
+        $eventDispatcher->dispatch(new InsolationHookEvent($insolation));
 
         return $this->json($value);
     }
