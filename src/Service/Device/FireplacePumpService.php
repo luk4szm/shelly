@@ -10,7 +10,6 @@ use App\Service\Shelly\Switch\FireplacePumpsService;
 
 class FireplacePumpService
 {
-    private ?Hook $stateHook;
     private ?Hook $powerHook;
 
     public function __construct(
@@ -20,7 +19,6 @@ class FireplacePumpService
 
     public function getActualState(): array
     {
-        $this->stateHook = $this->hookRepository->findLastDeviceState(FireplacePump::NAME);
         $this->powerHook = $this->hookRepository->findLastDevicePowerHook(Fireplace::NAME);
 
         return [
@@ -36,10 +34,10 @@ class FireplacePumpService
 
     protected function isPumpRunning(): bool
     {
-        if (null === $this->stateHook) {
+        if (null === $this->powerHook) {
             return false;
         }
 
-        return $this->stateHook->getValue() === 'on';
+        return $this->powerHook->getValue() > FireplacePump::BOUNDARY_POWER;
     }
 }
