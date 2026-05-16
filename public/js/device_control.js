@@ -33,6 +33,13 @@ $(document).ready(function () {
         'garage': '/garage/move',
     };
 
+    // Przeniesiono readApiUrls do globalnego zakresu dla dostępu w executeScene
+    const readApiUrls = {
+        'gate': '/supla/gate/read',
+        'covers': '/cover/read',
+        'garage': '/garage/read'
+    };
+
     const scenes = {
         'leaving': [ // Wracam do domu
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
@@ -50,6 +57,13 @@ $(document).ready(function () {
         ]
     };
 
+    // Mapowanie kluczy scen na ich nazwy wyświetlane
+    const sceneDisplayNames = {
+        'leaving': 'Wracam do domu',
+        'coming': 'Wychodzę z domu',
+        'kindergarten-work': 'Wychodzę z domu'
+    };
+
     function executeScene(button, sceneActions) {
         let currentActionIndex = 0;
 
@@ -64,6 +78,24 @@ $(document).ready(function () {
             }, statusClearDelay);
         }
 
+        function performActionAjax(step, apiUrl) {
+            $.ajax({
+                type: "PATCH",
+                url: apiUrl,
+                data: { "direction": step.action },
+                success: function () {
+                    console.log(`Akcja '${step.action}' dla '${step.controller}' wykonana pomyślnie.`);
+                    currentActionIndex++;
+                    setTimeout(executeNextAction, sceneStepDelay);
+                },
+                error: function (response) {
+                    const errorMsg = `Błąd przy: ${step.text}`;
+                    console.error("Błąd podczas wykonywania akcji AJAX:", response);
+                    finalizeScene(errorMsg, false);
+                }
+            });
+        }
+
         function executeNextAction() {
             if (currentActionIndex >= sceneActions.length) {
                 finalizeScene('Zakończono!', true);
@@ -71,7 +103,6 @@ $(document).ready(function () {
             }
 
             const step = sceneActions[currentActionIndex];
-            statusDisplay.append(`<div>${step.text}</div>`);
 
             // Obsługa specjalna: krok "navigation" – prosty link do Google Maps z hasha przycisku
             if (step.controller === 'navigation') {
@@ -109,21 +140,69 @@ $(document).ready(function () {
                 return;
             }
 
-            $.ajax({
-                type: "PATCH",
-                url: apiUrl,
-                data: { "direction": step.action },
-                success: function () {
-                    console.log(`Akcja '${step.action}' dla '${step.controller}' wykonana pomyślnie.`);
-                    currentActionIndex++;
-                    setTimeout(executeNextAction, sceneStepDelay);
-                },
-                error: function (response) {
-                    const errorMsg = `Błąd przy: ${step.text}`;
-                    console.error("Błąd podczas wykonywania akcji AJAX:", response);
+            // Sprawdź status urządzenia przed wysłaniem żądania, aby uniknąć zbędnych akcji
+            if (['gate', 'garage', 'covers'].includes(step.controller) && (step.action === 'open' || step.action === 'close')) {
+                const readApiUrl = readApiUrls[step.controller];
+                if (!readApiUrl) {
+                    const errorMsg = `Błąd konfiguracji dla odczytu statusu ${step.controller}`;
+                    console.error(errorMsg);
                     finalizeScene(errorMsg, false);
+                    return;
                 }
-            });
+
+                const deviceNamesGenitive = { 'gate': 'bramy', 'garage': 'garażu', 'covers': 'rolet' }; // Genitive for "status bramy/garażu/rolet"
+                const deviceNameGenitive = deviceNamesGenitive[step.controller];
+
+                const statusSpanId = `status-check-result-${step.controller}-${currentActionIndex}`;
+                statusDisplay.append(`<div>Sprawdzam status ${deviceNameGenitive}: <span id="${statusSpanId}"></span></div>`);
+
+                $.ajax({
+                    type: "GET",
+                    url: readApiUrl,
+                    success: function (response) {
+                        let isCurrentlyOpen = false;
+                        if (step.controller === 'gate' || step.controller === 'garage') {
+                            isCurrentlyOpen = response.is_open === true;
+                        } else if (step.controller === 'covers') {
+                            isCurrentlyOpen = response.last_direction === 'open';
+                        }
+
+                        let alreadyInDesiredPosition = false;
+                        let actionMessage = '';
+                        let skipMessage = '';
+
+                        if (step.action === 'open') {
+                            alreadyInDesiredPosition = isCurrentlyOpen;
+                            actionMessage = 'otwieram!';
+                            skipMessage = 'otwarte, pomijam';
+                        } else if (step.action === 'close') {
+                            alreadyInDesiredPosition = !isCurrentlyOpen; // If action is 'close', and it's not open (i.e., closed)
+                            actionMessage = 'zamykam!';
+                            skipMessage = 'zamknięte, pomijam';
+                        }
+
+                        const resultSpan = $(`#${statusSpanId}`);
+
+                        if (alreadyInDesiredPosition) {
+                            resultSpan.html(`<span style="color: grey;">${skipMessage}</span>`);
+                            currentActionIndex++;
+                            setTimeout(executeNextAction, sceneStepDelay);
+                        } else {
+                            resultSpan.html(`<span style="color: green; font-weight: bold;">${actionMessage}</span>`);
+                            performActionAjax(step, apiUrl);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        const errorMsg = `Błąd podczas sprawdzania statusu ${deviceNameGenitive}: ${error}`;
+                        console.error("Błąd podczas sprawdzania statusu AJAX:", error);
+                        finalizeScene(errorMsg, false);
+                    }
+                });
+            } else {
+                // Dla innych kontrolerów lub akcji, wyświetl oryginalny tekst i przejdź bezpośrednio
+                statusDisplay.append(`<div>${step.text}</div>`);
+                performActionAjax(step, apiUrl);
+            }
         }
 
         executeNextAction();
@@ -163,7 +242,8 @@ $(document).ready(function () {
                 if (controller === 'scene') {
                     const sceneActions = scenes[action];
                     if (sceneActions) {
-                        statusDisplay.html('<div>Rozpoczynanie sceny...</div>');
+                        const sceneName = sceneDisplayNames[action] || action; // Pobierz nazwę sceny
+                        statusDisplay.html(`<div>Rozpoczynanie sceny <strong>${sceneName}</strong>...</div>`); // Zaktualizowany komunikat
                         button.removeClass('btn-azure').addClass('btn-success');
                         executeScene(button, sceneActions);
                     } else {
@@ -233,11 +313,6 @@ $(document).ready(function () {
             return;
         }
 
-        const readApiUrls = {
-            'gate': '/supla/gate/read',
-            'covers': '/cover/read',
-            'garage': '/garage/read'
-        };
         const apiUrl = readApiUrls[controller];
 
         clickedSpan.addClass('is-loading').removeClass('bg-light-lt bg-red bg-green');
