@@ -3,6 +3,7 @@ $(document).ready(function () {
     const holdDuration = 350;
     const feedbackDisplayDuration = 2000;
     const sceneStepDelay = 2000; // 2 seconds delay between scene steps
+    const apiCallDelay = 1000; // 1 second delay between API calls to respect Shelly Cloud limits
     const statusClearDelay = 10000; // 10 seconds to clear the status display
     const statusDisplay = $('#scene-controller-status'); // Get the status display element
 
@@ -189,7 +190,8 @@ $(document).ready(function () {
                             setTimeout(executeNextAction, sceneStepDelay);
                         } else {
                             resultSpan.html(`<span style="color: green; font-weight: bold;">${actionMessage}</span>`);
-                            performActionAjax(step, apiUrl);
+                            // Add delay before performing the action (avoid shelly cloud 429 response)
+                            setTimeout(() => performActionAjax(step, apiUrl), apiCallDelay);
                         }
                     },
                     error: function (xhr, status, error) {
