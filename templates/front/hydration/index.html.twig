@@ -82,6 +82,23 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-center">
+                                <div class="subheader mb-2">
+                                    <span class="text-secondary">Łączny czas podlewania</span>
+                                </div>
+                                <div class="h1 mb-0 {{ totalHydrationToday > 0 ? 'text-azure' : 'text-muted' }}">
+                                    {% set hours = totalHydrationToday // 3600 %}
+                                    {% set minutes = (totalHydrationToday % 3600) // 60 %}
+                                    {% set seconds = totalHydrationToday % 60 %}
+                                    {% if hours > 0 %}
+                                        {{ "%d:%02d:%02d"|format(hours, minutes, seconds) }}
+                                    {% else %}
+                                        {{ "%02d:%02d"|format(minutes, seconds) }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -182,7 +199,20 @@
                         </div>
                         <div id="tab-history" class="card tab-pane" role="tabpanel">
                             {% if hydrationHistory is not empty %}
-                                {{ _self.hydrationPlan(hydrationHistory) }}
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <input type="radio" class="btn-check" name="hydration-history-view" id="hydration-history-single" autocomplete="off" checked>
+                                    <label for="hydration-history-single" type="button" class="btn">Pojedynczo</label>
+
+                                    <input type="radio" class="btn-check" name="hydration-history-view" id="hydration-history-grouped" autocomplete="off">
+                                    <label for="hydration-history-grouped" type="button" class="btn">Grupowane</label>
+                                </div>
+
+                                <div id="hydration-history-single-table">
+                                    {{ _self.hydrationPlan(hydrationHistory) }}
+                                </div>
+                                <div id="hydration-history-grouped-table" style="display: none;">
+                                    {{ _self.groupedHydrationHistory(groupedHydrationHistory) }}
+                                </div>
                             {% else %}
                                 <div class="card-body">
                                     <div class="empty">
@@ -215,7 +245,7 @@
             {% for state in plan %}
                 <tr style="position: relative;">
                     <td class="text-nowrap">
-                        {{ state.valve|trans }}
+                        {{ state.valve.name|trans }}
                         {# Progress bar widoczny TYLKO na mobile, jako cienka linia pod wierszem #}
                         <div class="progress progress-sm d-md-none"
                              style="position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; border-radius: 0; background: transparent;">
@@ -238,7 +268,14 @@
                         <span class="progress-text">
                             0%<br>
                             {% if state.duration %}
-                                {{ (state.duration // 60) }}:{{ (state.duration % 60)|format('%02d') }}
+                                {% set hours = state.duration // 3600 %}
+                                {% set minutes = (state.duration % 3600) // 60 %}
+                                {% set seconds = state.duration % 60 %}
+                                {% if hours > 0 %}
+                                    {{ "%d:%02d:%02d"|format(hours, minutes, seconds) }}
+                                {% else %}
+                                    {{ "%02d:%02d"|format(minutes, seconds) }}
+                                {% endif %}
                             {% else %}
                                 --:--
                             {% endif %}
@@ -250,6 +287,44 @@
                             {{ endDateTime|date('d.m.Y') }}<br>
                         {% endif %}
                         {{ endDateTime ? endDateTime|date('H:i:s') : '' }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
+
+{% macro groupedHydrationHistory(groupedHistory) %}
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+            <tr>
+                <th class="w-1">Strefa</th>
+                <th class="text-center">Czas startu/końca</th>
+                <th class="text-center">Łączny czas</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for group in groupedHistory %}
+                <tr>
+                    <td class="text-nowrap">
+                        {{ group.valve.name|trans }}
+                    </td>
+                    <td class="text-secondary text-center">
+                        {% for event in group.hydrationEvents %}
+                            {{ event.startsAt|date('d.m.Y H:i:s') }} - {{ event.endsAt|date('H:i:s') }}<br>
+                        {% endfor %}
+                    </td>
+                    <td class="text-secondary text-center text-nowrap">
+                        {% set hours = group.totalDuration // 3600 %}
+                        {% set minutes = (group.totalDuration % 3600) // 60 %}
+                        {% set seconds = group.totalDuration % 60 %}
+                        {% if hours > 0 %}
+                            {{ "%d:%02d:%02d"|format(hours, minutes, seconds) }}
+                        {% else %}
+                            {{ "%02d:%02d"|format(minutes, seconds) }}
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -277,4 +352,5 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="{{ asset('js/hydration/hydration-quick-run.js') }}"></script>
     <script src="{{ asset('js/hydration/hydration-schedule.js') }}"></script>
+    <script src="{{ asset('js/hydration/hydration-history.js') }}"></script>
 {% endblock %}

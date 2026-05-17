@@ -4,6 +4,7 @@ namespace App\Service\Hydration;
 
 use App\Entity\HydrationLog;
 use App\Entity\Process\HydrationProcess;
+use App\Model\Hydration\GroupedHydrationHistoryDto;
 use App\Model\Hydration\HydrationPlanDto;
 use App\Repository\HydrationLogRepository;
 use App\Repository\Process\HydrationProcessRepository;
@@ -25,7 +26,6 @@ class HydrationScheduleProvider
 
         $this->getActiveRuns();
         $this->getQueueRuns();
-
         $this->mergePlans();
 
         return $this->plan;
@@ -38,6 +38,51 @@ class HydrationScheduleProvider
         $this->getPreviousRuns($date);
 
         return $this->plan;
+    }
+
+    public function getGroupedHistory(\DateTimeInterface $date = null): ArrayCollection
+    {
+        $previousRuns   = $this->logRepository->findPreviousRuns($date);
+        $groupedHistory = new ArrayCollection();
+        $groupedData    = [];
+
+        /** @var HydrationLog $log */
+        foreach ($previousRuns as $log) {
+            $valveName = $log->getValve();
+            $valve     = $this->deviceFinder->getByName($valveName);
+
+            if (!isset($groupedData[$valveName])) {
+                $groupedData[$valveName] = new GroupedHydrationHistoryDto($valve);
+            }
+
+            $groupedData[$valveName]->addHydrationEvent(
+                $log->getStartsAt(),
+                $log->getEndsAt(),
+                $log->getDuration()
+            );
+        }
+
+        // Sort grouped data by valve name for consistent display
+        ksort($groupedData);
+
+        foreach ($groupedData as $data) {
+            $groupedHistory->add($data);
+        }
+
+        return $groupedHistory;
+    }
+
+    public function getTotalHydrationDurationForDay(\DateTimeInterface $date = null): int
+    {
+        $totalDuration = 0;
+        $previousRuns  = $this->logRepository->findPreviousRuns($date);
+
+        /** @var HydrationLog $log */
+        foreach ($previousRuns as $log) {
+            $totalDuration += $log->getDuration();
+        }
+
+        return $totalDuration;
     }
 
     private function getPreviousRuns(?\DateTimeInterface $date = null): void
