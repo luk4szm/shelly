@@ -1,21 +1,34 @@
 <style>
-    /* Ukrycie scrollbarów w większości przeglądarek */
+    /* Ukrycie scrollbarów w kontenerze */
+    #weatherMeteogramModal .modal-body {
+        overflow-x: auto;           /* Włączenie przewijania poziomego */
+        overflow-y: hidden;         /* Zablokowanie przewijania pionowego */
+        -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
+        scrollbar-width: none;      /* Firefox */
+    }
+    #weatherMeteogramModal .modal-body::-webkit-scrollbar {
+        display: none;              /* Chrome/Safari/Edge */
+    }
+
     #weatherMeteogramModal iframe {
         border: 0;
-        overflow: hidden;       /* próba wyłączenia przewijania na kontenerze iframa */
-        scrollbar-width: none;  /* Firefox */
-    }
-    #weatherMeteogramModal iframe::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-        display: none;          /* Chrome/Safari/Edge (Blink/WebKit) */
+        /* Ustawiamy minimalną szerokość, aby wymusić przewijanie,
+           jeśli obrazek jest szerszy niż ekran telefonu */
+        min-width: 800px;
     }
 </style>
 <div class="modal fade" id="weatherMeteogramModal" tabindex="-1" aria-labelledby="weatherMeteogramModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+{#    <div class="modal-dialog modal-dialog-centered modal-lg">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-body" style="height: 391px; width: 782px; padding: 0">#}
+{#                <iframe src="https://www.yr.no/en/content/{{ yr_no_location_id }}/meteogram.svg" width="100%" height="100%" scrolling="no" style="overflow: hidden; border: 0;"></iframe>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body" style="height: 391px; width: 782px; padding: 0">
-                <iframe src="https://www.yr.no/en/content/{{ yr_no_location_id }}/meteogram.svg" width="100%" height="100%" scrolling="no" style="overflow: hidden; border: 0;"></iframe>
+            <div class="modal-body" style="height: 780px; width: 630px; padding: 0">
+                <iframe src="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=400&col=180&lang=pl" width="100%" height="100%" style="border: 0;"></iframe>
             </div>
         </div>
     </div>
