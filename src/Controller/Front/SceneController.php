@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Front;
 
 use App\Entity\Scene;
+use App\Repository\ConfigRepository;
 use App\Repository\SceneRepository;
 use App\Service\Shelly\Scene\ShellySceneService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,5 +30,15 @@ final class SceneController extends AbstractController
         $sceneService->trigger((string)$scene->getShellyId());
 
         return $this->json([]);
+    }
+
+    #[Route('/modal', name: 'modal', methods: ['GET'])]
+    public function modal(ConfigRepository $configRepository): Response
+    {
+        return $this->json([
+            'modal_content' => $this->renderView('front/scene/modal_content.html.twig', [
+                'config' => $configRepository->getAllValues(),
+            ]),
+        ]);
     }
 }

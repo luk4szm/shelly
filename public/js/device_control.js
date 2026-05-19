@@ -32,6 +32,7 @@ $(document).ready(function () {
         'gate': '/supla/gate/open-close',
         'covers': '/cover/open-close',
         'garage': '/garage/move',
+        'config_set': '/config/set', // Nowy endpoint dla ustawień konfiguracji
     };
 
     // Przeniesiono readApiUrls do globalnego zakresu dla dostępu w executeScene
@@ -42,27 +43,40 @@ $(document).ready(function () {
     };
 
     const scenes = {
-        'leaving': [ // Wracam do domu
+        'coming': [ // Wracam do domu
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
             { controller: 'garage', action: 'open', text: 'Otwieranie garażu...' },
-            { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' }
+            { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Ustawianie trybu: w domu...' }
         ],
-        'coming': [ // Wychodzę z domu
+        'leaving': [ // Wychodzę z domu
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
-            { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' }
+            { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'config', action: 'set_occupancy_mode_away', text: 'Ustawianie trybu: nieobecność...' }
         ],
-        'kindergarten-work': [ // Wychodzę z domu
+        'kindergarten-work': [ // Przedszkole -> Forum
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
             { controller: 'navigation', action: 'start', text: 'Uruchamianie nawigacji...' }
+        ],
+        'sleeping': [ // Idziemy spać
+            { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
+            { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
+            { controller: 'config', action: 'set_occupancy_mode_sleep', text: 'Ustawianie trybu: spanie...' }
+        ],
+        'waking': [ // Pobudka
+            { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Ustawianie trybu: w domu...' }
         ]
     };
 
     // Mapowanie kluczy scen na ich nazwy wyświetlane
     const sceneDisplayNames = {
-        'leaving': 'Wracam do domu',
-        'coming': 'Wychodzę z domu',
-        'kindergarten-work': 'Wychodzę z domu'
+        'leaving': 'Wychodzę z domu',
+        'coming': 'Wracam do domu',
+        'kindergarten-work': 'Przedszkole -> Forum',
+        'sleeping': 'Idziemy spać',
+        'waking': 'Pobudka'
     };
 
     function executeScene(button, sceneActions) {
@@ -79,11 +93,11 @@ $(document).ready(function () {
             }, statusClearDelay);
         }
 
-        function performActionAjax(step, apiUrl) {
+        function performActionAjax(step, apiUrl, dataToSend) {
             $.ajax({
                 type: "PATCH",
                 url: apiUrl,
-                data: { "direction": step.action },
+                data: dataToSend,
                 success: function () {
                     console.log(`Akcja '${step.action}' dla '${step.controller}' wykonana pomyślnie.`);
                     currentActionIndex++;
@@ -129,6 +143,48 @@ $(document).ready(function () {
                     console.error('Błąd podczas otwierania nawigacji:', e);
                     finalizeScene('Nie udało się uruchomić nawigacji.', false);
                 }
+                return;
+            }
+
+            if (step.controller === 'config' && step.action === 'set_occupancy_mode_sleep') {
+                const configApiUrl = apiUrls['config_set'];
+                if (!configApiUrl) {
+                    const errorMsg = `Błąd konfiguracji dla ${step.controller}`;
+                    console.error(errorMsg);
+                    finalizeScene(errorMsg, false);
+                    return;
+                }
+                statusDisplay.append(`<div>${step.text}</div>`);
+
+                performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "sleep" });
+                return;
+            }
+
+            if (step.controller === 'config' && step.action === 'set_occupancy_mode_home') {
+                const configApiUrl = apiUrls['config_set'];
+                if (!configApiUrl) {
+                    const errorMsg = `Błąd konfiguracji dla ${step.controller}`;
+                    console.error(errorMsg);
+                    finalizeScene(errorMsg, false);
+                    return;
+                }
+                statusDisplay.append(`<div>${step.text}</div>`);
+
+                performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "home" });
+                return;
+            }
+
+            if (step.controller === 'config' && step.action === 'set_occupancy_mode_away') {
+                const configApiUrl = apiUrls['config_set'];
+                if (!configApiUrl) {
+                    const errorMsg = `Błąd konfiguracji dla ${step.controller}`;
+                    console.error(errorMsg);
+                    finalizeScene(errorMsg, false);
+                    return;
+                }
+                statusDisplay.append(`<div>${step.text}</div>`);
+
+                performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "away" });
                 return;
             }
 
@@ -191,7 +247,7 @@ $(document).ready(function () {
                         } else {
                             resultSpan.html(`<span style="color: green; font-weight: bold;">${actionMessage}</span>`);
                             // Add delay before performing the action (avoid shelly cloud 429 response)
-                            setTimeout(() => performActionAjax(step, apiUrl), apiCallDelay);
+                            setTimeout(() => performActionAjax(step, apiUrl, { "direction": step.action }), apiCallDelay);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -203,7 +259,7 @@ $(document).ready(function () {
             } else {
                 // Dla innych kontrolerów lub akcji, wyświetl oryginalny tekst i przejdź bezpośrednio
                 statusDisplay.append(`<div>${step.text}</div>`);
-                performActionAjax(step, apiUrl);
+                performActionAjax(step, apiUrl, { "direction": step.action });
             }
         }
 

@@ -1,0 +1,38 @@
+<div class="row text-center g-5">
+    {% if config.occupancy_mode == 'away' %}
+        <div class="col-12">
+            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="coming">
+                Wracam do domu
+            </button>
+        </div>
+    {% endif %}
+    {% if config.occupancy_mode == 'home' %}
+        <div class="col-12">
+            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="leaving">
+                Wychodzę z domu
+            </button>
+        </div>
+        <div class="col-12 d-block d-md-none">
+            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="kindergarten-work" data-map-hash="dWahzDmZqDqt7Bfv9">
+                Przedszkole -> Forum
+            </button>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="sleeping">
+                Idziemy spać
+            </button>
+        </div>
+    {% endif %}
+    {% if config.occupancy_mode == 'sleep' %}
+        <div class="col-12">
+            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="waking">
+                Pobudka
+            </button>
+        </div>
+    {% endif %}
+</div>
+<div class="row">
+    <div class="col-12">
+        <div id="scene-controller-status"></div>
+    </div>
+</div>

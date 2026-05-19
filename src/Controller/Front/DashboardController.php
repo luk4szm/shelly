@@ -11,8 +11,6 @@ use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\Device\HeatingPumpService;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Service\Location\LocationFinder;
-use App\Service\Processable\TurnOffHeatingProcess;
-use App\Service\Processable\TurnOnHeatingProcess;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\Response;
