@@ -47,13 +47,13 @@ $(document).ready(function () {
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
             { controller: 'garage', action: 'open', text: 'Otwieranie garażu...' },
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
-            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Ustawianie trybu: w domu...' }
+            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ],
         'leaving': [ // Wychodzę z domu
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
-            { controller: 'config', action: 'set_occupancy_mode_away', text: 'Ustawianie trybu: nieobecność...' }
+            { controller: 'config', action: 'set_occupancy_mode_away', text: 'Zmieniam tryb domu na: <b>nieobecność</b>...' }
         ],
         'kindergarten-work': [ // Przedszkole -> Forum
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
@@ -62,11 +62,11 @@ $(document).ready(function () {
         'sleeping': [ // Idziemy spać
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
-            { controller: 'config', action: 'set_occupancy_mode_sleep', text: 'Ustawianie trybu: spanie...' }
+            { controller: 'config', action: 'set_occupancy_mode_sleep', text: 'Zmieniam tryb domu na: <b>spanie</b>...' }
         ],
         'waking': [ // Pobudka
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
-            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Ustawianie trybu: w domu...' }
+            { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ]
     };
 
