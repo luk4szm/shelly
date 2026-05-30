@@ -1,0 +1,12 @@
+auto_light_inside: Automatyczne światła wewnętrzne
+auto_light_outside: Automatyczne światła zewnętrzne
+
+occupancy_mode:
+    home: W domu
+    away: Poza domem
+    sleeping: Śpimy
+
+daylight_mode:
+    day: Dzień
+    night: Noc
+    twilight: Zmierzch

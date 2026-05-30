@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}Ustawienia{% endblock %}
+{% block pagePreTitle %}{% endblock %}
+{% block pageTitleActions %}Zmiana trybu nie powoduje uruchomienia żadnych scen{% endblock %}
+
+{% block pageBody %}
+    <div class="container-xl">
+        <div class="row row-cards">
+            <div class="col-md-6 col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Zmienne środowiskowe</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y m-0 p-0">
+                            <label class="row align-items-center">
+                                <span class="col">Tryb mieszkańców</span>
+                                <span class="col-auto">
+                                    {% set occupancy_config = configs|filter(c => c.name == 'occupancy_mode')|first %}
+                                    <select class="form-select my-0" data-name="occupancy_mode">
+                                        {% for mode in occupancyModes %}
+                                            <option value="{{ mode.value }}" {% if occupancy_config and occupancy_config.value == mode.value %}selected{% endif %}>
+                                                {{ ('occupancy_mode.' ~ mode.value)|trans({}, 'config') }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </span>
+                            </label>
+                            <label class="row align-items-center">
+                                <span class="col">Pora dnia</span>
+                                <span class="col-auto">
+                                    {% set daylight_config = configs|filter(c => c.name == 'daylight_mode')|first %}
+                                    <select class="form-select" data-name="daylight_mode">
+                                        {% for mode in daylightModes %}
+                                            <option value="{{ mode.value }}" {% if daylight_config and daylight_config.value == mode.value %}selected{% endif %}>
+                                                {{ ('daylight_mode.' ~ mode.value)|trans({}, 'config') }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ustawienia systemu</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="divide-y">
+                            {% for config in configs %}
+                                {% if config.type == 'boolean' %}
+                                    <div>
+                                        <label class="row align-items-center" style="height: 35px;">
+                                            <span class="col">{{ config.name|trans({}, 'config') }}</span>
+                                            <span class="col-auto">
+                                               <label class="form-check form-check-single form-switch">
+                                                  <input
+                                                      class="form-check-input"
+                                                      type="checkbox"
+                                                      data-name="{{ config.name }}"
+                                                      {{ config.value ? 'checked' }}
+                                                  >
+                                               </label>
+                                            </span>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script>
+        const updateSetting = (name, value, element) => {
+            fetch('/settings/set', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    value: value
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                if (element.type === 'checkbox') {
+                    element.checked = !value;
+                }
+            });
+        };
+
+        document.querySelectorAll('input[type="checkbox"][data-name]').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                updateSetting(this.getAttribute('data-name'), this.checked, this);
+            });
+        });
+
+        document.querySelectorAll('select[data-name]').forEach(select => {
+            select.addEventListener('change', function () {
+                updateSetting(this.getAttribute('data-name'), this.value, this);
+            });
+        });
+    </script>
+{% endblock %}
