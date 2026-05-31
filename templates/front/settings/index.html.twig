@@ -18,7 +18,7 @@
                                 <span class="col">Tryb mieszkańców</span>
                                 <span class="col-auto">
                                     {% set occupancy_config = configs|filter(c => c.name == 'occupancy_mode')|first %}
-                                    <select class="form-select my-0" data-name="occupancy_mode">
+                                    <select class="form-select my-0" data-name="occupancy_mode" style="width: 175px">
                                         {% for mode in occupancyModes %}
                                             <option value="{{ mode.value }}" {% if occupancy_config and occupancy_config.value == mode.value %}selected{% endif %}>
                                                 {{ ('occupancy_mode.' ~ mode.value)|trans({}, 'config') }}
@@ -31,10 +31,23 @@
                                 <span class="col">Pora dnia</span>
                                 <span class="col-auto">
                                     {% set daylight_config = configs|filter(c => c.name == 'daylight_mode')|first %}
-                                    <select class="form-select" data-name="daylight_mode">
+                                    <select class="form-select" data-name="daylight_mode" style="width: 175px">
                                         {% for mode in daylightModes %}
                                             <option value="{{ mode.value }}" {% if daylight_config and daylight_config.value == mode.value %}selected{% endif %}>
                                                 {{ ('daylight_mode.' ~ mode.value)|trans({}, 'config') }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </span>
+                            </label>
+                            <label class="row align-items-center">
+                                <span class="col">Pora roku</span>
+                                <span class="col-auto">
+                                    {% set season_config = configs|filter(c => c.name == 'season_mode')|first %}
+                                    <select class="form-select" data-name="season_mode" style="width: 175px">
+                                        {% for mode in seasonModes %}
+                                            <option value="{{ mode.value }}" {% if season_config and season_config.value == mode.value %}selected{% endif %}>
+                                                {{ ('season_mode.' ~ mode.value)|trans({}, 'config') }}
                                             </option>
                                         {% endfor %}
                                     </select>

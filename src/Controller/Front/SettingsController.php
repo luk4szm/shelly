@@ -6,6 +6,7 @@ namespace App\Controller\Front;
 
 use App\Enum\DaylightMode;
 use App\Enum\OccupancyMode;
+use App\Enum\SeasonMode;
 use App\Model\Request\SettingsRequestPayload;
 use App\Repository\ConfigRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,6 +24,7 @@ final class SettingsController extends AbstractController
             'configs'        => $repository->findAll(),
             'occupancyModes' => OccupancyMode::cases(),
             'daylightModes'  => DaylightMode::cases(),
+            'seasonModes'    => SeasonMode::cases(),
         ]);
     }
 

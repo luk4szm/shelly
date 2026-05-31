@@ -10,3 +10,8 @@ daylight_mode:
     day: Dzień
     night: Noc
     twilight: Zmierzch
+
+season_mode:
+    winter: Zima
+    summer: Lato
+    transitional: Okres przejściowy
