@@ -32,7 +32,8 @@ $(document).ready(function () {
         'gate': '/supla/gate/open-close',
         'covers': '/cover/open-close',
         'garage': '/garage/move',
-        'config_set': '/config/set', // Nowy endpoint dla ustawień konfiguracji
+        'config_set': '/config/set',
+        'scene': '/scene/run',
     };
 
     // Przeniesiono readApiUrls do globalnego zakresu dla dostępu w executeScene
@@ -62,6 +63,7 @@ $(document).ready(function () {
         'sleeping': [ // Idziemy spać
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
+            { controller: 'scene', action: '1776464366415', text: 'Wyłączam światła...' },
             { controller: 'config', action: 'set_occupancy_mode_sleep', text: 'Zmieniam tryb domu na: <b>spanie</b>...' }
         ],
         'waking': [ // Pobudka
@@ -185,6 +187,14 @@ $(document).ready(function () {
                 getStatusDisplay().append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "away" });
+                return;
+            }
+
+            if (step.controller === 'scene') {
+                const sceneRunUrl = `${apiUrls['scene']}/${step.action}`;
+                getStatusDisplay().append(`<div>${step.text}</div>`);
+
+                performActionAjax(step, sceneRunUrl, {});
                 return;
             }
 

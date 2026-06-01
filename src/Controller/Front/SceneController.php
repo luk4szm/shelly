@@ -8,6 +8,7 @@ use App\Entity\Scene;
 use App\Repository\ConfigRepository;
 use App\Repository\SceneRepository;
 use App\Service\Shelly\Scene\ShellySceneService;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,8 +25,11 @@ final class SceneController extends AbstractController
         ]);
     }
 
-    #[Route('/run/{id}', name: 'run', methods: ['PATCH'])]
-    public function run(Scene $scene, ShellySceneService $sceneService): Response
+    #[Route('/run/{shellyId}', name: 'run', methods: ['PATCH'])]
+    public function run(
+        #[MapEntity(mapping: ['shellyId' => 'shellyId'])] Scene $scene,
+        ShellySceneService                                      $sceneService,
+    ): Response
     {
         $sceneService->trigger((string)$scene->getShellyId());
 
