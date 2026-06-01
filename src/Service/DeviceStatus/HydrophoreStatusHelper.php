@@ -3,6 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
+use App\Enum\SeasonMode;
 use App\Model\Device\Hydrophore;
 
 final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
@@ -25,6 +26,13 @@ final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceS
     public function isActive(Hook $hook): bool
     {
         return (float)$hook->getValue() > Hydrophore::BOUNDARY_POWER;
+    }
+
+    public function showOnDashboard(): bool
+    {
+        $season = $this->configRepository->getValueByName('season_mode');
+
+        return $season !== SeasonMode::Winter->value;
     }
 
     public function getPriority(): int

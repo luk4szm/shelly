@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    // Pobieramy wysokość z rodzica (.card-body), usuwając "px" z wartości style.height
+    const parentBody = elChart.closest('.card-body');
+    const chartHeight = parentBody ? parseInt(window.getComputedStyle(parentBody).height) : 222;
+
     let chart = null;
 
     const fetchData = async () => {
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const options = {
             chart: {
                 type: 'line',
-                height: 322,
+                height: chartHeight * 0.9,
                 animations: { enabled: true },
                 toolbar: { show: false }
             },

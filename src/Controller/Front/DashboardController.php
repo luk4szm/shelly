@@ -4,6 +4,7 @@ namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
 use App\Repository\AirQualityRepository;
+use App\Repository\ConfigRepository;
 use App\Repository\HookRepository;
 use App\Repository\Process\ScheduledProcessRepository;
 use App\Repository\WeatherForecastRepository;
@@ -24,6 +25,7 @@ final class DashboardController extends AbstractController
         #[AutowireIterator('app.shelly.daily_stats')] iterable          $dailyStatsCalculators,
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
+        ConfigRepository                                                $configRepository,
         HeatingPumpService                                              $heatingPumpService,
         AirQualityRepository                                            $airQualityRepository,
         WeatherForecastRepository                                       $weatherRepository,
@@ -70,14 +72,14 @@ final class DashboardController extends AbstractController
             ];
         }
 
-        $airQuality = $airQualityRepository->findLast();
-
+        $airQuality        = $airQualityRepository->findLast();
         $temperature15m    = $hookRepository->findActualTempForLocation('bufor');
         $temperature05m    = $hookRepository->findActualTempForLocation('bufor-solary');
         $tempRecirculation = $hookRepository->findActualTempForLocation('podl-powrot-recyrkulacja');
         $bufferEnergy      = 1.163 * (($temperature15m->getValue() + $temperature05m->getValue()) / 2 - $tempRecirculation->getValue());
 
         return $this->render('front/dashboard/index.html.twig', [
+            'season'      => $configRepository->getValueByName('season_mode'),
             'buffer'      => [
                 'energy'          => $bufferEnergy,
                 'temperature_15m' => $temperature15m,

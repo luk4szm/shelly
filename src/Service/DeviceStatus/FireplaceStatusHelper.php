@@ -3,6 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
+use App\Enum\SeasonMode;
 use App\Model\Device\Fireplace;
 
 final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
@@ -30,6 +31,13 @@ final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceSt
     public function isHeatingAppliance(): bool
     {
         return true;
+    }
+
+    public function showOnDashboard(): bool
+    {
+        $season = $this->configRepository->getValueByName('season_mode');
+
+        return $season !== SeasonMode::Summer->value;
     }
 
     public function getPriority(): int

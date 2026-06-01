@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Front;
 
 use App\Entity\HeatingNote;
+use App\Enum\SeasonMode;
 use App\Form\HeatingNoteType;
 use App\Model\DateRange;
+use App\Repository\ConfigRepository;
 use App\Repository\HeatingNoteRepository;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
@@ -24,7 +26,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HeatingController extends AbstractController
 {
     #[Route('', name: 'index')]
-    public function index(Request $request, HeatingNoteRepository $noteRepository): Response
+    public function index(
+        Request               $request,
+        ConfigRepository      $configRepository,
+        HeatingNoteRepository $noteRepository,
+    ): Response
     {
         $form = $this->createForm(HeatingNoteType::class)->handleRequest($request);
 
@@ -40,9 +46,10 @@ final class HeatingController extends AbstractController
         }
 
         return $this->render('front/heating/index.html.twig', [
-            'date'  => $request->query->get('date'),
-            'form'  => $form->createView(),
-            'notes' => $noteRepository->findForDate(new \DateTime()),
+            'season' => $configRepository->getValueByName('season_mode'),
+            'date'   => $request->query->get('date'),
+            'form'   => $form->createView(),
+            'notes'  => $noteRepository->findForDate(new \DateTime()),
         ]);
     }
 
@@ -52,6 +59,7 @@ final class HeatingController extends AbstractController
         LocationFinder                                                  $locationFinder,
         HookRepository                                                  $hookRepository,
         HeatingNoteRepository                                           $noteRepository,
+        ConfigRepository                                                $configRepository,
         TemperatureGraphHandler                                         $graphHandler,
         #[AutowireIterator('app.shelly.device_status_helper')] iterable $statusHelpers,
         LocationRegistry                                                $locationRegistry,
@@ -61,6 +69,11 @@ final class HeatingController extends AbstractController
         $to        = (clone $from)->setTime(23, 59, 59);
         $isToday   = $from->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
         $locations = $locationFinder->getLocations($request->query->get('locations', 'heating-full'));
+        $season    = $configRepository->getValueByName('season_mode');
+
+        if ($season === SeasonMode::Summer->value) {
+            $locations = array_filter($locations, fn(string $location): bool => $location !== 'kominek');
+        }
 
         $currentDayHooks = $hookRepository->findLocationTemperatures(
             $from,

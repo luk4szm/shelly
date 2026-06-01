@@ -6,6 +6,7 @@ use App\Entity\Hook;
 use App\Model\DateRange;
 use App\Model\DeviceStatus;
 use App\Model\Status;
+use App\Repository\ConfigRepository;
 use App\Repository\HookRepository;
 use App\Utils\TimeUtils;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,7 +19,8 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
     private int        $pointer;
 
     public function __construct(
-        protected readonly HookRepository $hookRepository,
+        protected readonly HookRepository   $hookRepository,
+        protected readonly ConfigRepository $configRepository,
     ) {
     }
 

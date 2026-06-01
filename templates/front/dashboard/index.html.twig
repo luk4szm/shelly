@@ -24,7 +24,9 @@
         <div class="row row-deck row-cards align-items-stretch">
             <div class="col-md-4 col-12 d-inline">
                 {% include 'front/dashboard/_partials/weather.html.twig' %}
-                {% include 'front/dashboard/_partials/heating_controllers.html.twig' %}
+                {% if season != constant('App\\Enum\\SeasonMode::Summer').value %}
+                    {% include 'front/dashboard/_partials/heating_controllers.html.twig' %}
+                {% endif %}
             </div>
             <div class="col-md-8 col-12 d-none d-md-flex">
                 {% include 'front/dashboard/_partials/heating_chart.html.twig' %}
@@ -61,6 +63,6 @@
     <script src="{{ asset('js/device_status.js') }}"></script>
     <script src="{{ asset('js/device_control.js') }}?v=20260520.1"></script>
     <script src="{{ asset('js/location_temperatures.js') }}"></script>
-    <script src="{{ asset('js/heating_simple_chart.js') }}"></script>
+    <script src="{{ asset('js/heating_simple_chart.js') }}?v=20260601"></script>
     <script src="{{ asset('js/heating_modal.js') }}"></script>
 {% endblock %}
