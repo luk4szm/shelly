@@ -23,7 +23,7 @@
             </button>
         </div>
     {% endif %}
-    {% if config.occupancy_mode == 'sleep' %}
+    {% if config.occupancy_mode == 'sleeping' %}
         <div class="col-12">
             <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="waking">
                 Pobudka
@@ -33,6 +33,6 @@
 </div>
 <div class="row">
     <div class="col-12">
-        <div id="scene-controller-status"></div>
+        <div class="scene-controller-status"></div>
     </div>
 </div>

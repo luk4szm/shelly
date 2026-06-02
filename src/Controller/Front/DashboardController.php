@@ -80,6 +80,7 @@ final class DashboardController extends AbstractController
 
         return $this->render('front/dashboard/index.html.twig', [
             'season'      => $configRepository->getValueByName('season_mode'),
+            'occupancy'   => $configRepository->getValueByName('occupancy_mode'),
             'buffer'      => [
                 'energy'          => $bufferEnergy,
                 'temperature_15m' => $temperature15m,

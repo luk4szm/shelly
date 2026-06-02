@@ -4,8 +4,8 @@ $(document).ready(function () {
     const feedbackDisplayDuration = 2000;
     const sceneStepDelay = 2000; // 2 seconds delay between scene steps
     const apiCallDelay = 1000; // 1 second delay between API calls to respect Shelly Cloud limits
-    const statusClearDelay = 10000; // 10 seconds to clear the status display
-    const getStatusDisplay = () => $('#scene-controller-status');
+    const statusClearDelay = 3000; // 3 seconds to clear the status display
+    const getStatusDisplay = () => $('.scene-controller-status');
 
     /**
      * Funkcja pomocnicza do resetowania przycisku do jego pierwotnego stanu.
@@ -91,7 +91,10 @@ $(document).ready(function () {
             setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
 
             setTimeout(() => {
-                getStatusDisplay().html('');
+                getStatusDisplay().empty();
+                if (isSuccess) {
+                    button.closest('.scene-hideable-div').hide();
+                }
             }, statusClearDelay);
         }
 
@@ -158,7 +161,7 @@ $(document).ready(function () {
                 }
                 getStatusDisplay().append(`<div>${step.text}</div>`);
 
-                performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "sleep" });
+                performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "sleeping" });
                 return;
             }
 

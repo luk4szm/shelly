@@ -21,6 +21,18 @@
 
 {% block pageBody %}
     <div class="container-xl">
+        {% if occupancy == constant('App\\Enum\\OccupancyMode::Sleeping').value %}
+            {{ _self.scene_button("waking", "Pobudka") }}
+        {% endif %}
+        {% if occupancy == constant('App\\Enum\\OccupancyMode::Away').value %}
+            {{ _self.scene_button("coming", "Wracam do domu") }}
+        {% endif %}
+        {% if occupancy == constant('App\\Enum\\OccupancyMode::Home').value %}
+            {% set currentHour = "now"|date('H')|number_format %}
+            {% if currentHour >= 23 or currentHour < 4 %}
+                {{ _self.scene_button("sleeping", "Idziemy spać") }}
+            {% endif %}
+        {% endif %}
         <div class="row row-deck row-cards align-items-stretch">
             <div class="col-md-4 col-12 d-inline">
                 {% include 'front/dashboard/_partials/weather.html.twig' %}
@@ -61,8 +73,32 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/device_status.js') }}"></script>
-    <script src="{{ asset('js/device_control.js') }}?v=20260601"></script>
+    <script src="{{ asset('js/device_control.js') }}?v=20260602"></script>
     <script src="{{ asset('js/location_temperatures.js') }}"></script>
     <script src="{{ asset('js/heating_simple_chart.js') }}?v=20260601"></script>
     <script src="{{ asset('js/heating_modal.js') }}"></script>
 {% endblock %}
+
+{% macro scene_button(action, label, controller = 'scene', map_hash = null) %}
+    <div class="row d-md-none mb-3 scene-hideable-div">
+        <div class="col-12">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button class="btn btn-azure btn-5 long-press-btn w-100"
+                                    data-controller="{{ controller }}"
+                                    data-action="{{ action }}"
+                                    {% if map_hash %}data-map-hash="{{ map_hash }}"{% endif %}>
+                                <span>{{ label }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="scene-controller-status"></div>
+        </div>
+    </div>
+{% endmacro %}
