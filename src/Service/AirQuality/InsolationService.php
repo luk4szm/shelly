@@ -10,6 +10,11 @@ readonly class InsolationService
         private AirQualityRepository $repository,
     ) {}
 
+    public function getActualInsolation(): float
+    {
+        return $this->repository->findLastInsolationReading();
+    }
+
     public function store(float $value): void
     {
         $lastValue     = $this->repository->findLastInsolationReading();

@@ -2,22 +2,24 @@
 
 namespace App\EventSubscriber;
 
+use App\Enum\InsolationLevel;
 use App\Event\Hook\TvHookEvent;
 use App\Model\Device\Tv;
 use App\Model\Device\TvLedsBoard;
 use App\Model\Device\TvLedsCabinet;
 use App\Model\Device\TvLedsMonitor;
-use App\Service\Date\DateSunInfo;
+use App\Service\AirQuality\InsolationService;
 use App\Service\Shelly\Light\ShellyLightService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
 class TvHookSubscriber implements EventSubscriberInterface
 {
-    private const TV_ON_CACHE_KEY = 'tv_on';
+    public const TV_ON_CACHE_KEY = 'tv_on';
 
     public function __construct(
         private readonly ShellyLightService      $shellyLightService,
+        private readonly InsolationService       $insolationService,
         private readonly NamespacedPoolInterface $cache,
     ) {
     }
@@ -71,7 +73,7 @@ class TvHookSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            if (DateSunInfo::isDarkOutside()) {
+            if ($this->insolationService->getActualInsolation() <= InsolationLevel::IndoorLightsOn->value) {
                 // Sequence of turning on the mood light
                 $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
                 sleep(1);
