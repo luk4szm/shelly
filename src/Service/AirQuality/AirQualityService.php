@@ -33,7 +33,7 @@ class AirQualityService
         $airQuality->setPm25($this->getSensorValue('SDS_P2'));
         $airQuality->setTemperature($temperature);
         $airQuality->setPerceivedTemperature($this->calculatePerceivedTemperature($temperature, $humidity));
-        $airQuality->setPressure(round($pressure / 100, 2));
+        $airQuality->setPressure(null); // TODO: revert after replace BME sensor
         $airQuality->setHumidity($humidity);
         $airQuality->calculateSeaLevelPressure($_ENV['ALTITUDE']);
 
