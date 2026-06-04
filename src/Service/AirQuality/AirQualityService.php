@@ -25,6 +25,7 @@ class AirQualityService
 
         $temperature = $this->getSensorValue('BME280_temperature');
         $humidity    = $this->getSensorValue('BME280_humidity');
+        $pressure    = $this->getSensorValue('BME280_pressure') - 54123; // tmp
 
         $airQuality = new AirQuality();
         $airQuality->setMeasuredAt(new \DateTime());
@@ -32,7 +33,7 @@ class AirQualityService
         $airQuality->setPm25($this->getSensorValue('SDS_P2'));
         $airQuality->setTemperature($temperature);
         $airQuality->setPerceivedTemperature($this->calculatePerceivedTemperature($temperature, $humidity));
-        $airQuality->setPressure(round($this->getSensorValue('BME280_pressure') / 100, 2));
+        $airQuality->setPressure(round($pressure / 100, 2));
         $airQuality->setHumidity($humidity);
         $airQuality->calculateSeaLevelPressure($_ENV['ALTITUDE']);
 
