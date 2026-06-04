@@ -12,11 +12,13 @@
                 Wychodzę z domu
             </button>
         </div>
-        <div class="col-12 d-block d-md-none">
-            <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="kindergarten-work" data-map-hash="dWahzDmZqDqt7Bfv9">
-                Przedszkole -> Forum
-            </button>
-        </div>
+        {% if 'ROLE_ADMIN' in app.user.roles %}
+            <div class="col-12 d-block d-md-none">
+                <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="kindergarten-work" data-map-hash="dWahzDmZqDqt7Bfv9">
+                    Przedszkole -> Forum
+                </button>
+            </div>
+        {% endif %}
         <div class="col-12">
             <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="sleeping">
                 Idziemy spać
