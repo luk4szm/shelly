@@ -21,14 +21,16 @@
 
 {% block pageBody %}
     <div class="container-xl">
+        {% set currentHour = "now"|date('H')|number_format %}
         {% if occupancy == constant('App\\Enum\\OccupancyMode::Sleeping').value %}
-            {{ _self.scene_button("waking", "Pobudka") }}
+            {% if currentHour >= 4 or currentHour < 20 %}
+                {{ _self.scene_button("waking", "Pobudka") }}
+            {% endif %}
         {% endif %}
         {% if occupancy == constant('App\\Enum\\OccupancyMode::Away').value %}
             {{ _self.scene_button("coming", "Wracam do domu") }}
         {% endif %}
         {% if occupancy == constant('App\\Enum\\OccupancyMode::Home').value %}
-            {% set currentHour = "now"|date('H')|number_format %}
             {% if currentHour >= 23 or currentHour < 4 %}
                 {{ _self.scene_button("sleeping", "Idziemy spać") }}
             {% endif %}
