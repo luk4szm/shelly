@@ -11,6 +11,7 @@ use App\Model\Device\KitchenLedsTop;
 use App\Model\Device\TvLedsBoard;
 use App\Model\Device\TvLedsCabinet;
 use App\Model\Device\TvLedsMonitor;
+use App\Model\Scene\TurnOffKitchenLightsScene;
 use App\Model\Scene\TurnOffLightsScene;
 use App\Repository\ConfigRepository;
 use App\Service\Shelly\Light\ShellyLightService;
@@ -42,7 +43,11 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
         $insolation = $event->getInsolation();
         $config     = $this->configRepository->getAllValues();
 
-        // When we are at home, it starts to turn gray outside, and we have the automatic lights on
+        /**
+         * Przejście z dnia w tryb zmierzchu
+         * Kiedy jesteśmy w domu i automatyczne światła są włączone - zapalamy światła w kuchni i przy TV
+         * Jeśli tv jest włączony zapalamy tylko te w kuchni
+         */
         if (
             $insolation < InsolationLevel::IndoorLightsOn->value
             && $config['daylight_mode'] === DaylightMode::Day->value
@@ -53,7 +58,7 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             ) {
                 $tvLightsStatusCache = $this->cache->getItem(TvHookSubscriber::TV_ON_CACHE_KEY);
 
-                if (!$tvLightsStatusCache->isHit() || $tvLightsStatusCache->get() !== true) {
+                if (!$tvLightsStatusCache->isHit() && $tvLightsStatusCache->get() !== true) {
                     $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
                     sleep(1);
                     $this->shellyLightService->turnOn(new TvLedsBoard(), white: 10);
@@ -72,10 +77,13 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // When we are at home, it is dark outside and we have the automatic lights on
+        /**
+         * Przejście ze zmierzchu w tryb nocny
+         * Kiedy jesteśmy w domu i automatyczne światła zewnętrze są włączone - zapalamy światła na ogrodzie
+         */
         if (
             $insolation < InsolationLevel::OutdoorLightsOn->value
-            && $config['daylight_mode'] !== DaylightMode::Night
+            && $config['daylight_mode'] !== DaylightMode::Night->value
         ) {
             if (
                 $config['occupancy_mode'] === 'home'
@@ -89,10 +97,13 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // When we are at home, it is dark outside and we have the automatic lights on
+        /**
+         * Poranek - przejście z nocy w tryb zmierzchu
+         * Wyłączamy światła na ogrodzie
+         */
         if (
             $insolation > InsolationLevel::OutdoorLightsOff->value
-            && $config['daylight_mode'] === DaylightMode::Night
+            && $config['daylight_mode'] === DaylightMode::Night->value
         ) {
             $this->shellySwitchService->switch(Garland::DEVICE_ID, Garland::CHANNEL, 'off');
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Twilight);
@@ -100,12 +111,23 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // When we are at home, it is dark outside and we have the automatic lights on
+        /**
+         * Pełny dzień - przejście zw zmierzchu w tryb dzienny
+         * Wyłączamy światła w domu
+         */
         if (
             $insolation > InsolationLevel::IndoorLightsOff->value
-            && $config['daylight_mode'] !== DaylightMode::Day
+            && $config['daylight_mode'] !== DaylightMode::Day->value
         ) {
-            $this->shellySceneService->trigger(TurnOffLightsScene::ID); // turn off lights
+            $tvLightsStatusCache = $this->cache->getItem(TvHookSubscriber::TV_ON_CACHE_KEY);
+
+            if ($tvLightsStatusCache->isHit() && $tvLightsStatusCache->get() === true) {
+                // turn off kitchen lights scene
+                $this->shellySceneService->trigger(TurnOffKitchenLightsScene::ID);
+            } else {
+                // turn off all lights scene
+                $this->shellySceneService->trigger(TurnOffLightsScene::ID);
+            }
 
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Day);
 

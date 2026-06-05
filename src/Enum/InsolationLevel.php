@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum InsolationLevel: int
 {
-    case IndoorLightsOn   = 75;
-    case IndoorLightsOff  = 80;
-    case OutdoorLightsOn  = 40;
-    case OutdoorLightsOff = 50;
+    case IndoorLightsOn   = 80;
+    case IndoorLightsOff  = 85;
+    case OutdoorLightsOn  = 30;
+    case OutdoorLightsOff = 40;
 }
