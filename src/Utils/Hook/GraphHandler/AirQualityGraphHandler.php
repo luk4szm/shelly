@@ -17,12 +17,14 @@ class AirQualityGraphHandler
 
     public static function serializeWeatherData(AirQuality $airQuality): array
     {
+        $toFloat = fn($value) => $value !== null ? (float)$value : null;
+
         return [
             'measuredAt'           => $airQuality->getMeasuredAt()->format('Y-m-d H:i:s'),
-            'temperature'          => (float)$airQuality->getTemperature(),
-            'perceivedTemperature' => (float)$airQuality->getPerceivedTemperature(),
-            'humidity'             => (float)$airQuality->getHumidity(),
-            'pressure'             => (float)$airQuality->getSeaLevelPressure(),
+            'temperature'          => $toFloat($airQuality->getTemperature()),
+            'perceivedTemperature' => $toFloat($airQuality->getPerceivedTemperature()),
+            'humidity'             => $toFloat($airQuality->getHumidity()),
+            'pressure'             => $toFloat($airQuality->getSeaLevelPressure()),
         ];
     }
 }

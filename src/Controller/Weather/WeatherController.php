@@ -177,9 +177,16 @@ class WeatherController extends AbstractController
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
 
-            $out['temperature'][] = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
-            $out['humidity'][] = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
-            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+            $mapToFloats = fn(string $prefix, array $row) => [
+                $row[$prefix . '_open'] !== null ? (float)$row[$prefix . '_open'] : null,
+                $row[$prefix . '_high'] !== null ? (float)$row[$prefix . '_high'] : null,
+                $row[$prefix . '_low'] !== null ? (float)$row[$prefix . '_low'] : null,
+                $row[$prefix . '_close'] !== null ? (float)$row[$prefix . '_close'] : null,
+            ];
+
+            $out['temperature'][]      = [$ts, $mapToFloats('temperature', $r)];
+            $out['humidity'][]         = [$ts, $mapToFloats('humidity', $r)];
+            $out['seaLevelPressure'][] = [$ts, $mapToFloats('seaLevelPressure', $r)];
         }
 
         return $this->json($out);
@@ -210,9 +217,16 @@ class WeatherController extends AbstractController
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['month_start']))->getTimestamp() * 1000;
 
-            $out['temperature'][] = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
-            $out['humidity'][] = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
-            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+            $mapToFloats = fn(string $prefix, array $row) => [
+                $row[$prefix . '_open'] !== null ? (float)$row[$prefix . '_open'] : null,
+                $row[$prefix . '_high'] !== null ? (float)$row[$prefix . '_high'] : null,
+                $row[$prefix . '_low'] !== null ? (float)$row[$prefix . '_low'] : null,
+                $row[$prefix . '_close'] !== null ? (float)$row[$prefix . '_close'] : null,
+            ];
+
+            $out['temperature'][]      = [$ts, $mapToFloats('temperature', $r)];
+            $out['humidity'][]         = [$ts, $mapToFloats('humidity', $r)];
+            $out['seaLevelPressure'][] = [$ts, $mapToFloats('seaLevelPressure', $r)];
         }
 
         return $this->json($out);
