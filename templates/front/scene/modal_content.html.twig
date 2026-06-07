@@ -1,5 +1,5 @@
 <div class="row text-center g-5">
-    {% if config.occupancy_mode == 'away' %}
+    {% if config.occupancy_mode in ['away', 'vacation'] %}
         <div class="col-12">
             <button class="btn btn-primary btn-5 long-press-btn" data-controller="scene" data-action="coming">
                 Wracam do domu

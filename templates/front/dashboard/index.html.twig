@@ -47,11 +47,13 @@
             </div>
         </div>
     </div>
-    <div id="devices_controllers" class="container-xl mt-3">
-        <div class="row row-deck row-cards">
-            {% include 'front/dashboard/_partials/device_controllers.html.twig' %}
+    {% if occupancy != constant('App\\Enum\\OccupancyMode::Vacation').value %}
+        <div id="devices_controllers" class="container-xl mt-3">
+            <div class="row row-deck row-cards">
+                {% include 'front/dashboard/_partials/device_controllers.html.twig' %}
+            </div>
         </div>
-    </div>
+    {% endif %}
     <div id="reloadable-box">
         <div id="devices_status" class="container-xl mt-3" data-device-names="{{ devices|map((device) => device.name)|join('|') }}">
             <div class="row row-cards">
