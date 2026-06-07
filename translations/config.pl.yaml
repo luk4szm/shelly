@@ -5,6 +5,7 @@ occupancy_mode:
     home: W domu
     away: Poza domem
     sleeping: Śpimy
+    vacation: Wakacje
 
 daylight_mode:
     day: Dzień
