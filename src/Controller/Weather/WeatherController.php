@@ -8,6 +8,7 @@ use App\Entity\AirQuality;
 use App\Entity\WeatherForecast;
 use App\Repository\AirQualityRepository;
 use App\Repository\WeatherForecastRepository;
+use App\Service\AirQuality\InvalidAirQualityReadingDetector;
 use App\Utils\Hook\GraphHandler\AirQualityGraphHandler;
 use App\Utils\Hook\GraphHandler\WeatherForecastGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,18 +21,22 @@ class WeatherController extends AbstractController
 {
     #[Route('/daily', name: 'daily', methods: ['GET'])]
     public function daily(
-        Request                   $request,
-        WeatherForecastRepository $forecastRepository,
-        AirQualityRepository      $airQualityRepository,
+        Request                          $request,
+        WeatherForecastRepository        $forecastRepository,
+        AirQualityRepository             $airQualityRepository,
+        InvalidAirQualityReadingDetector $invalidReadingDetector,
     ): Response
     {
+        $date = $this->resolveRequestedDate($request->query->get('date'));
+
         return $this->render('front/weather/daily.html.twig', [
-            'date' => $request->query->get('date'),
-            'airQuality' => [
+            'date'          => $date->format('Y-m-d'),
+            'cleanupFields' => $invalidReadingDetector->getFieldChoices(),
+            'airQuality'    => [
                 'actual' => $airQualityRepository->findLast(),
-                'daily'  => $airQualityRepository->findAverageForDate(new \DateTime($request->query->get('date', ''))),
+                'daily'  => $airQualityRepository->findAverageForDate($date),
             ],
-            'forecast' => [
+            'forecast'      => [
                 'actual' => $forecastRepository->findForecastForDate(),
                 'daily'  => [],
             ],
@@ -40,7 +45,7 @@ class WeatherController extends AbstractController
 
     #[Route('/monthly', name: 'monthly', methods: ['GET'])]
     public function monthly(
-        Request              $request,
+        Request $request,
         AirQualityRepository $airQualityRepository,
     ): Response
     {
@@ -54,9 +59,9 @@ class WeatherController extends AbstractController
         }
 
         return $this->render('front/weather/monthly.html.twig', [
-            'date' => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
+            'date'       => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
             'airQuality' => [
-                'monthly'  => $averages,
+                'monthly' => $averages,
             ],
         ]);
     }
@@ -77,9 +82,9 @@ class WeatherController extends AbstractController
         }
 
         return $this->render('front/weather/yearly.html.twig', [
-            'date' => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
+            'date'       => isset($date) ? $date->format('Y-m-d') : $from->format('Y-m-d'),
             'airQuality' => [
-                'yearly'  => $averages,
+                'yearly' => $averages,
             ],
         ]);
     }
@@ -88,7 +93,7 @@ class WeatherController extends AbstractController
     public function getAirQualityData(Request $request, AirQualityRepository $airQualityRepository): Response
     {
         return $this->json(
-            array_map(function (AirQuality $airQuality) {
+            array_map(static function (AirQuality $airQuality) {
                 return AirQualityGraphHandler::serializeAirQuality($airQuality);
             }, $airQualityRepository->findForDate(new \DateTime($request->query->get('date'))))
         );
@@ -136,7 +141,6 @@ class WeatherController extends AbstractController
             // Pełne ostatnie 12 miesięcy (np. od 1-go dnia miesiąca rok temu do ostatniego dnia poprzedniego miesiąca)
             $to   = new \DateTime('last day of this month 23:59:59');
             $from = (new \DateTime('first day of this month 00:00:00'))->modify('-11 months');
-
             $rows = $airQualityRepository->findDailyAveragesForRange($from, $to);
         }
 
@@ -177,7 +181,7 @@ class WeatherController extends AbstractController
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['day']))->getTimestamp() * 1000;
 
-            $mapToFloats = fn(string $prefix, array $row) => [
+            $mapToFloats = static fn(string $prefix, array $row) => [
                 $row[$prefix . '_open'] !== null ? (float)$row[$prefix . '_open'] : null,
                 $row[$prefix . '_high'] !== null ? (float)$row[$prefix . '_high'] : null,
                 $row[$prefix . '_low'] !== null ? (float)$row[$prefix . '_low'] : null,
@@ -217,7 +221,7 @@ class WeatherController extends AbstractController
         foreach ($rows as $r) {
             $ts = (new \DateTime($r['month_start']))->getTimestamp() * 1000;
 
-            $mapToFloats = fn(string $prefix, array $row) => [
+            $mapToFloats = static fn(string $prefix, array $row) => [
                 $row[$prefix . '_open'] !== null ? (float)$row[$prefix . '_open'] : null,
                 $row[$prefix . '_high'] !== null ? (float)$row[$prefix . '_high'] : null,
                 $row[$prefix . '_low'] !== null ? (float)$row[$prefix . '_low'] : null,
@@ -257,7 +261,13 @@ class WeatherController extends AbstractController
 
             $out['temperature'][]      = [$ts, [(float)$r['temperature_open'], (float)$r['temperature_high'], (float)$r['temperature_low'], (float)$r['temperature_close']]];
             $out['humidity'][]         = [$ts, [(float)$r['humidity_open'], (float)$r['humidity_high'], (float)$r['humidity_low'], (float)$r['humidity_close']]];
-            $out['seaLevelPressure'][] = [$ts, [(float)$r['seaLevelPressure_open'], (float)$r['seaLevelPressure_high'], (float)$r['seaLevelPressure_low'], (float)$r['seaLevelPressure_close']]];
+            $out['seaLevelPressure'][] = [$ts, [
+                    (float)$r['seaLevelPressure_open'],
+                    (float)$r['seaLevelPressure_high'],
+                    (float)$r['seaLevelPressure_low'],
+                    (float)$r['seaLevelPressure_close'],
+                ],
+            ];
         }
 
         return $this->json($out);
@@ -272,18 +282,27 @@ class WeatherController extends AbstractController
     {
         $date = $request->query->get('date');
 
-        $airQualityInfo = array_map(function (AirQuality $airQuality) {
-                return AirQualityGraphHandler::serializeWeatherData($airQuality);
-            }, $airQualityRepository->findForDate(new \DateTime($date)));
+        $airQualityInfo = array_map(static function (AirQuality $airQuality) {
+            return AirQualityGraphHandler::serializeWeatherData($airQuality);
+        }, $airQualityRepository->findForDate(new \DateTime($date)));
 
         if ($date < (new \DateTime())->format('Y-m-d')) {
             return $this->json($airQualityInfo);
         }
 
-        $forecastData = array_map(function (WeatherForecast $weatherForecast) {
+        $forecastData = array_map(static function (WeatherForecast $weatherForecast) {
             return WeatherForecastGraphHandler::serializeForecast($weatherForecast);
         }, $forecastRepository->findForestForRestOfDay(new \DateTime($date)));
 
         return $this->json(array_merge($airQualityInfo, $forecastData));
+    }
+
+    private function resolveRequestedDate(mixed $dateValue): \DateTimeImmutable
+    {
+        if (is_string($dateValue) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateValue)) {
+            return new \DateTimeImmutable($dateValue);
+        }
+
+        return new \DateTimeImmutable('today');
     }
 }

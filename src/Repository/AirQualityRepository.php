@@ -29,6 +29,19 @@ class AirQualityRepository extends CrudRepository
             ->andWhere('aq.measuredAt <= :to')
             ->setParameter('from', (clone $date)->setTime(0, 0))
             ->setParameter('to', (clone $date)->setTime(23, 59, 59))
+            ->orderBy('aq.measuredAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findForPeriod(\DateTimeInterface $from, \DateTimeInterface $to): array
+    {
+        return $this->createQueryBuilder('aq')
+            ->where('aq.measuredAt >= :from')
+            ->andWhere('aq.measuredAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('aq.measuredAt', 'ASC')
             ->getQuery()
             ->getResult();
     }

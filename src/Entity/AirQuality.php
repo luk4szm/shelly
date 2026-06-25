@@ -18,10 +18,10 @@ class AirQuality
     #[ORM\Column(nullable: true)]
     private ?int $sensor = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $pm25 = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $pm10 = null;
 
     #[ORM\Column(nullable: true)]
@@ -76,7 +76,7 @@ class AirQuality
         return $this->pm25;
     }
 
-    public function setPm25(float $pm25): static
+    public function setPm25(?float $pm25): static
     {
         $this->pm25 = $pm25;
 
@@ -88,7 +88,7 @@ class AirQuality
         return $this->pm10;
     }
 
-    public function setPm10(float $pm10): static
+    public function setPm10(?float $pm10): static
     {
         $this->pm10 = $pm10;
 

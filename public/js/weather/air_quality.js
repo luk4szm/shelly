@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Elementy sterujące i kontenery wykresów
     const dateInput = document.getElementById('wheater_date');
     const prevBtn = document.getElementById('prev-day-btn');
     const nextBtn = document.getElementById('next-day-btn');
@@ -23,12 +22,164 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Instancje wykresów
     let airChart = null;
     let weatherChart = null;
+    let cleanupPreviewIds = [];
 
-    // Narzędzia
+    const cleanupModal = document.getElementById('weather-invalid-readings-modal');
+    const cleanupDateLabel = document.getElementById('weather-invalid-date-label');
+    const cleanupFieldInput = document.getElementById('weather-invalid-field');
+    const cleanupFromInput = document.getElementById('weather-invalid-from-time');
+    const cleanupToInput = document.getElementById('weather-invalid-to-time');
+    const cleanupPreviewBtn = document.getElementById('weather-invalid-preview-btn');
+    const cleanupApplyBtn = document.getElementById('weather-invalid-apply-btn');
+    const cleanupStatus = document.getElementById('weather-invalid-status');
+    const cleanupError = document.getElementById('weather-invalid-error');
+    const cleanupEmpty = document.getElementById('weather-invalid-empty');
+    const cleanupSummary = document.getElementById('weather-invalid-summary');
+    const cleanupPreview = document.getElementById('weather-invalid-preview');
+    const cleanupPreviewBody = document.getElementById('weather-invalid-preview-body');
+
     const formatDate = (date) => date.toISOString().split('T')[0];
+    const isValidDateStr = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+    const syncCleanupDate = () => {
+        if (cleanupDateLabel) {
+            cleanupDateLabel.textContent = dateInput.value || '-';
+        }
+    };
+
+    const setCleanupStatus = (message = '') => {
+        if (cleanupStatus) {
+            cleanupStatus.textContent = message;
+        }
+    };
+
+    const hideCleanupFeedback = () => {
+        if (cleanupError) {
+            cleanupError.classList.add('d-none');
+            cleanupError.textContent = '';
+        }
+
+        if (cleanupEmpty) {
+            cleanupEmpty.classList.add('d-none');
+            cleanupEmpty.textContent = '';
+        }
+
+        if (cleanupSummary) {
+            cleanupSummary.classList.add('d-none');
+            cleanupSummary.innerHTML = '';
+        }
+    };
+
+    const resetCleanupPreview = () => {
+        cleanupPreviewIds = [];
+        hideCleanupFeedback();
+        setCleanupStatus('');
+
+        if (cleanupPreviewBody) {
+            cleanupPreviewBody.innerHTML = '';
+        }
+
+        if (cleanupPreview) {
+            cleanupPreview.classList.add('d-none');
+        }
+
+        if (cleanupApplyBtn) {
+            cleanupApplyBtn.classList.add('d-none');
+            cleanupApplyBtn.disabled = true;
+            cleanupApplyBtn.textContent = 'Zmień na null';
+        }
+    };
+
+    const setCleanupBusy = (isBusy, phase = 'preview') => {
+        if (cleanupPreviewBtn) {
+            cleanupPreviewBtn.disabled = isBusy;
+            cleanupPreviewBtn.textContent = isBusy && phase === 'preview' ? 'Szukam…' : 'Pokaż podejrzane odczyty';
+        }
+
+        if (cleanupApplyBtn) {
+            cleanupApplyBtn.disabled = isBusy || cleanupPreviewIds.length === 0;
+            cleanupApplyBtn.textContent = isBusy && phase === 'apply' ? 'Zmieniam…' : 'Zmień na null';
+        }
+    };
+
+    const validateCleanupTimeRange = () => {
+        if (cleanupFromInput && cleanupToInput && cleanupFromInput.value && cleanupToInput.value && cleanupFromInput.value > cleanupToInput.value) {
+            throw new Error('Godzina początkowa nie może być późniejsza niż końcowa.');
+        }
+    };
+
+    const buildCleanupPayload = () => ({
+        date: dateInput.value,
+        field: cleanupFieldInput ? cleanupFieldInput.value : null,
+        fromTime: cleanupFromInput && cleanupFromInput.value ? cleanupFromInput.value : null,
+        toTime: cleanupToInput && cleanupToInput.value ? cleanupToInput.value : null,
+    });
+
+    const fetchCleanupJson = async (url, payload) => {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
+        return data;
+    };
+
+    const renderCleanupPreview = (data) => {
+        resetCleanupPreview();
+
+        cleanupPreviewIds = Array.isArray(data.candidates)
+            ? data.candidates.map((candidate) => candidate.id).filter((id) => Number.isInteger(id))
+            : [];
+
+        if (!cleanupPreviewIds.length) {
+            if (cleanupEmpty) {
+                cleanupEmpty.classList.remove('d-none');
+                cleanupEmpty.textContent = 'Nie znaleziono podejrzanych odczytów dla wybranego zakresu.';
+            }
+
+            return;
+        }
+
+        if (cleanupSummary) {
+            cleanupSummary.classList.remove('d-none');
+            cleanupSummary.innerHTML = `<div class="alert alert-warning mb-0">Znaleziono <strong>${data.count}</strong> podejrzanych odczytów dla parametru <strong>${data.fieldLabel}</strong> w zakresie ${data.fromTime} - ${data.toTime}.</div>`;
+        }
+
+        if (cleanupPreviewBody) {
+            cleanupPreviewBody.innerHTML = data.candidates.map((candidate) => {
+                const reasons = Array.isArray(candidate.reasons) ? candidate.reasons.join('<br>') : '';
+
+                return `
+                    <tr>
+                        <td>${candidate.measuredAt}</td>
+                        <td>${candidate.value} ${data.unit}</td>
+                        <td class="text-muted">${reasons}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        if (cleanupPreview) {
+            cleanupPreview.classList.remove('d-none');
+        }
+
+        if (cleanupApplyBtn) {
+            cleanupApplyBtn.classList.remove('d-none');
+            cleanupApplyBtn.disabled = false;
+        }
+    };
 
     const updateNextButtonState = () => {
         const today = new Date();
@@ -53,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             return true;
         }
+
         return false;
     };
 
@@ -81,18 +233,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         dateInput.value = newVal;
+        syncCleanupDate();
+        resetCleanupPreview();
         setUrlDateParam(newVal);
         updateNextButtonState();
         loadAll(newVal);
         reloadAirQualityCards();
     };
 
-    // Odczyt daty ze znacznika data-role-date
     const dateHolder = document.querySelector('[data-role-date]');
     const dateFromDataAttr = dateHolder ? (dateHolder.getAttribute('data-role-date') || '').trim() : '';
-    const isValidDateStr = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
 
-    // API: pobieranie danych
     const fetchAirQuality = async (dateStr) => {
         try {
             if (elAir) elAir.innerHTML = '<div class="text-center p-4">Ładowanie…</div>';
@@ -117,37 +268,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Transformacje danych
     const transformAir = (raw) => {
         if (!Array.isArray(raw)) return { series: [] };
         const points = raw
-            .map(r => {
+            .map((r) => {
                 const t = new Date(r.measuredAt).getTime();
                 if (Number.isNaN(t)) return null;
                 return {
                     x: t,
                     pm25: typeof r.pm25 === 'number' ? r.pm25 : null,
-                    pm10: typeof r.pm10 === 'number' ? r.pm10 : null
+                    pm10: typeof r.pm10 === 'number' ? r.pm10 : null,
                 };
             })
             .filter(Boolean)
             .sort((a, b) => a.x - b.x);
 
-        const pm25 = points.filter(p => p.pm25 != null).map(p => ({ x: p.x, y: p.pm25 }));
-        const pm10 = points.filter(p => p.pm10 != null).map(p => ({ x: p.x, y: p.pm10 }));
+        const pm25 = points.filter((p) => p.pm25 != null).map((p) => ({ x: p.x, y: p.pm25 }));
+        const pm10 = points.filter((p) => p.pm10 != null).map((p) => ({ x: p.x, y: p.pm10 }));
 
         return {
             series: [
                 { name: 'PM2.5', data: pm25 },
-                { name: 'PM10', data: pm10 }
-            ]
+                { name: 'PM10', data: pm10 },
+            ],
         };
     };
 
     const transformWeather = (raw) => {
         if (!Array.isArray(raw)) return { series: [] };
         const pts = raw
-            .map(r => {
+            .map((r) => {
                 const t = new Date(r.measuredAt).getTime();
                 if (Number.isNaN(t)) return null;
                 return {
@@ -155,18 +305,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     pressure: typeof r.pressure === 'number' ? r.pressure : null,
                     temperature: typeof r.temperature === 'number' ? r.temperature : null,
                     perceivedTemperature: typeof r.perceivedTemperature === 'number' ? r.perceivedTemperature : null,
-                    humidity: typeof r.humidity === 'number' ? r.humidity : null
+                    humidity: typeof r.humidity === 'number' ? r.humidity : null,
                 };
             })
             .filter(Boolean)
             .sort((a, b) => a.x - b.x);
 
-        const pressureAll = pts.filter(p => p.pressure != null).map(p => ({ x: p.x, y: p.pressure }));
-        const temperatureAll = pts.filter(p => p.temperature != null).map(p => ({ x: p.x, y: p.temperature }));
-        const perceivedTemperature = pts.filter(p => p.perceivedTemperature != null).map(p => ({ x: p.x, y: p.perceivedTemperature }));
-        const humidity = pts.filter(p => p.humidity != null).map(p => ({ x: p.x, y: p.humidity }));
+        const pressureAll = pts.filter((p) => p.pressure != null).map((p) => ({ x: p.x, y: p.pressure }));
+        const temperatureAll = pts.filter((p) => p.temperature != null).map((p) => ({ x: p.x, y: p.temperature }));
+        const perceivedTemperature = pts.filter((p) => p.perceivedTemperature != null).map((p) => ({ x: p.x, y: p.perceivedTemperature }));
+        const humidity = pts.filter((p) => p.humidity != null).map((p) => ({ x: p.x, y: p.humidity }));
 
-        // LOGIKA PODZIAŁU LINII
         const cutoffTime = new Date().getTime();
         const tempSolid = [];
         const tempDashed = [];
@@ -183,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (pt.x >= cutoffTime) pressureDashed.push(pt);
         });
 
-        // Ciągłość linii (łączenie punktu styku)
         const ensureContinuity = (solid, dashed) => {
             if (solid.length > 0 && dashed.length > 0) {
                 const lastSolid = solid[solid.length - 1];
@@ -202,23 +350,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 { name: 'Temperatura', data: tempSolid, type: 'area' },
                 { name: 'Prognoza temp.', data: tempDashed, type: 'area' },
                 { name: 'Temp. odczuwalna', data: perceivedTemperature, type: 'line' },
-                { name: 'Wilgotność', data: humidity, type: 'area' }
-            ]
+                { name: 'Wilgotność', data: humidity, type: 'area' },
+            ],
         };
     };
 
-    // Renderery
     const renderAir = ({ series }) => {
         if (!elAir) return;
 
         const selectedDateStr = dateInput.value;
         const todayStr = formatDate(new Date());
-
         const isFuture = selectedDateStr > todayStr;
         const containerChart = elAir.closest('.row');
         const containerCards = document.getElementById('air_quality_data_cards');
-
-        const hasData = series.some(s => s.data.length > 0);
+        const hasData = series.some((s) => s.data.length > 0);
 
         if (isFuture && !hasData) {
             if (containerChart) containerChart.style.display = 'none';
@@ -229,12 +374,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!hasData) {
-            if (airChart) { airChart.destroy(); airChart = null; }
+            if (airChart) {
+                airChart.destroy();
+                airChart = null;
+            }
             elAir.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
 
-        // Obliczanie zakresu osi X (od północy do północy wybranego dnia)
         const selectedDate = new Date(dateInput.value);
         const minX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0).getTime();
         const maxX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59).getTime();
@@ -245,57 +392,66 @@ document.addEventListener('DOMContentLoaded', function () {
             stroke: { curve: 'smooth', width: 2 },
             fill: {
                 type: 'gradient',
-                gradient: { shadeIntensity: 0.3, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 50, 100] }
+                gradient: { shadeIntensity: 0.3, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 50, 100] },
             },
             dataLabels: { enabled: false },
             markers: { size: 0, hover: { sizeOffset: 2 } },
             tooltip: {
-                shared: true, intersect: false, theme: 'dark',
+                shared: true,
+                intersect: false,
+                theme: 'dark',
                 x: { format: 'dd MMM, HH:mm' },
-                y: { formatter: v => (v == null ? '' : `${v.toFixed(1)} µg/m³`) }
+                y: { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} µg/m³`) },
             },
             xaxis: {
                 type: 'datetime',
                 labels: { format: 'HH:mm', datetimeUTC: false },
                 min: minX,
-                max: maxX
+                max: maxX,
             },
             yaxis: {
-                min: 0, forceNiceScale: true,
-                labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) },
-                title: { text: 'µg/m³' }
+                min: 0,
+                forceNiceScale: true,
+                labels: { formatter: (v) => (v == null ? '' : `${v.toFixed(0)}`) },
+                title: { text: 'µg/m³' },
             },
             grid: { strokeDashArray: 4 },
             legend: { show: true, position: 'bottom' },
-            colors: ['#ff6b6b', '#4dabf7']
+            colors: ['#ff6b6b', '#4dabf7'],
         };
+
         elAir.innerHTML = '';
-        if (!airChart) { airChart = new ApexCharts(elAir, options); airChart.render(); }
-        else { airChart.updateOptions(options, true, true); }
+        if (!airChart) {
+            airChart = new ApexCharts(elAir, options);
+            airChart.render();
+        } else {
+            airChart.updateOptions(options, true, true);
+        }
     };
 
     const renderWeather = ({ series }) => {
         if (!elWeather) return;
-        const hasData = series.some(s => s.data.length > 0);
+        const hasData = series.some((s) => s.data.length > 0);
         if (!hasData) {
-            if (weatherChart) { weatherChart.destroy(); weatherChart = null; }
+            if (weatherChart) {
+                weatherChart.destroy();
+                weatherChart = null;
+            }
             elWeather.innerHTML = '<div class="text-center p-4">Brak danych.</div>';
             return;
         }
 
-        // Zakres osi X (cała doba)
         const selectedDate = new Date(dateInput.value);
         const minX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0).getTime();
         const maxX = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59).getTime();
 
-        // 1. WSPÓLNY ZAKRES DLA CIŚNIENIA
-        // series[0]: Ciśnienie, series[1]: Prognoza ciśnienia
         const pressureValues = []
-            .concat((series[0].data || []).map(p => p.y))
-            .concat((series[1].data || []).map(p => p.y))
-            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+            .concat((series[0].data || []).map((p) => p.y))
+            .concat((series[1].data || []).map((p) => p.y))
+            .filter((v) => typeof v === 'number' && !Number.isNaN(v));
 
-        let pressureMin = null, pressureMax = null;
+        let pressureMin = null;
+        let pressureMax = null;
         if (pressureValues.length > 0) {
             const rawPMin = Math.min(...pressureValues);
             const rawPMax = Math.max(...pressureValues);
@@ -304,15 +460,14 @@ document.addEventListener('DOMContentLoaded', function () {
             pressureMax = Math.ceil(rawPMax + pPadding);
         }
 
-        // 2. WSPÓLNY ZAKRES DLA TEMPERATURY
-        // series[2]: Temperatura, series[3]: Prognoza temp., series[4]: Odczuwalna
         const tempValues = []
-            .concat((series[2].data || []).map(p => p.y))
-            .concat((series[3].data || []).map(p => p.y))
-            .concat((series[4].data || []).map(p => p.y))
-            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+            .concat((series[2].data || []).map((p) => p.y))
+            .concat((series[3].data || []).map((p) => p.y))
+            .concat((series[4].data || []).map((p) => p.y))
+            .filter((v) => typeof v === 'number' && !Number.isNaN(v));
 
         let tempMin = null;
+        let tempMax = null;
         if (tempValues.length > 0) {
             const rawMin = Math.min(...tempValues);
             const rawMax = Math.max(...tempValues);
@@ -323,13 +478,13 @@ document.addEventListener('DOMContentLoaded', function () {
             tempMax = Math.ceil(valForMax / 2) * 2;
         }
 
-        // 2. DYNAMICZNY ZAKRES DLA WILGOTNOŚCI
         const humiditySeries = series[5] || { data: [] };
         const humValues = (humiditySeries.data || [])
-            .map(p => p.y)
-            .filter(v => typeof v === 'number' && !Number.isNaN(v));
+            .map((p) => p.y)
+            .filter((v) => typeof v === 'number' && !Number.isNaN(v));
 
-        let humMin = 0, humMax = 100;
+        let humMin = 0;
+        let humMax = 100;
         if (humValues.length > 0) {
             const rawHumMin = Math.min(...humValues);
             const rawHumMax = Math.max(...humValues);
@@ -344,15 +499,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'line',
                 stacked: false,
                 toolbar: { show: false },
-                animations: { enabled: true }
+                animations: { enabled: true },
             },
             series,
-            // Kolory: Ciśnienie(S), Ciśnienie(D), Temp(S), Temp(D), Odczuwalna, Wilgotność
             colors: ['#7463f0', '#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0'],
             stroke: {
                 curve: 'smooth',
                 width: [2, 1.5, 2, 1.5, 1.5, 2],
-                dashArray: [0, 5, 0, 5, 6, 0]
+                dashArray: [0, 5, 0, 5, 6, 0],
             },
             fill: {
                 type: ['solid', 'solid', 'gradient', 'gradient', 'solid', 'gradient'],
@@ -360,8 +514,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     shadeIntensity: 0.3,
                     opacityFrom: 0.35,
                     opacityTo: 0.05,
-                    stops: [0, 99, 100]
-                }
+                    stops: [0, 99, 100],
+                },
             },
             dataLabels: { enabled: false },
             markers: { size: 0, hover: { sizeOffset: 2 } },
@@ -369,47 +523,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'datetime',
                 labels: { format: 'HH:mm', datetimeUTC: false },
                 min: minX,
-                max: maxX
+                max: maxX,
             },
             yaxis: [
                 {
                     seriesName: 'Ciśnienie',
                     opposite: true,
                     title: { text: 'hPa' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}`) },
-                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {})
+                    labels: { formatter: (v) => (v == null ? '' : `${v.toFixed(0)}`) },
+                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {}),
                 },
                 {
                     seriesName: 'Prognoza ciśnienia',
                     show: false,
                     opposite: true,
-                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {})
+                    ...(pressureMin !== null && pressureMax !== null ? { min: pressureMin, max: pressureMax } : {}),
                 },
                 {
                     seriesName: 'Temperatura',
                     opposite: false,
                     title: { text: '°C' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(1)}°C`) },
-                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
+                    labels: { formatter: (v) => (v == null ? '' : `${v.toFixed(1)}°C`) },
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {}),
                 },
                 {
                     seriesName: 'Prognoza temp.',
                     show: false,
-                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {}),
                 },
                 {
                     seriesName: 'Temp. odczuwalna',
                     show: false,
-                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {})
+                    ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {}),
                 },
                 {
                     seriesName: 'Wilgotność',
                     opposite: true,
                     title: { text: '%' },
-                    labels: { formatter: v => (v == null ? '' : `${v.toFixed(0)}%`) },
+                    labels: { formatter: (v) => (v == null ? '' : `${v.toFixed(0)}%`) },
                     min: humMin,
-                    max: humMax
-                }
+                    max: humMax,
+                },
             ],
             grid: { strokeDashArray: 4 },
             legend: { show: true, position: 'bottom' },
@@ -419,14 +573,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 theme: 'dark',
                 x: { format: 'dd MMM, HH:mm' },
                 y: [
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`)}, // Ciśnienie
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} hPa`)}, // Prognoza ciśnienia
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temperatura
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Prognoza temp.
-                    {formatter: v => (v == null ? '' : `${v.toFixed(1)} °C`)},  // Temp. odczuwalna
-                    {formatter: v => (v == null ? '' : `${v.toFixed(0)} %`)}    // Wilgotność
-                ]
-            }
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} hPa`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} hPa`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} °C`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} °C`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} °C`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(0)} %`) },
+                ],
+            },
         };
 
         elWeather.innerHTML = '';
@@ -439,7 +593,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Odświeżanie kart (zachowuje wybraną datę)
     const reloadAirQualityCards = async () => {
         const container = document.getElementById('air_quality_data_cards');
         if (!container) return;
@@ -461,63 +614,145 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Ładowanie danych dla danej daty
     const loadAll = async (dateStr) => {
-            const tasks = [];
-            if (elAir) tasks.push(fetchAirQuality(dateStr).then(raw => renderAir(transformAir(raw || []))));
-            if (elWeather) tasks.push(fetchWeather(dateStr).then(raw => renderWeather(transformWeather(raw || []))));
-            // Usunięto automatyczne odświeżanie kart przy starcie; zostawiamy je wyłącznie na zmianę daty.
-            // tasks.push(reloadAirQualityCards());
-            await Promise.allSettled(tasks);
-        };
+        const tasks = [];
+        if (elAir) tasks.push(fetchAirQuality(dateStr).then((raw) => renderAir(transformAir(raw || []))));
+        if (elWeather) tasks.push(fetchWeather(dateStr).then((raw) => renderWeather(transformWeather(raw || []))));
+        await Promise.allSettled(tasks);
+    };
 
-        // Handlery
-        prevBtn.addEventListener('click', () => {
-            changeDate(-1);
+    if (cleanupModal) {
+        cleanupModal.addEventListener('show.bs.modal', () => {
+            syncCleanupDate();
+            resetCleanupPreview();
         });
-        nextBtn.addEventListener('click', () => {
-            changeDate(1);
-        });
-        dateInput.addEventListener('change', (e) => {
-            const val = e.target.value;
-            if (!isValidDateStr(val)) return;
 
-            if (checkForecastTransition(val)) {
+        [cleanupFieldInput, cleanupFromInput, cleanupToInput].forEach((element) => {
+            if (!element) {
                 return;
             }
 
-            setUrlDateParam(val);
-            updateNextButtonState();
-            loadAll(val);
-            // Po ręcznej zmianie daty przeładuj karty
-            reloadAirQualityCards();
+            element.addEventListener('change', () => {
+                resetCleanupPreview();
+                syncCleanupDate();
+            });
         });
 
-        // Reakcja na nawigację wstecz/przód (przywróć stan po zmianie historii)
-        window.addEventListener('popstate', () => {
-            const url = new URL(window.location.href);
-            const d = url.searchParams.get('date');
-            const dateStr = isValidDateStr(d) ? d : dateInput.value;
-            if (isValidDateStr(dateStr)) {
-                if (checkForecastTransition(dateStr, true)) {
+        if (cleanupPreviewBtn) {
+            cleanupPreviewBtn.addEventListener('click', async () => {
+                try {
+                    validateCleanupTimeRange();
+                    hideCleanupFeedback();
+                    setCleanupStatus('Analizuję odczyty…');
+                    setCleanupBusy(true, 'preview');
+                    const data = await fetchCleanupJson(cleanupModal.dataset.previewUrl, buildCleanupPayload());
+                    renderCleanupPreview(data);
+                    setCleanupStatus(cleanupPreviewIds.length ? 'Sprawdź listę i zatwierdź zmianę.' : 'Analiza zakończona.');
+                } catch (error) {
+                    resetCleanupPreview();
+                    if (cleanupError) {
+                        cleanupError.classList.remove('d-none');
+                        cleanupError.textContent = error.message || 'Nie udało się pobrać podglądu.';
+                    }
+                    setCleanupStatus('');
+                } finally {
+                    setCleanupBusy(false);
+                }
+            });
+        }
+
+        if (cleanupApplyBtn) {
+            cleanupApplyBtn.addEventListener('click', async () => {
+                if (!cleanupPreviewIds.length) {
                     return;
                 }
-                dateInput.value = dateStr;
-                updateNextButtonState();
-                loadAll(dateStr);
-                // Po przywróceniu stanu historii przeładuj karty
-                reloadAirQualityCards();
-            }
-        });
 
-        // Inicjalizacja
-        const urlDate = new URL(window.location.href).searchParams.get('date');
-        const initial = isValidDateStr(urlDate)
-            ? urlDate
-            : (isValidDateStr(dateFromDataAttr) ? dateFromDataAttr : (dateInput.value || formatDate(new Date())));
-        dateInput.value = initial;
-        setUrlDateParam(initial, true); // zsynchronizuj URL bez dodawania wpisu w historii
+                try {
+                    validateCleanupTimeRange();
+                    hideCleanupFeedback();
+                    setCleanupStatus('Zapisuję zmiany…');
+                    setCleanupBusy(true, 'apply');
+                    const data = await fetchCleanupJson(cleanupModal.dataset.applyUrl, {
+                        ...buildCleanupPayload(),
+                        ids: cleanupPreviewIds,
+                        _token: cleanupModal.dataset.csrfToken,
+                    });
+
+                    resetCleanupPreview();
+                    setCleanupStatus(`Zmieniono ${data.updated} odczytów na null.`);
+                    await Promise.allSettled([loadAll(dateInput.value), reloadAirQualityCards()]);
+
+                    if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+                        const instance = window.bootstrap.Modal.getOrCreateInstance(cleanupModal);
+                        instance.hide();
+                    } else {
+                        const dismiss = cleanupModal.querySelector('[data-bs-dismiss="modal"]');
+                        if (dismiss) {
+                            dismiss.click();
+                        }
+                    }
+                } catch (error) {
+                    if (cleanupError) {
+                        cleanupError.classList.remove('d-none');
+                        cleanupError.textContent = error.message || 'Nie udało się zapisać zmian.';
+                    }
+                    setCleanupStatus('');
+                } finally {
+                    setCleanupBusy(false);
+                }
+            });
+        }
+    }
+
+    prevBtn.addEventListener('click', () => {
+        changeDate(-1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        changeDate(1);
+    });
+
+    dateInput.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (!isValidDateStr(val)) return;
+
+        if (checkForecastTransition(val)) {
+            return;
+        }
+
+        syncCleanupDate();
+        resetCleanupPreview();
+        setUrlDateParam(val);
         updateNextButtonState();
-        // Na starcie NIE przeładowujemy kart, bo są już wyrenderowane serwerowo.
-        loadAll(initial);
+        loadAll(val);
+        reloadAirQualityCards();
+    });
+
+    window.addEventListener('popstate', () => {
+        const url = new URL(window.location.href);
+        const d = url.searchParams.get('date');
+        const dateStr = isValidDateStr(d) ? d : dateInput.value;
+        if (isValidDateStr(dateStr)) {
+            if (checkForecastTransition(dateStr, true)) {
+                return;
+            }
+            dateInput.value = dateStr;
+            syncCleanupDate();
+            resetCleanupPreview();
+            updateNextButtonState();
+            loadAll(dateStr);
+            reloadAirQualityCards();
+        }
+    });
+
+    const urlDate = new URL(window.location.href).searchParams.get('date');
+    const initial = isValidDateStr(urlDate)
+        ? urlDate
+        : (isValidDateStr(dateFromDataAttr) ? dateFromDataAttr : (dateInput.value || formatDate(new Date())));
+
+    dateInput.value = initial;
+    syncCleanupDate();
+    setUrlDateParam(initial, true);
+    updateNextButtonState();
+    loadAll(initial);
 });
