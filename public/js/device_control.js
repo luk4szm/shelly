@@ -34,6 +34,7 @@ $(document).ready(function () {
         'garage': '/garage/move',
         'config_set': '/config/set',
         'scene': '/scene/run',
+        'switch': '/device/switch/turn',
     };
 
     // Przeniesiono readApiUrls do globalnego zakresu dla dostępu w executeScene
@@ -48,12 +49,14 @@ $(document).ready(function () {
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
             { controller: 'garage', action: 'open', text: 'Otwieranie garażu...' },
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'switch', action: 'on', device_id: 'e4b3233b00ac', channel: 0, text: 'Włączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ],
         'leaving': [ // Wychodzę z domu
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'switch', action: 'off', device_id: 'e4b3233b00ac', channel: 0, text: 'Wyłączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_away', text: 'Zmieniam tryb domu na: <b>nieobecność</b>...' }
         ],
         'kindergarten-work': [ // Przedszkole -> Forum
@@ -64,10 +67,12 @@ $(document).ready(function () {
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'scene', action: '1776464366415', text: 'Wyłączam światła...' },
+            { controller: 'switch', action: 'off', device_id: 'e4b3233b00ac', channel: 0, text: 'Wyłączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_sleep', text: 'Zmieniam tryb domu na: <b>spanie</b>...' }
         ],
         'waking': [ // Pobudka
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'switch', action: 'on', device_id: 'e4b3233b00ac', channel: 0, text: 'Włączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ]
     };
@@ -198,6 +203,18 @@ $(document).ready(function () {
                 getStatusDisplay().append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, sceneRunUrl, {});
+                return;
+            }
+
+            if (step.controller === 'switch') {
+                const switchApiUrl = apiUrls['switch'];
+                getStatusDisplay().append(`<div>${step.text}</div>`);
+
+                performActionAjax(step, switchApiUrl, {
+                    "deviceId": step.device_id,
+                    "channel": step.channel,
+                    "action": step.action
+                });
                 return;
             }
 
