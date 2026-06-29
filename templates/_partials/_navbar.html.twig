@@ -45,13 +45,19 @@
                                     <span class="nav-link-title"> Devices </span>
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'piec'}) }}"> Piec </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'kominek'}) }}"> Kominek </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'solary'}) }}"> Solary </a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'pompa-zasilanie'}) }}"> Pompa - zasilanie </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'pompa-powrot'}) }}"> Pompa - powrót </a>
-                                    <div class="dropdown-divider"></div>
+                                    <div class="dropend">
+                                        <a class="dropdown-item dropdown-toggle show" href="#heating" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
+                                            Ogrzewanie
+                                        </a>
+                                        <div class="dropdown-menu show" data-bs-popper="static">
+                                            <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'piec'}) }}"> Piec </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'kominek'}) }}"> Kominek </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'solary'}) }}"> Solary </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'pompa-zasilanie'}) }}"> Pompa - zasilanie </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'pompa-powrot'}) }}"> Pompa - powrót </a>
+                                        </div>
+                                    </div>
                                     <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'tv'}) }}"> Tv </a>
                                     <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'hydrofor'}) }}"> Hydrofor </a>
                                 </div>
