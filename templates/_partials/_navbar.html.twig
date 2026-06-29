@@ -91,11 +91,18 @@
                                     <span class="nav-link-title"> Locations </span>
                                 </a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'salon'}) }}"> Salon </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'sypialnia'}) }}"> Sypialnia </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'stasiu'}) }}"> Stasiu </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'dziewczynki'}) }}"> Dziewczynki </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'biuro'}) }}"> Biuro </a>
+                                    <div class="dropend">
+                                        <a class="dropdown-item dropdown-toggle show" href="#rooms" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
+                                            Pokoje
+                                        </a>
+                                        <div class="dropdown-menu show" data-bs-popper="static">
+                                            <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'salon'}) }}"> Salon </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'sypialnia'}) }}"> Sypialnia </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'stasiu'}) }}"> Stasiu </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'dziewczynki'}) }}"> Dziewczynki </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'biuro'}) }}"> Biuro </a>
+                                        </div>
+                                    </div>
                                     <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'garage'}) }}"> Garaż </a>
                                     <a class="dropdown-item" href="{{ path('app_front_default_location_monthly', {'location': 'ogrod'}) }}"> Ogród </a>
                                     <a class="dropdown-item" href="{{ path('app_front_location_buffer_index') }}"> Bufor </a>
