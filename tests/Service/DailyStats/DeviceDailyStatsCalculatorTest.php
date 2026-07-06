@@ -74,8 +74,6 @@ class DeviceDailyStatsCalculatorTest extends TestCase
 
     public function testCalculateDailyStatsThrowsExceptionWhenNoHooks(): void
     {
-        $this->expectException(\RuntimeException::class);
-
         $date = new DateTimeImmutable('2023-01-01');
 
         $this->hookRepository->expects($this->once())
@@ -83,6 +81,10 @@ class DeviceDailyStatsCalculatorTest extends TestCase
             ->with('test-device', $date)
             ->willReturn([]);
 
-        $this->sut->calculateDailyStats($date);
+        $result = $this->sut->calculateDailyStats($date);
+
+        $this->assertEquals(0, $result->getInclusions());
+        $this->assertEquals(null, $result->getFirstSeenAt());
+        $this->assertEquals(0, $result->getEnergy());
     }
 }

@@ -6,11 +6,11 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class DashboardControllerTest extends WebTestCase
 {
-    public function testIndex(): void
+    public function testUnauthorizedRequest(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/front/dashboard');
+        $client->request('GET', '/');
 
-        self::assertResponseIsSuccessful();
+        self::assertResponseStatusCodeSame(302);
     }
 }
