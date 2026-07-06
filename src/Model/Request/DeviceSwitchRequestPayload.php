@@ -8,7 +8,7 @@ readonly class DeviceSwitchRequestPayload
 {
     public function __construct(
         #[Assert\NotBlank] public string                       $deviceId,
-        public int                                             $channel = 0,
         #[Assert\Choice(choices: ['on', 'off'])] public string $action,
+        public int                                             $channel = 0,
     ) {}
 }
