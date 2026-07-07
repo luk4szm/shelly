@@ -23,7 +23,7 @@
     <div class="container-xl">
         {% set currentHour = "now"|date('H')|number_format %}
         {% if occupancy == constant('App\\Enum\\OccupancyMode::Sleeping').value %}
-            {% if currentHour >= 4 or currentHour < 20 %}
+            {% if currentHour >= 4 and currentHour < 20 %}
                 {{ _self.scene_button("waking", "Pobudka") }}
             {% endif %}
         {% endif %}
