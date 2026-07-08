@@ -4,7 +4,7 @@ namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
 use App\Enum\SeasonMode;
-use App\Model\Device\Hydrophore;
+use App\Model\Device\Relay\Hydrophore;
 
 final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
@@ -15,7 +15,8 @@ final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceS
 
     public function getDeviceName(): string
     {
-        return Hydrophore::NAME;
+        return
+            Hydrophore::NAME;
     }
 
     public function getDeviceId(): string

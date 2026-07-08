@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\Fireplace;
+use App\Model\Device\PowerMeter\Fireplace;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\FireplaceStatusHelper;
 

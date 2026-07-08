@@ -2,8 +2,8 @@
 
 namespace App\Service\Shelly\Switch;
 
-use App\Model\Device\HeatingPumpReturn;
-use App\Model\Device\HeatingPumpSupply;
+use App\Model\Device\Relay\HeatingPumpReturn;
+use App\Model\Device\Relay\HeatingPumpSupply;
 
 readonly class HeatingPumpsService extends ShellySwitchService
 {

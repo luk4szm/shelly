@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Device\Hydration;
+namespace App\Model\Device\Valve;
 
 final class RotatingValve extends ValveDevice
 {

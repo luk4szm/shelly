@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Valve;
 
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 

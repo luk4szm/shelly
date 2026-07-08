@@ -4,7 +4,7 @@ namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
 use App\Enum\SeasonMode;
-use App\Model\Device\Fireplace;
+use App\Model\Device\PowerMeter\Fireplace;
 
 final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

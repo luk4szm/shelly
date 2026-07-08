@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\PowerMeter;
 
-final class Solars extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class Solars extends Device
 {
     public const NAME              = 'solary';
     public const DEVICE_ID         = '3030f9eb9e5c';

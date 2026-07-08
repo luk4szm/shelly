@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\Solars;
+use App\Model\Device\PowerMeter\Solars;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\SolarsStatusHelper;
 

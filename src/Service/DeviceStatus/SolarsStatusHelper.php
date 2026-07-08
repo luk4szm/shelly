@@ -3,7 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
-use App\Model\Device\Solars;
+use App\Model\Device\PowerMeter\Solars;
 
 final class SolarsStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

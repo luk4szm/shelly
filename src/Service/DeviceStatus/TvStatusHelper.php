@@ -3,7 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
-use App\Model\Device\Tv;
+use App\Model\Device\PowerMeter\Tv;
 
 final class TvStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

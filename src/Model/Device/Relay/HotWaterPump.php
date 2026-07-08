@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
-final class HotWaterPump extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class HotWaterPump extends Device
 {
     public const NAME              = 'pompa-cwu';
     public const DEVICE_ID         = '64b708097270';

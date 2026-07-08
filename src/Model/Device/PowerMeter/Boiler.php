@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\PowerMeter;
 
-final class Boiler extends Device implements DeviceInterface
+use App\Model\Device\Device;
+use App\Model\Device\DeviceInterface;
+
+final class Boiler extends Device
 {
     public const NAME              = 'piec';
     public const DEVICE_ID         = '5432046b0fd8';

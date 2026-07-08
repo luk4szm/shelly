@@ -2,7 +2,7 @@
 
 namespace App\Service\Shelly\Switch;
 
-use App\Model\Device\FireplacePump;
+use App\Model\Device\Relay\FireplacePump;
 
 readonly class FireplacePumpsService extends ShellySwitchService
 {

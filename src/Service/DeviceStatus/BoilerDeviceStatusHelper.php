@@ -3,7 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
-use App\Model\Device\Boiler;
+use App\Model\Device\PowerMeter\Boiler;
 
 final class BoilerDeviceStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

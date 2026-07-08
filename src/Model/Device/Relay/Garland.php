@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
-final class Garland extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class Garland extends Device
 {
     public const NAME              = 'girlanda';
     public const DEVICE_ID         = '345f45193b80';

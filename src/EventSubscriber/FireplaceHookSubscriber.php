@@ -3,7 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Event\Hook\FireplaceHookEvent;
-use App\Model\Device\Boiler;
+use App\Model\Device\PowerMeter\Boiler;
 use App\Repository\HookRepository;
 use App\Repository\UserRepository;
 use App\Service\Device\FireplacePumpService;

@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\PowerMeter;
 
-final class Tv extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class Tv extends Device
 {
     public const NAME              = 'tv';
     public const DEVICE_ID         = '84fce63e8abc';

@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Model\Device\BedLeds;
+use App\Model\Device\Light\BedLeds;
 use App\Service\Shelly\Light\ShellyLightService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

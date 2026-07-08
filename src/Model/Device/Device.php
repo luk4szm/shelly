@@ -2,7 +2,7 @@
 
 namespace App\Model\Device;
 
-abstract class Device
+abstract class Device implements DeviceInterface
 {
     public function getName(): string
     {

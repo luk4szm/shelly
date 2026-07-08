@@ -4,10 +4,10 @@ namespace App\EventSubscriber;
 
 use App\Enum\InsolationLevel;
 use App\Event\Hook\TvHookEvent;
-use App\Model\Device\Tv;
-use App\Model\Device\TvLedsBoard;
-use App\Model\Device\TvLedsCabinet;
-use App\Model\Device\TvLedsMonitor;
+use App\Model\Device\Light\TvLedsBoard;
+use App\Model\Device\Light\TvLedsCabinet;
+use App\Model\Device\Light\TvLedsMonitor;
+use App\Model\Device\PowerMeter\Tv;
 use App\Service\AirQuality\InsolationService;
 use App\Service\Shelly\Light\ShellyLightService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

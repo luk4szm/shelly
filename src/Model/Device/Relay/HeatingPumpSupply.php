@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
-final class HeatingPumpSupply extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class HeatingPumpSupply extends Device
 {
     public const NAME              = 'pompa-zasilanie';
     public const DEVICE_ID         = 'ecc9ff4b35e4';

@@ -123,7 +123,7 @@
                             {% for stat in device.monthlyData %}
                                 {% set gas = 0 %}
                                 {% if device.name == 'piec' %}
-                                    {% set gas = stat.energy|default(0) * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME') %}
+                                    {% set gas = stat.energy|default(0) * constant('App\\Model\\Device\\PowerMeter\\Boiler::EST_FUEL_CONSUME') %}
                                 {% endif %}
                                 {% set monthly_chart_data = monthly_chart_data|merge([{
                                     'date': stat.date|date('Y-m-d'),
@@ -180,7 +180,7 @@
                                         <td class="text-end text-nowrap">{{ row.energy ? row.energy|format_energy : '0 Wh' }}</td>
                                         {% if device.name == 'piec' %}
                                             <td class="text-end text-nowrap">
-                                                {{ (row.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
+                                                {{ (row.energy * constant('App\\Model\\Device\\PowerMeter\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}
                                             </td>
                                         {% endif %}
                                         <td class="text-end">{{ row.totalActiveTime ? row.totalActiveTime|readableDurationTime : '' }}</td>

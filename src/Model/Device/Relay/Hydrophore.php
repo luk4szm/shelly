@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
 use App\Model\Device\Device;
-use App\Model\Device\DeviceInterface;
 
-final class Hydrophore extends Device implements DeviceInterface
+final class Hydrophore extends Device
 {
     public const NAME              = 'hydrofor';
     public const DEVICE_ID         = 'fce8c0fd0a7c';

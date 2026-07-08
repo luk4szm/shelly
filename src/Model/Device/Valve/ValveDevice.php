@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Model\Device\Hydration;
+namespace App\Model\Device\Valve;
 
 use App\Model\Device\Device;
 use App\Model\Device\DeviceInterface;
-use App\Model\Device\ValveDeviceInterface;
 
-abstract class ValveDevice extends Device implements DeviceInterface, ValveDeviceInterface
+abstract class ValveDevice extends Device implements ValveDeviceInterface
 {
     public function __toString(): string
     {

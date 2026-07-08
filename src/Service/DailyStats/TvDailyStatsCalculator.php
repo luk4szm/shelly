@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\Tv;
+use App\Model\Device\PowerMeter\Tv;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\TvStatusHelper;
 

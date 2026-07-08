@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
-final class HeatingPumpReturn extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class HeatingPumpReturn extends Device
 {
     public const NAME              = 'pompa-powrot';
     public const DEVICE_ID         = 'ecc9ff4b35e4';

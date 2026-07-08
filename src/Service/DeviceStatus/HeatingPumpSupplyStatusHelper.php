@@ -3,7 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
-use App\Model\Device\HeatingPumpSupply;
+use App\Model\Device\Relay\HeatingPumpSupply;
 
 final class HeatingPumpSupplyStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

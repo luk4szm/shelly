@@ -2,7 +2,7 @@
 
 namespace App\Service\Shelly\Switch;
 
-use App\Model\Device\HotWaterPump;
+use App\Model\Device\Relay\HotWaterPump;
 
 final readonly class HotWaterPumpService extends ShellySwitchService
 {

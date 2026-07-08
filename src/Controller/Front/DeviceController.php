@@ -7,7 +7,7 @@ namespace App\Controller\Front;
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
 use App\Model\DateRange;
-use App\Model\Device\Boiler;
+use App\Model\Device\PowerMeter\Boiler;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;

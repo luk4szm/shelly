@@ -2,7 +2,7 @@
 
 namespace App\Service\Shelly\Switch;
 
-use App\Model\Device\Hydration\ValveDevice;
+use App\Model\Device\Valve\ValveDevice;
 use App\Service\Shelly\ShellyDeviceService;
 
 readonly class HydrationValveService extends ShellyDeviceService

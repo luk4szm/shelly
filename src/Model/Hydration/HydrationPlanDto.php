@@ -2,7 +2,7 @@
 
 namespace App\Model\Hydration;
 
-use App\Model\Device\Hydration\ValveDevice;
+use App\Model\Device\Valve\ValveDevice;
 
 class HydrationPlanDto
 {

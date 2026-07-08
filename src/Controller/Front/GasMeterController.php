@@ -6,11 +6,11 @@ namespace App\Controller\Front;
 
 use App\Form\GasMeterIndicationType;
 use App\Model\DateRange;
-use App\Model\Device\Boiler;
-use App\Repository\GasMeterRepository;
-use App\Service\DeviceStatus\BoilerDeviceStatusHelper;
+use App\Model\Device\PowerMeter\Boiler;
 use App\Model\DeviceStatus;
 use App\Model\Status;
+use App\Repository\GasMeterRepository;
+use App\Service\DeviceStatus\BoilerDeviceStatusHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

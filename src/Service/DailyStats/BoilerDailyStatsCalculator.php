@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\Boiler;
+use App\Model\Device\PowerMeter\Boiler;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\BoilerDeviceStatusHelper;
 

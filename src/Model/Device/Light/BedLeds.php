@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Light;
 
-final class BedLeds extends LightDevice implements DeviceInterface
+final class BedLeds extends LightDevice
 {
     public const NAME      = 'bed_leds';
     public const TYPE      = 'rgbw';

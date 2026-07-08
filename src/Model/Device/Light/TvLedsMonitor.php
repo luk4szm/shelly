@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Light;
 
-final class TvLedsMonitor extends LightDevice implements DeviceInterface
+final class TvLedsMonitor extends LightDevice
 {
     public const NAME      = 'tv_leds_monitor';
     public const TYPE      = 'white';

@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Relay;
 
-final class FireplacePump extends Device implements DeviceInterface
+use App\Model\Device\Device;
+
+final class FireplacePump extends Device
 {
     public const NAME              = 'pompa-kominek';
     public const DEVICE_ID         = 'cc7b5c8378b4';

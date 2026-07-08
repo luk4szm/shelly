@@ -2,7 +2,7 @@
 
 namespace App\Service\Hydration;
 
-use App\Model\Device\Hydration\ValveDevice;
+use App\Model\Device\Valve\ValveDevice;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class HydrationDeviceFinder

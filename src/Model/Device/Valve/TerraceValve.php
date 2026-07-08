@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Device\Hydration;
+namespace App\Model\Device\Valve;
 
-class TerraceValve extends ValveDevice
+final class TerraceValve extends ValveDevice
 {
     public const NAME             = 'hydration_valve_terrace';
     public const DEVICE_ID        = '30c922573230';

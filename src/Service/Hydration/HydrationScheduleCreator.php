@@ -4,7 +4,7 @@ namespace App\Service\Hydration;
 
 use App\Entity\Process\HydrationProcess;
 use App\Entity\Process\ScheduledProcess;
-use App\Model\Device\Hydration\ValveDevice;
+use App\Model\Device\Valve\ValveDevice;
 use App\Repository\Process\HydrationProcessRepository;
 use App\Service\Processable\StartHydrationProcess;
 use App\Service\Shelly\Switch\HydrationValveService;

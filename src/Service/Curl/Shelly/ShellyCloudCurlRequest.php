@@ -2,8 +2,8 @@
 
 namespace App\Service\Curl\Shelly;
 
-use App\Model\Device\Hydration\ValveDevice;
-use App\Model\Device\LightDevice;
+use App\Model\Device\Valve\ValveDevice;
+use App\Model\Device\Light\LightDevice;
 use App\Service\Curl\Curl;
 
 class ShellyCloudCurlRequest extends Curl

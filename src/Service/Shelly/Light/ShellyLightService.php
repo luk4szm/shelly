@@ -2,7 +2,7 @@
 
 namespace App\Service\Shelly\Light;
 
-use App\Model\Device\LightDevice;
+use App\Model\Device\Light\LightDevice;
 use App\Service\Shelly\ShellyDeviceService;
 
 readonly class ShellyLightService extends ShellyDeviceService

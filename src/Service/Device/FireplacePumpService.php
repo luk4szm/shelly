@@ -3,8 +3,8 @@
 namespace App\Service\Device;
 
 use App\Entity\Hook;
-use App\Model\Device\Fireplace;
-use App\Model\Device\FireplacePump;
+use App\Model\Device\PowerMeter\Fireplace;
+use App\Model\Device\Relay\FireplacePump;
 use App\Repository\HookRepository;
 use App\Service\Shelly\Switch\FireplacePumpsService;
 

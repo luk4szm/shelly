@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\Hydrophore;
+use App\Model\Device\Relay\Hydrophore;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\HydrophoreStatusHelper;
 

@@ -4,7 +4,7 @@ namespace App\Service\Processable;
 
 use App\Entity\Process\Process;
 use App\Entity\Process\RecurringProcess;
-use App\Model\Device\BedLeds;
+use App\Model\Device\Light\BedLeds;
 use App\Repository\Process\ProcessRepository;
 use App\Service\Shelly\Light\ShellyLightService;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;

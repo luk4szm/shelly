@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\HotWaterPump;
+use App\Model\Device\Relay\HotWaterPump;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\HotWaterPumpStatusHelper;
 

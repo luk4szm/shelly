@@ -3,7 +3,7 @@
 namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
-use App\Model\Device\HotWaterPump;
+use App\Model\Device\Relay\HotWaterPump;
 
 final class HotWaterPumpStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {

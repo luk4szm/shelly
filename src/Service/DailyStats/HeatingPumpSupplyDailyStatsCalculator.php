@@ -2,7 +2,7 @@
 
 namespace App\Service\DailyStats;
 
-use App\Model\Device\HeatingPumpSupply;
+use App\Model\Device\Relay\HeatingPumpSupply;
 use App\Repository\HookRepository;
 use App\Service\DeviceStatus\HeatingPumpSupplyStatusHelper;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Device;
+namespace App\Model\Device\Light;
 
-final class KitchenLedsBottom extends LightDevice implements DeviceInterface
+final class KitchenLedsBottom extends LightDevice
 {
     public const NAME      = 'kitchen_leds_bottom';
     public const TYPE      = 'white';

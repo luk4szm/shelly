@@ -25,7 +25,7 @@
                             <br>
                             <span class="ms-1">&#128498; {{ device.dailyStats.energy|default(0)|format_energy }}</span>
                             {% if device.name == 'piec' %}
-                                <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</span>
+                                <span class="ms-1">&#9832; {{ (device.dailyStats.energy * constant('App\\Model\\Device\\PowerMeter\\Boiler::EST_FUEL_CONSUME'))|format_gas_consume }}</span>
                             {% endif %}
                             {% if device.temperature is defined %}
                                 {% set comparativeValue = buffer.temperature_15m ? buffer.temperature_15m.value : 25 %}
