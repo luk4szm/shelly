@@ -16,6 +16,38 @@
           height: 0;
           display: none;
        }
+
+       .device-status-item {
+          width: 100%;
+       }
+
+       @media (min-width: 768px) {
+          .device-status-item {
+             width: 50%;
+          }
+       }
+
+       @media (min-width: 1200px) {
+          .device-status-item {
+             width: 25%;
+          }
+
+          .device-status-grid-1 .device-status-item,
+          .device-status-grid-2 .device-status-item,
+          .device-status-grid-3 .device-status-item,
+          .device-status-grid-4 .device-status-item {
+             flex: 1 0 0;
+             width: auto;
+          }
+
+          .device-status-grid-5 .device-status-item {
+             width: 33.333333%;
+          }
+
+          .device-status-grid-5 .device-status-item:nth-child(4) {
+             margin-left: 16.666667%;
+          }
+       }
     </style>
 {% endblock %}
 
@@ -56,7 +88,7 @@
     {% endif %}
     <div id="reloadable-box">
         <div id="devices_status" class="container-xl mt-3" data-device-names="{{ devices|map((device) => device.name)|join('|') }}">
-            <div class="row row-cards">
+            <div class="row row-cards device-status-grid-{{ devices|length }}">
                 {% include 'front/dashboard/_partials/device_status.html.twig' %}
             </div>
         </div>
