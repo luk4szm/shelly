@@ -4,7 +4,6 @@ namespace App\Command;
 
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\Device\DeviceFinder;
-use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 abstract class DailyStatsCommand extends DeviceCommand
@@ -19,10 +18,10 @@ abstract class DailyStatsCommand extends DeviceCommand
 
     protected function getDeviceDailyStatsCalculator(string $deviceName): DailyStatsCalculatorInterface
     {
-        /** @var DeviceStatusHelperInterface $helper */
+        /** @var DailyStatsCalculatorInterface $statsCalculator */
         foreach ($this->dailyStatsCalculators as $statsCalculator) {
             if ($statsCalculator->supports($deviceName)) {
-                return $statsCalculator->getCalculatorInstance();
+                return $statsCalculator;
             }
         }
 

@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\Relay\Hydrophore;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\HydrophoreStatusHelper;
 
-final class HydrophoreDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class HydrophoreDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository         $hookRepository,
-        HydrophoreStatusHelper $tvStatusHelper,
-    ) {
-        parent::__construct($hookRepository, $tvStatusHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === self::getDeviceName();
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(Hydrophore::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return Hydrophore::NAME;
+        return Hydrophore::class;
     }
 }

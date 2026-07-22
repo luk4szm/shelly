@@ -4,23 +4,28 @@ namespace App\Service\DailyStats;
 
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
+use App\Model\Device\DeviceInterface;
 use App\Repository\HookRepository;
-use App\Service\DeviceStatus\DeviceStatusHelper;
+use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use App\Utils\Hook\HookDurationUtil;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
 {
-    /** @var array{Hook} */
-    private array $hooks;
-
     public function __construct(
+        #[AutowireIterator('app.shelly.device_status_helper')]
+        private readonly iterable $statusHelpers,
         private readonly HookRepository $hookRepository,
-        private readonly DeviceStatusHelper $statusHelper,
     ) {}
 
-    public function getCalculatorInstance(): static
+    public function supports(string $device): bool
     {
-        return $this;
+        return $device === $this->getDeviceName();
+    }
+
+    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
+    {
+        return new \DateTimeImmutable($this->getDevice()::INSTALLATION_DATE) <= $date;
     }
 
     /**
@@ -33,13 +38,14 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
      */
     public function calculateDailyStats(\DateTimeInterface $date): DeviceDailyStats
     {
-        $this->getDailyHooks($date);
-
+        $hooks      = $this->getDailyHooks($date);
         $dailyStats = new DeviceDailyStats($this->getDeviceName(), $date);
 
-        if (empty($this->hooks)) {
-           return $dailyStats;
+        if (empty($hooks)) {
+            return $dailyStats;
         }
+
+        $statusHelper = $this->getStatusHelper();
 
         $activeTime       = 0; // seconds
         $runTime          = 0; // seconds
@@ -51,20 +57,20 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
         $firstSeenAt      = null;
         $lastSeenAt       = null;
 
-        for ($i = 0; $i < count($this->hooks); $i++) {
-            $isActive = $this->statusHelper->isActive($this->hooks[$i]);
-            $duration = HookDurationUtil::calculateHookDuration($this->hooks[$i], $this->hooks[$i + 1] ?? null);
+        for ($i = 0; $i < count($hooks); $i++) {
+            $isActive = $statusHelper->isActive($hooks[$i]);
+            $duration = HookDurationUtil::calculateHookDuration($hooks[$i], $hooks[$i + 1] ?? null);
 
             if ($isActive) {
                 if ($firstSeenAt === null) {
-                    $firstSeenAt = $this->hooks[$i]->getCreatedAt();
+                    $firstSeenAt = $hooks[$i]->getCreatedAt();
                 }
 
-                $lastSeenAt = $this->hooks[$i]->getCreatedAt();
+                $lastSeenAt = $hooks[$i]->getCreatedAt();
 
                 if (
                     $i !== 0
-                    && !$this->statusHelper->isActive($this->hooks[$i - 1])
+                    && !$statusHelper->isActive($hooks[$i - 1])
                 ) {
                     $inclusions++;
                 }
@@ -72,7 +78,7 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
                 $pauseTime      = 0;
                 $runTime        += $duration;
                 $activeTime     += $duration;
-                $energy         += $this->hooks[$i]->getValue() * $duration;
+                $energy         += $hooks[$i]->getValue() * $duration;
                 $longestRunTime = max($longestRunTime, $runTime);
             } else {
                 $runTime          = 0;
@@ -94,28 +100,49 @@ abstract class DeviceDailyStatsCalculator implements DailyStatsCalculatorInterfa
 
     /**
      * @param \DateTimeInterface $date
-     * @return void
+     * @return Hook[]
      * @throws \DateMalformedStringException
      */
-    private function getDailyHooks(\DateTimeInterface $date): void
+    private function getDailyHooks(\DateTimeInterface $date): array
     {
-        $this->hooks ??= $this->hookRepository->findHooksByDeviceAndDate($this->getDeviceName(), $date);
+        $hooks = $this->hookRepository->findHooksByDeviceAndDate($this->getDeviceName(), $date);
 
-        if (count($this->hooks) === 0) {
-            return;
+        if (count($hooks) === 0) {
+            return [];
         }
 
-        if ($this->hooks[0]->getCreatedAt()->format('H:i:s') === '00:00:00') {
-            return;
+        if ($hooks[0]->getCreatedAt()->format('H:i:s') === '00:00:00') {
+            return $hooks;
         }
 
         if (null !== $lastHookOfDayBefore = $this->hookRepository->findPreviousHookToDate($this->getDeviceName(), $date)) {
             $virtualFirstHook = clone $lastHookOfDayBefore;
             $virtualFirstHook->setCreatedAt(new \DateTimeImmutable((clone $date)->format('Y-m-d')));
 
-            array_unshift($this->hooks, $virtualFirstHook);
+            array_unshift($hooks, $virtualFirstHook);
         }
+
+        return $hooks;
     }
 
-    abstract public function getDeviceName(): string;
+    public function getDeviceName(): string
+    {
+        return $this->getDevice()::NAME;
+    }
+
+    private function getStatusHelper(): DeviceStatusHelperInterface
+    {
+        foreach ($this->statusHelpers as $statusHelper) {
+            if ($statusHelper->supports($this->getDeviceName())) {
+                return $statusHelper;
+            }
+        }
+
+        throw new \RuntimeException(sprintf('There is no configured status helper for the device called "%s"', $this->getDeviceName()));
+    }
+
+    /**
+     * @return class-string<DeviceInterface>
+     */
+    abstract protected function getDevice(): string;
 }

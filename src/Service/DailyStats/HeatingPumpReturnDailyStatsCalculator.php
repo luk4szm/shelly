@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\Relay\HeatingPumpReturn;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\HeatingPumpReturnStatusHelper;
 
-final class HeatingPumpReturnDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class HeatingPumpReturnDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository                $hookRepository,
-        HeatingPumpReturnStatusHelper $heatingPumpStatusHelper,
-    ) {
-        parent::__construct($hookRepository, $heatingPumpStatusHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === self::getDeviceName();
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(HeatingPumpReturn::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return HeatingPumpReturn::NAME;
+        return HeatingPumpReturn::class;
     }
 }

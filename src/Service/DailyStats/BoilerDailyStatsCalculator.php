@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\PowerMeter\Boiler;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\BoilerDeviceStatusHelper;
 
-final class BoilerDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class BoilerDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository           $hookRepository,
-        BoilerDeviceStatusHelper $boilerHelper,
-    ) {
-        parent::__construct($hookRepository,$boilerHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === Boiler::NAME;
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(Boiler::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return Boiler::NAME;
+        return Boiler::class;
     }
 }

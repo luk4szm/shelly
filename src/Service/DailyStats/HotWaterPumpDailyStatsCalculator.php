@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\Relay\HotWaterPump;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\HotWaterPumpStatusHelper;
 
-final class HotWaterPumpDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class HotWaterPumpDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository           $hookRepository,
-        HotWaterPumpStatusHelper $hotWaterPumpStatusHelper,
-    ) {
-        parent::__construct($hookRepository, $hotWaterPumpStatusHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === self::getDeviceName();
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(HotWaterPump::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return HotWaterPump::NAME;
+        return HotWaterPump::class;
     }
 }

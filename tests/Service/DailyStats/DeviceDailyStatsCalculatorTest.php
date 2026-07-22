@@ -4,29 +4,34 @@ namespace App\Tests\Service\DailyStats;
 
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
+use App\Model\Device\DeviceInterface;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DeviceDailyStatsCalculator;
-use App\Service\DeviceStatus\DeviceStatusHelper;
+use App\Service\DeviceStatus\DeviceStatusHelperInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 class DeviceDailyStatsCalculatorTest extends TestCase
 {
-    private HookRepository $hookRepository;
-    private DeviceStatusHelper $statusHelper;
-    private DeviceDailyStatsCalculator $sut;
+    private HookRepository              $hookRepository;
+    private DeviceStatusHelperInterface $statusHelper;
+    private DeviceDailyStatsCalculator  $sut;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->hookRepository = $this->createMock(HookRepository::class);
-        $this->statusHelper = $this->createMock(DeviceStatusHelper::class);
+        $this->statusHelper = $this->createMock(DeviceStatusHelperInterface::class);
 
-        $this->sut = new class($this->hookRepository, $this->statusHelper) extends DeviceDailyStatsCalculator {
-            public function getDeviceName(): string
+        $this->statusHelper->method('supports')
+            ->with(TestDailyStatsDevice::NAME)
+            ->willReturn(true);
+
+        $this->sut = new class([$this->statusHelper], $this->hookRepository) extends DeviceDailyStatsCalculator {
+            protected function getDevice(): string
             {
-                return 'test-device';
+                return TestDailyStatsDevice::class;
             }
         };
     }
@@ -72,7 +77,7 @@ class DeviceDailyStatsCalculatorTest extends TestCase
         $this->assertEquals(86349, $result->getLongestPauseTime());
     }
 
-    public function testCalculateDailyStatsThrowsExceptionWhenNoHooks(): void
+    public function testCalculateDailyStatsReturnsEmptyStatsWhenNoHooks(): void
     {
         $date = new DateTimeImmutable('2023-01-01');
 
@@ -81,10 +86,24 @@ class DeviceDailyStatsCalculatorTest extends TestCase
             ->with('test-device', $date)
             ->willReturn([]);
 
+        $this->statusHelper->expects($this->never())
+            ->method('isActive');
+
         $result = $this->sut->calculateDailyStats($date);
 
         $this->assertEquals(0, $result->getInclusions());
         $this->assertEquals(null, $result->getFirstSeenAt());
         $this->assertEquals(0, $result->getEnergy());
+    }
+}
+
+final class TestDailyStatsDevice implements DeviceInterface
+{
+    public const NAME              = 'test-device';
+    public const INSTALLATION_DATE = '2023-01-01';
+
+    public function getName(): string
+    {
+        return self::NAME;
     }
 }

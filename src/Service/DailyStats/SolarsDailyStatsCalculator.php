@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\PowerMeter\Solars;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\SolarsStatusHelper;
 
-final class SolarsDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class SolarsDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository     $hookRepository,
-        SolarsStatusHelper $solarsHelper,
-    ) {
-        parent::__construct($hookRepository, $solarsHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === self::getDeviceName();
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(Solars::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return Solars::NAME;
+        return Solars::class;
     }
 }

@@ -3,30 +3,11 @@
 namespace App\Service\DailyStats;
 
 use App\Model\Device\PowerMeter\Tv;
-use App\Repository\HookRepository;
-use App\Service\DeviceStatus\TvStatusHelper;
 
-final class TvDailyStatsCalculator extends DeviceDailyStatsCalculator implements DailyStatsCalculatorInterface
+final class TvDailyStatsCalculator extends DeviceDailyStatsCalculator
 {
-    public function __construct(
-        HookRepository $hookRepository,
-        TvStatusHelper $tvStatusHelper,
-    ) {
-        parent::__construct($hookRepository, $tvStatusHelper);
-    }
-
-    public function supports(string $device): bool
+    protected function getDevice(): string
     {
-        return $device === self::getDeviceName();
-    }
-
-    public function isDeviceInstalledOn(\DateTimeInterface $date): bool
-    {
-        return new \DateTime(Tv::INSTALLATION_DATE) <= $date;
-    }
-
-    public function getDeviceName(): string
-    {
-        return Tv::NAME;
+        return Tv::class;
     }
 }
