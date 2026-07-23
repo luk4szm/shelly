@@ -56,6 +56,9 @@
             "symfony/runtime": true
         },
         "bump-after-update": true,
+        "platform": {
+            "ext-redis": false
+        },
         "sort-packages": true
     },
     "autoload": {
