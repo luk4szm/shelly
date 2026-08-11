@@ -296,6 +296,118 @@ class HookRepository extends CrudRepository
         return $resultSet->fetchAllAssociative();
     }
 
+    public function findForWeeklyCandleChart(
+        string    $device,
+        string    $property,
+        \DateTime $from,
+        \DateTime $to
+    ): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT
+                DATE_SUB(DATE(hook.created_at), INTERVAL WEEKDAY(hook.created_at) DAY) AS period_start,
+                CAST(hook_open.value AS DECIMAL(10,2)) AS start_value,
+                MAX(CAST(hook.value AS DECIMAL(10,2))) AS max_value,
+                MIN(CAST(hook.value AS DECIMAL(10,2))) AS min_value,
+                CAST(hook_close.value AS DECIMAL(10,2)) AS end_value
+            FROM hook
+            JOIN (
+                SELECT
+                    YEARWEEK(created_at, 3) AS period_key,
+                    MIN(created_at) AS min_time,
+                    MAX(created_at) AS max_time
+                FROM hook
+                WHERE device = :device
+                  AND property = :property
+                  AND created_at >= :from
+                  AND created_at <= :to
+                GROUP BY period_key
+            ) AS period_times
+                ON YEARWEEK(hook.created_at, 3) = period_times.period_key
+            LEFT JOIN hook hook_open
+                ON hook_open.created_at = period_times.min_time
+               AND hook_open.device = :device
+               AND hook_open.property = :property
+            LEFT JOIN hook hook_close
+                ON hook_close.created_at = period_times.max_time
+               AND hook_close.device = :device
+               AND hook_close.property = :property
+            WHERE hook.device = :device
+              AND hook.property = :property
+              AND hook.created_at >= :from
+              AND hook.created_at <= :to
+            GROUP BY period_start, hook_open.value, hook_close.value
+            ORDER BY period_start ASC
+        ';
+
+        $resultSet = $conn->executeQuery($sql, [
+            'device'   => $device,
+            'property' => $property,
+            'from'     => $from->format('Y-m-d H:i:s'),
+            'to'       => $to->format('Y-m-d H:i:s'),
+        ]);
+
+        return $resultSet->fetchAllAssociative();
+    }
+
+    public function findForMonthlyCandleChart(
+        string    $device,
+        string    $property,
+        \DateTime $from,
+        \DateTime $to
+    ): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT
+                DATE_FORMAT(hook.created_at, \'%Y-%m-01\') AS period_start,
+                CAST(hook_open.value AS DECIMAL(10,2)) AS start_value,
+                MAX(CAST(hook.value AS DECIMAL(10,2))) AS max_value,
+                MIN(CAST(hook.value AS DECIMAL(10,2))) AS min_value,
+                CAST(hook_close.value AS DECIMAL(10,2)) AS end_value
+            FROM hook
+            JOIN (
+                SELECT
+                    DATE_FORMAT(created_at, \'%Y-%m\') AS period_key,
+                    MIN(created_at) AS min_time,
+                    MAX(created_at) AS max_time
+                FROM hook
+                WHERE device = :device
+                  AND property = :property
+                  AND created_at >= :from
+                  AND created_at <= :to
+                GROUP BY period_key
+            ) AS period_times
+                ON DATE_FORMAT(hook.created_at, \'%Y-%m\') = period_times.period_key
+            LEFT JOIN hook hook_open
+                ON hook_open.created_at = period_times.min_time
+               AND hook_open.device = :device
+               AND hook_open.property = :property
+            LEFT JOIN hook hook_close
+                ON hook_close.created_at = period_times.max_time
+               AND hook_close.device = :device
+               AND hook_close.property = :property
+            WHERE hook.device = :device
+              AND hook.property = :property
+              AND hook.created_at >= :from
+              AND hook.created_at <= :to
+            GROUP BY period_start, hook_open.value, hook_close.value
+            ORDER BY period_start ASC
+        ';
+
+        $resultSet = $conn->executeQuery($sql, [
+            'device'   => $device,
+            'property' => $property,
+            'from'     => $from->format('Y-m-d H:i:s'),
+            'to'       => $to->format('Y-m-d H:i:s'),
+        ]);
+
+        return $resultSet->fetchAllAssociative();
+    }
+
     private function createQueryBuilderForHooksByDevice(string $device, ?\DateTimeInterface $date = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('hook')

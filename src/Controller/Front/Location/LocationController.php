@@ -38,6 +38,14 @@ class LocationController extends AbstractController
         ]);
     }
 
+    #[Route('/yearly', name: 'yearly')]
+    public function yearly(string $location): Response
+    {
+        return $this->render('front/location/default/yearly.html.twig', [
+            'location' => $location,
+        ]);
+    }
+
     #[Route('/get-daily-data', name: 'get_daily_data')]
     public function getDailyData(
         Request        $request,
@@ -78,5 +86,30 @@ class LocationController extends AbstractController
         }
 
         return $this->json($hookRepository->findForCandleChart($location, $type, $from, $to));
+    }
+
+    #[Route('/get-yearly-data', name: 'get_yearly_data')]
+    public function getYearlyData(
+        Request        $request,
+        HookRepository $hookRepository,
+        string         $location,
+    ): Response {
+        $date = $request->query->get('date', '');
+        $type = $request->query->get('type');
+        $group = $request->query->get('group', 'weeks');
+
+        if ($date !== '' && preg_match('/^\d{4}$/', $date)) {
+            $from = new \DateTime($date . '-01-01 00:00:00');
+            $to   = (clone $from)->modify('last day of December')->setTime(23, 59, 59);
+        } else {
+            $to   = new \DateTime('last day of this month 23:59:59');
+            $from = (new \DateTime('first day of this month 00:00:00'))->modify('-11 months');
+        }
+
+        if ($group === 'months') {
+            return $this->json($hookRepository->findForMonthlyCandleChart($location, $type, $from, $to));
+        }
+
+        return $this->json($hookRepository->findForWeeklyCandleChart($location, $type, $from, $to));
     }
 }
