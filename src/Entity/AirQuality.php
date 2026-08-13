@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class AirQuality
 {
+    private const SEA_LEVEL_PRESSURE_CORRECTION = -1.0;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -221,6 +223,6 @@ class AirQuality
         $seaLevelPressure = $this->pressure * exp($exponent);
 
         // Round the result for typical meteorological precision (two decimal places)
-        $this->seaLevelPressure = round($seaLevelPressure, 2);
+        $this->seaLevelPressure = round($seaLevelPressure, 2) + self::SEA_LEVEL_PRESSURE_CORRECTION;
     }
 }
