@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.render();
     chart.hideSeries('Liczba włączeń');
 
-    const TIME_BASED_DEVICES = new Set(['tv', 'hydrofor', 'pompa-zasilanie', 'pompa-powrot', 'kominek']);
+    const TIME_BASED_DEVICES = new Set(['tv', 'pompa-cwu', 'hydrofor', 'pompa-zasilanie', 'pompa-powrot', 'kominek']);
     const isTimeBasedDevice = TIME_BASED_DEVICES.has(deviceName);
 
     if (deviceName === 'piec') {
