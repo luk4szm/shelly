@@ -5,9 +5,15 @@ namespace App\Service\DeviceStatus;
 use App\Entity\Hook;
 use App\Enum\SeasonMode;
 use App\Model\Device\PowerMeter\Fireplace;
+use App\Model\Device\Relay\FireplacePump;
 
 final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
+    public function getDeviceClass(): string
+    {
+        return FireplacePump::class;
+    }
+
     public function supports(string $device): bool
     {
         return $device === self::getDeviceName();
@@ -20,12 +26,12 @@ final class FireplaceStatusHelper extends DeviceStatusHelper implements DeviceSt
 
     public function getDeviceId(): string
     {
-        return Fireplace::DEVICE_ID;
+        return FireplacePump::DEVICE_ID;
     }
 
     public function isActive(Hook $hook): bool
     {
-        return (float)$hook->getValue() > Fireplace::BOUNDARY_POWER;
+        return (float)$hook->getValue() > FireplacePump::BOUNDARY_POWER;
     }
 
     public function isHeatingAppliance(): bool

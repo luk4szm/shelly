@@ -2,9 +2,7 @@
 
 namespace App\Model\Device\Relay;
 
-use App\Model\Device\Device;
-
-final class HeatingPumpSupply extends Device
+final class HeatingPumpSupply extends Relay
 {
     public const NAME              = 'pompa-zasilanie';
     public const DEVICE_ID         = 'ecc9ff4b35e4';

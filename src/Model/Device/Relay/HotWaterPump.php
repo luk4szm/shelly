@@ -2,9 +2,7 @@
 
 namespace App\Model\Device\Relay;
 
-use App\Model\Device\Device;
-
-final class HotWaterPump extends Device
+final class HotWaterPump extends Relay
 {
     public const NAME              = 'pompa-cwu';
     public const DEVICE_ID         = '64b708097270';

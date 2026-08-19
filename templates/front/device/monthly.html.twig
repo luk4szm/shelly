@@ -25,6 +25,7 @@
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
+                {{ include('front/device/device_status.html.twig') }}
                 <div class="card" id="device_stats">
                     {% set selected_date = app.request.query.get('date') ? app.request.query.get('date') : 'now' %}
                     {% set daysInMonth = 'now'|date('t') %}
@@ -210,4 +211,6 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/device/monthly_power_chart.js') }}"></script>
+    <script src="{{ asset('js/device_status.js') }}"></script>
+    <script src="{{ asset('js/device_control.js') }}?v=20260819"></script>
 {% endblock %}

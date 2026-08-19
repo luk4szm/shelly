@@ -2,9 +2,7 @@
 
 namespace App\Model\Device\Relay;
 
-use App\Model\Device\Device;
-
-final class FireplacePump extends Device
+final class FireplacePump extends Relay
 {
     public const NAME              = 'pompa-kominek';
     public const DEVICE_ID         = 'cc7b5c8378b4';

@@ -7,6 +7,10 @@ use App\Model\Device\Relay\HeatingPumpSupply;
 
 final class HeatingPumpSupplyStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
+    public function getDeviceClass(): string
+    {
+        return HeatingPumpSupply::class;
+    }
     public function supports(string $device): bool
     {
         return $device === self::getDeviceName();

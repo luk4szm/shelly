@@ -4,6 +4,7 @@ namespace App\Service\DeviceStatus;
 
 use App\Entity\Hook;
 use App\Model\DateRange;
+use App\Model\Device\Device;
 use App\Model\DeviceStatus;
 use App\Model\Status;
 use App\Repository\ConfigRepository;
@@ -22,6 +23,11 @@ abstract class DeviceStatusHelper implements DeviceStatusHelperInterface
         protected readonly HookRepository   $hookRepository,
         protected readonly ConfigRepository $configRepository,
     ) {
+    }
+
+    public function getDeviceClass(): string
+    {
+        return Device::class;
     }
 
     public function getHistory(

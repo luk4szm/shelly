@@ -25,6 +25,7 @@
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
+                {{ include('front/device/device_status.html.twig') }}
                 <div class="card" id="device_stats">
                     <div class="card-header">
                         <h3 class="card-title">Statystyki roczne</h3>
@@ -138,6 +139,8 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/device/yearly_power_chart.js') }}"></script>
+    <script src="{{ asset('js/device_status.js') }}"></script>
+    <script src="{{ asset('js/device_control.js') }}?v=20260819"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const heatingDate = document.getElementById('heating_date');

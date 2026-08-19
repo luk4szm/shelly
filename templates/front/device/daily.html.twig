@@ -25,6 +25,7 @@
     <div class="container-xl">
         <div class="row row-cards">
             <div class="col-12 col-md-3">
+                {{ include('front/device/device_status.html.twig') }}
                 <div class="card" id="device_stats">
                     {% if device.dailyStats is not null and device.dailyStats.date|date('Y-m-d') == "now"|date('Y-m-d') %}
                         {% set secondsPassed = "now"|date('U') - "today"|date('U') %}
@@ -139,4 +140,6 @@
 
 {% block pagejs %}
     <script src="{{ asset('js/device/daily_power_chart.js') }}"></script>
+    <script src="{{ asset('js/device_status.js') }}"></script>
+    <script src="{{ asset('js/device_control.js') }}?v=20260819"></script>
 {% endblock %}

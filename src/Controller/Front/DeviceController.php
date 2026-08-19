@@ -8,10 +8,12 @@ use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
 use App\Model\DateRange;
 use App\Model\Device\PowerMeter\Boiler;
+use App\Model\Device\Relay\Relay;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
+use App\Service\Shelly\Switch\ShellySwitchService;
 use App\Utils\Hook\GraphHandler\PowerGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -25,11 +27,12 @@ class DeviceController extends AbstractController
     #[Route('/daily', name: 'daily')]
     public function daily(
         #[AutowireIterator('app.shelly.device_status_helper')]
-        iterable $statusHelpers,
+        iterable            $statusHelpers,
         #[AutowireIterator('app.shelly.daily_stats')]
-        iterable $dailyStatsCalculators,
-        Request  $request,
-        string   $device,
+        iterable            $dailyStatsCalculators,
+        Request             $request,
+        string              $device,
+        ShellySwitchService $shellySwitchService,
     ): Response {
         $date = new \DateTime($request->query->get('date', ''));
 
@@ -62,11 +65,13 @@ class DeviceController extends AbstractController
             }
 
             $device = [
-                'name'       => $helper->getDeviceName(),
-                'deviceId'   => $helper->getDeviceId(),
-                'history'    => $helper->getHistory(dateRange: $dateRange, grouped: true),
-                'dailyStats' => $dailyStats ?? null,
-                'gas'        => $gas ?? 0,
+                'name'          => $helper->getDeviceName(),
+                'deviceId'      => $helper->getDeviceId(),
+                'currentStatus' => $helper->getHistory(historyLimit: 1),
+                'history'       => $helper->getHistory(dateRange: $dateRange, grouped: true),
+                'dailyStats'    => $dailyStats ?? null,
+                'gas'           => $gas ?? 0,
+                'switch'        => $this->getSwitchData($helper, $shellySwitchService),
             ];
 
             break;
@@ -86,6 +91,7 @@ class DeviceController extends AbstractController
         Request                    $request,
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
+        ShellySwitchService        $shellySwitchService,
     ): Response {
         $date = new \DateTime($request->query->get('date', ''));
 
@@ -139,12 +145,14 @@ class DeviceController extends AbstractController
             }, $initialValues);
 
             $device = [
-                'name'         => $helper->getDeviceName(),
-                'deviceId'     => $helper->getDeviceId(),
-                'history'      => $helper->getHistory(dateRange: $dateRange, grouped: true),
-                'dailyStats'   => $dailyStats ?? null,
-                'monthlyData'  => $monthlyData,
-                'monthlyStats' => $monthlyStats ?? [],
+                'name'          => $helper->getDeviceName(),
+                'deviceId'      => $helper->getDeviceId(),
+                'currentStatus' => $helper->getHistory(historyLimit: 1),
+                'history'       => $helper->getHistory(dateRange: $dateRange, grouped: true),
+                'dailyStats'    => $dailyStats ?? null,
+                'monthlyData'   => $monthlyData,
+                'monthlyStats'  => $monthlyStats ?? [],
+                'switch'        => $this->getSwitchData($helper, $shellySwitchService),
             ];
 
             break;
@@ -162,6 +170,7 @@ class DeviceController extends AbstractController
         Request                    $request,
         DeviceDailyStatsRepository $statsRepository,
         string                     $device,
+        ShellySwitchService        $shellySwitchService,
     ): Response {
         $dateParam = $request->query->get('date');
 
@@ -222,11 +231,14 @@ class DeviceController extends AbstractController
 
 
             $device = [
-                'name'         => $helper->getDeviceName(),
-                'deviceId'     => $helper->getDeviceId(),
-                'monthlyStats' => $monthlyStats,
-                'yearlyStats'  => $yearlyStats,
-                'year'         => $year,
+                'name'          => $helper->getDeviceName(),
+                'deviceId'      => $helper->getDeviceId(),
+                'currentStatus' => $helper->getHistory(historyLimit: 1),
+                'monthlyStats'  => $monthlyStats,
+                'yearlyStats'   => $yearlyStats,
+                'year'          => $year,
+                'dailyStats'    => null,
+                'switch'        => $this->getSwitchData($helper, $shellySwitchService),
             ];
 
             break;
@@ -268,5 +280,58 @@ class DeviceController extends AbstractController
                 return PowerGraphHandler::serialize($hook);
             }, $hooks)
         );
+    }
+
+    /**
+     * Resolves the model by the Shelly device id exposed by the status helper.
+     * Only models extending Relay may be controlled from the device history pages.
+     */
+    private function getSwitchData(
+        DeviceStatusHelperInterface $helper,
+        ShellySwitchService $shellySwitchService,
+    ): ?array {
+        $deviceClass = $helper->getDeviceClass();
+
+        if (!is_a($deviceClass, Relay::class, true)) {
+            return null;
+        }
+
+        $channel = defined($deviceClass . '::CHANNEL') ? $deviceClass::CHANNEL : 0;
+        $isOn    = null;
+
+        try {
+            $status = $shellySwitchService->getStatus($helper->getDeviceId());
+            $isOn   = $this->findSwitchOutput($status, $channel);
+        } catch (\Throwable) {
+            // The control remains available even when Shelly status cannot be read.
+        }
+
+        return [
+            'deviceId' => $helper->getDeviceId(),
+            'channel'  => $channel,
+            'isOn'     => $isOn,
+        ];
+    }
+
+    private function findSwitchOutput(array $status, int $channel): ?bool
+    {
+        $channelKey = 'switch:' . $channel;
+
+        if (isset($status[$channelKey]) && is_array($status[$channelKey])) {
+            return isset($status[$channelKey]['output'])
+                ? (bool) $status[$channelKey]['output']
+                : null;
+        }
+
+        foreach ($status as $value) {
+            if (is_array($value)) {
+                $output = $this->findSwitchOutput($value, $channel);
+                if ($output !== null) {
+                    return $output;
+                }
+            }
+        }
+
+        return null;
     }
 }

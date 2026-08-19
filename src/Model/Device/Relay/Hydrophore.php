@@ -2,9 +2,7 @@
 
 namespace App\Model\Device\Relay;
 
-use App\Model\Device\Device;
-
-final class Hydrophore extends Device
+final class Hydrophore extends Relay
 {
     public const NAME              = 'hydrofor';
     public const DEVICE_ID         = 'fce8c0fd0a7c';

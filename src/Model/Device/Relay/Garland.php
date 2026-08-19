@@ -2,9 +2,7 @@
 
 namespace App\Model\Device\Relay;
 
-use App\Model\Device\Device;
-
-final class Garland extends Device
+final class Garland extends Relay
 {
     public const NAME              = 'girlanda';
     public const DEVICE_ID         = '345f45193b80';

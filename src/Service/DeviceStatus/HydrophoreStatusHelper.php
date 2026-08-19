@@ -8,6 +8,11 @@ use App\Model\Device\Relay\Hydrophore;
 
 final class HydrophoreStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
+    public function getDeviceClass(): string
+    {
+        return Hydrophore::class;
+    }
+
     public function supports(string $device): bool
     {
         return $device === self::getDeviceName();

@@ -7,6 +7,10 @@ use App\Model\Device\Relay\HotWaterPump;
 
 final class HotWaterPumpStatusHelper extends DeviceStatusHelper implements DeviceStatusHelperInterface
 {
+    public function getDeviceClass(): string
+    {
+        return HotWaterPump::class;
+    }
     public function supports(string $device): bool
     {
         return $device === self::getDeviceName();

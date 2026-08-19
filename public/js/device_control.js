@@ -107,7 +107,8 @@ $(document).ready(function () {
             $.ajax({
                 type: "PATCH",
                 url: apiUrl,
-                data: dataToSend,
+                contentType: step.controller === 'switch' ? 'application/json' : undefined,
+                data: step.controller === 'switch' ? JSON.stringify(dataToSend) : dataToSend,
                 success: function () {
                     console.log(`Akcja '${step.action}' dla '${step.controller}' wykonana pomyślnie.`);
                     currentActionIndex++;
@@ -353,12 +354,28 @@ $(document).ready(function () {
                     const apiUrl = apiUrls[controller];
 
                     if (apiUrl) {
+                        const requestData = controller === 'switch'
+                            ? {
+                                "deviceId": button.data('device-id'),
+                                "channel": button.data('channel'),
+                                "action": action
+                            }
+                            : { "direction": action };
+
                         $.ajax({
                             type: "PATCH",
                             url: apiUrl,
-                            data: { "direction": action },
+                            contentType: controller === 'switch' ? 'application/json' : undefined,
+                            data: controller === 'switch' ? JSON.stringify(requestData) : requestData,
                             success: function () {
                                 console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
+                                if (controller === 'switch') {
+                                    button.data('action', action === 'on' ? 'off' : 'on');
+                                    button.data('original-text', action === 'on' ? 'Wyłącz' : 'Włącz');
+                                    button.closest('#device_status').find('.device-switch-state')
+                                        .removeClass('bg-light-lt bg-success')
+                                        .addClass(action === 'on' ? 'bg-success' : 'bg-light-lt');
+                                }
                             },
                             error: function (response) {
                                 console.error("Błąd podczas wykonywania akcji AJAX:", response);
