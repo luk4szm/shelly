@@ -375,6 +375,7 @@ $(document).ready(function () {
                                     button.closest('#device_status').find('.device-switch-state')
                                         .removeClass('bg-light-lt bg-success')
                                         .addClass(action === 'on' ? 'bg-success' : 'bg-light-lt');
+                                    $(document).trigger('device:switch-success', [button]);
                                 }
                             },
                             error: function (response) {
