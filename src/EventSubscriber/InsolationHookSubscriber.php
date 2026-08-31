@@ -10,13 +10,13 @@ use App\Model\Device\Light\KitchenLedsTop;
 use App\Model\Device\Light\TvLedsBoard;
 use App\Model\Device\Light\TvLedsCabinet;
 use App\Model\Device\Light\TvLedsMonitor;
-use App\Model\Device\Relay\Garland;
 use App\Model\Scene\TurnOffKitchenLightsScene;
 use App\Model\Scene\TurnOffLightsScene;
+use App\Model\Scene\TurnOffOutsideLightsScene;
+use App\Model\Scene\TurnOnOutsideLightsScene;
 use App\Repository\ConfigRepository;
 use App\Service\Shelly\Light\ShellyLightService;
 use App\Service\Shelly\Scene\ShellySceneService;
-use App\Service\Shelly\Switch\ShellySwitchService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
@@ -25,7 +25,6 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
     public function __construct(
         private ConfigRepository        $configRepository,
         private ShellyLightService      $shellyLightService,
-        private ShellySwitchService     $shellySwitchService,
         private ShellySceneService      $shellySceneService,
         private NamespacedPoolInterface $cache,
     ) {
@@ -89,7 +88,7 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
                 $config['occupancy_mode'] === 'home'
                 && $config['auto_light_outside'] === '1'
             ) {
-                $this->shellySwitchService->switch(Garland::DEVICE_ID, Garland::CHANNEL, 'on');
+                $this->shellySceneService->trigger(TurnOnOutsideLightsScene::ID);
             }
 
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Night);
@@ -105,7 +104,7 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             $insolation > InsolationLevel::OutdoorLightsOff->value
             && $config['daylight_mode'] === DaylightMode::Night->value
         ) {
-            $this->shellySwitchService->switch(Garland::DEVICE_ID, Garland::CHANNEL, 'off');
+            $this->shellySceneService->trigger(TurnOffOutsideLightsScene::ID);
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Twilight);
 
             return;
