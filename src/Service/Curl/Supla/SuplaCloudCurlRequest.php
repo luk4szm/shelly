@@ -24,4 +24,20 @@ class SuplaCloudCurlRequest extends Curl
             'action' => 'open-close',
         ]);
     }
+
+    public function open(): array
+    {
+        return $this->request(self::METHOD, self::URL, [
+            'code'   => $_ENV['GATE_DIRECT_LINK_CODE'],
+            'action' => 'open',
+        ]);
+    }
+
+    public function close(): array
+    {
+        return $this->request(self::METHOD, self::URL, [
+            'code'   => $_ENV['GATE_DIRECT_LINK_CODE'],
+            'action' => 'close',
+        ]);
+    }
 }

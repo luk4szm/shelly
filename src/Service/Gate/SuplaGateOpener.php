@@ -69,7 +69,7 @@ readonly class SuplaGateOpener
         return false;
     }
 
-    public function sendOpenCloseSimpleRequest(?string $userIdentifier = null): bool
+    public function sendOpenCloseRequest(?string $userIdentifier = null): bool
     {
         $this->user = $this->security->getUser();
 
@@ -82,6 +82,36 @@ readonly class SuplaGateOpener
         );
 
         return $this->tryOpen();
+    }
+
+    public function sendOpenRequest(?string $userIdentifier = null, ?string $deviceName = null): void
+    {
+        $this->user = $this->security->getUser();
+
+        $this->gateOpenerLogger->info(
+            'Open button click',
+            [
+                'user'   => $userIdentifier ?: $this->user?->getUserIdentifier(),
+                'device' => $deviceName,
+            ],
+        );
+
+        $this->suplaCurl->open();
+    }
+
+    public function sendCloseRequest(?string $userIdentifier = null, ?string $deviceName = null): void
+    {
+        $this->user = $this->security->getUser();
+
+        $this->gateOpenerLogger->info(
+            'Close button click',
+            [
+                'user'   => $userIdentifier ?: $this->user?->getUserIdentifier(),
+                'device' => $deviceName,
+            ],
+        );
+
+        $this->suplaCurl->close();
     }
 
     public function read(): array

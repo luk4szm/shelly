@@ -7,10 +7,10 @@ use Symfony\Contracts\EventDispatcher\Event;
 class SuplaGateOpenEvent extends Event
 {
     public function __construct(
-        private readonly string $method,
-        private readonly string $userEmail,
-    ) {
-    }
+        private readonly string  $method,
+        private readonly string  $userEmail,
+        private readonly ?string $deviceName = null,
+    ) {}
 
     public function getMethod(): string
     {
@@ -20,5 +20,10 @@ class SuplaGateOpenEvent extends Event
     public function getUserEmail(): string
     {
         return $this->userEmail;
+    }
+
+    public function getDeviceName(): string
+    {
+        return $this->deviceName;
     }
 }

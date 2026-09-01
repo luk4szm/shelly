@@ -33,7 +33,7 @@ final class SuplaGateController extends AbstractController
     {
         $dispatcher->dispatch(new SuplaGateOpenEvent('open-close', $this->getUser()->getUserIdentifier()));
 
-        return $this->json($gateOpener->sendOpenCloseSimpleRequest());
+        return $this->json($gateOpener->sendOpenCloseRequest());
     }
 
     #[Route('/read', name: 'read', methods: ['GET'])]

@@ -68,7 +68,7 @@ final class HookController extends AbstractController
         return $this->json([]);
     }
 
-    #[Route('/hook/gate/open-close/remote/{key}', name: 'app_hook_gate_open_from_remote_controller')]
+    #[Route('/hook/gate/open/remote/{key}', name: 'app_hook_gate_open_from_remote_controller')]
     public function gateOpenFromRemoteController(
         Request                  $request,
         SuplaGateOpener          $gateOpener,
@@ -76,18 +76,14 @@ final class HookController extends AbstractController
         string                   $key
     ): Response
     {
-        if (!str_starts_with($request->headers->get('User-Agent'), 'Plus1/1.6.2'))
-        {
-            return $this->json([]);
-        }
-
         if ($key !== $_ENV['GATE_REMOTE_CONTROLLER_KEY']) {
             return $this->json([]);
         }
 
-        $dispatcher->dispatch(new SuplaGateOpenEvent('open-close', 'remote controller'));
+        $gateOpener->sendOpenRequest('not logged in', $request->query->get('deviceName'));
+        $dispatcher->dispatch(new SuplaGateOpenEvent('open', 'not logged in', $request->query->get('deviceName')));
 
-        return $this->json($gateOpener->sendOpenCloseSimpleRequest('remote controller'));
+        return $this->json([]);
     }
 
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
