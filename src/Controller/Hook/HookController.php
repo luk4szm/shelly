@@ -68,8 +68,8 @@ final class HookController extends AbstractController
         return $this->json([]);
     }
 
-    #[Route('/hook/gate/open/remote/{key}', name: 'app_hook_gate_open_from_remote_controller')]
-    public function gateOpenFromRemoteController(
+    #[Route('/hook/gate/open/remote/{key}', name: 'app_hook_gate_open_from_garmin_watch')]
+    public function gateOpenFromGarminWatch(
         Request                  $request,
         SuplaGateOpener          $gateOpener,
         EventDispatcherInterface $dispatcher,
@@ -83,7 +83,7 @@ final class HookController extends AbstractController
         $gateOpener->sendOpenRequest('not logged in', $request->query->get('deviceName'));
         $dispatcher->dispatch(new SuplaGateOpenEvent('open', 'not logged in', $request->query->get('deviceName')));
 
-        return $this->json([]);
+        return new Response('OK', Response::HTTP_OK, ['Content-Type' => 'text/plain']);
     }
 
     #[Route('/hook/{device}/{property}/{value}', name: 'app_hoke_save')]
