@@ -1,5 +1,5 @@
 $(function () {
-    const reloadDelay = 3000;
+    const reloadDelay = 5000;
     let reloadTimer = null;
 
     $(document).on('device:switch-success', function () {
