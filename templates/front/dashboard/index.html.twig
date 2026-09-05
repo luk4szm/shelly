@@ -51,6 +51,33 @@
     </style>
 {% endblock %}
 
+{% block pageStatus %}
+    {% set occupancyStyles = {
+        sleeping: 'indigo',
+        away: 'orange',
+        vacation: 'azure'
+    } %}
+    {% if occupancyStyles[occupancy] is defined %}
+        <div class="bg-{{ occupancyStyles[occupancy] }}-lt border-bottom border-{{ occupancyStyles[occupancy] }} border-opacity-25 d-print-none" role="status">
+            <div class="container-xl d-flex align-items-center justify-content-center gap-2 py-1 small">
+                <span>Tryb: <strong>{{ ('occupancy_mode.' ~ occupancy)|trans({}, 'config') }}</strong></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                     stroke-linejoin="round" class="flex-shrink-0" aria-hidden="true">
+                    {% if occupancy == 'sleeping' %}
+                        <path d="M12 3a9 9 0 1 0 9 9a7 7 0 0 1 -9 -9" />
+                    {% elseif occupancy == 'away' %}
+                        <path d="M9 8v-3a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-3m-6 -4h12m-9 -3l-3 3l3 3" />
+                    {% else %}
+                        <rect x="5" y="7" width="14" height="14" rx="2" />
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3m-6 4v6m6 -6v6" />
+                    {% endif %}
+                </svg>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block pageBody %}
     <div class="container-xl">
         {% set currentHour = "now"|date('H')|number_format %}
