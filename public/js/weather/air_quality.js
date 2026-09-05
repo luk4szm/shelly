@@ -306,6 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     temperature: typeof r.temperature === 'number' ? r.temperature : null,
                     perceivedTemperature: typeof r.perceivedTemperature === 'number' ? r.perceivedTemperature : null,
                     humidity: typeof r.humidity === 'number' ? r.humidity : null,
+                    insolation: typeof r.insolation === 'number' ? r.insolation : null,
                 };
             })
             .filter(Boolean)
@@ -315,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const temperatureAll = pts.filter((p) => p.temperature != null).map((p) => ({ x: p.x, y: p.temperature }));
         const perceivedTemperature = pts.filter((p) => p.perceivedTemperature != null).map((p) => ({ x: p.x, y: p.perceivedTemperature }));
         const humidity = pts.filter((p) => p.humidity != null).map((p) => ({ x: p.x, y: p.humidity }));
+        const insolation = pts.filter((p) => p.insolation != null).map((p) => ({ x: p.x, y: p.insolation }));
 
         const cutoffTime = new Date().getTime();
         const tempSolid = [];
@@ -351,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 { name: 'Prognoza temp.', data: tempDashed, type: 'area' },
                 { name: 'Temp. odczuwalna', data: perceivedTemperature, type: 'line' },
                 { name: 'Wilgotność', data: humidity, type: 'area' },
+                { name: 'Nasłonecznienie', data: insolation, type: 'area' },
             ],
         };
     };
@@ -479,7 +482,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const humiditySeries = series[5] || { data: [] };
+        const insolationSeries = series[6] || { data: [] };
         const humValues = (humiditySeries.data || [])
+            .concat(insolationSeries.data || [])
             .map((p) => p.y)
             .filter((v) => typeof v === 'number' && !Number.isNaN(v));
 
@@ -502,14 +507,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 animations: { enabled: true },
             },
             series,
-            colors: ['#7463f0', '#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0'],
+            colors: ['#7463f0', '#7463f0', '#d90f0f', '#d90f0f', '#d90f0f', '#4bc0c0', '#f59f00'],
             stroke: {
                 curve: 'smooth',
-                width: [2, 1.5, 2, 1.5, 1.5, 2],
-                dashArray: [0, 5, 0, 5, 6, 0],
+                width: [2, 1.5, 2, 1.5, 1.5, 2, 2],
+                dashArray: [0, 5, 0, 5, 6, 0, 0],
             },
             fill: {
-                type: ['solid', 'solid', 'gradient', 'gradient', 'solid', 'gradient'],
+                type: ['solid', 'solid', 'gradient', 'gradient', 'solid', 'gradient', 'gradient'],
                 gradient: {
                     shadeIntensity: 0.3,
                     opacityFrom: 0.35,
@@ -557,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ...(tempMin !== null && tempMax !== null ? { min: tempMin, max: tempMax, tickAmount: (tempMax - tempMin) / 5 } : {}),
                 },
                 {
-                    seriesName: 'Wilgotność',
+                    seriesName: ['Wilgotność', 'Nasłonecznienie'],
                     opposite: true,
                     title: { text: '%' },
                     labels: { formatter: (v) => (v == null ? '' : `${v.toFixed(0)}%`) },
@@ -579,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} °C`) },
                     { formatter: (v) => (v == null ? '' : `${v.toFixed(1)} °C`) },
                     { formatter: (v) => (v == null ? '' : `${v.toFixed(0)} %`) },
+                    { formatter: (v) => (v == null ? '' : `${v.toFixed(0)} %`) },
                 ],
             },
         };
@@ -588,6 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
             weatherChart = new ApexCharts(elWeather, options);
             weatherChart.render();
             weatherChart.hideSeries('Wilgotność');
+            weatherChart.hideSeries('Nasłonecznienie');
         } else {
             weatherChart.updateOptions(options, true, true);
         }

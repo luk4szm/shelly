@@ -27,6 +27,7 @@ class AirQualityGraphHandler
             'perceivedTemperature' => $toFloat($airQuality->getPerceivedTemperature()),
             'humidity'             => $toFloat($airQuality->getHumidity()),
             'pressure'             => $toFloat($airQuality->getSeaLevelPressure()),
+            'insolation'           => $toFloat($airQuality->getInsolation()),
         ];
     }
 }
