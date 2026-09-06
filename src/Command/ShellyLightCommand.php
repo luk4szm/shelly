@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Exception\ShellyRateLimitException;
 use App\Model\Device\Light\BedLeds;
 use App\Service\Shelly\Light\ShellyLightService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -41,11 +42,17 @@ class ShellyLightCommand extends Command
             $brightness = $input->getArgument('brightness') ?: $io->ask('Please type device brightness');
         }
 
-        $response = match ($action) {
-            'on'    => $this->lightService->turnOn(new BedLeds(), brightness: $brightness ?? 50, white: 50, colors: [123, 244, 41]),
-            'off'   => $this->lightService->turnOff(new BedLeds()),
-            default => throw new \Exception('Invalid command')
-        };
+        try {
+            $response = match ($action) {
+                'on'    => $this->lightService->turnOn(new BedLeds(), brightness: $brightness ?? 50, white: 50, colors: [123, 244, 41]),
+                'off'   => $this->lightService->turnOff(new BedLeds()),
+                default => throw new \Exception('Invalid command')
+            };
+        } catch (ShellyRateLimitException $e) {
+            $io->error($e->getMessage());
+
+            return Command::FAILURE;
+        }
 
         dump($response);
 

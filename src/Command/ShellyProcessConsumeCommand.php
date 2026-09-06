@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Exception\ShellyRateLimitException;
+use Psr\Log\LoggerInterface;
 use App\Entity\Process\RecurringProcess;
 use App\Entity\Process\ScheduledProcess;
 use App\Repository\Process\HydrationProcessRepository;
@@ -20,6 +22,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 )]
 class ShellyProcessConsumeCommand extends Command
 {
+    private int $failedProcesses = 0;
+
     public function __construct(
         #[AutowireIterator('app.shelly.processable.recurring')] private readonly iterable $recurringProcessable,
         #[AutowireIterator('app.shelly.processable.scheduled')] private readonly iterable $scheduledProcessable,
@@ -27,6 +31,7 @@ class ShellyProcessConsumeCommand extends Command
         private readonly RecurringProcessRepository                                       $recurringRepository,
         private readonly ScheduledProcessRepository                                       $scheduledRepository,
         private readonly HydrationProcessRepository                                       $hydrationRepository,
+        private readonly LoggerInterface                                                  $logger,
         private int                                                                       $executedProcesses = 0,
     ) {
         parent::__construct();
@@ -36,9 +41,18 @@ class ShellyProcessConsumeCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $this->executedProcesses = 0;
+        $this->failedProcesses   = 0;
+
         $this->executeHydrationProcesses();
         $this->executeRecurringProcesses();
         $this->executeScheduledProcesses();
+
+        if ($this->failedProcesses > 0) {
+            $io->error(sprintf('Executed %d process(es); %d failed due to the Shelly Cloud rate limit.', $this->executedProcesses, $this->failedProcesses));
+
+            return Command::FAILURE;
+        }
 
         if ($this->executedProcesses > 0) {
             $io->success(sprintf('Executed %d process(es).', $this->executedProcesses));
@@ -99,14 +113,19 @@ class ShellyProcessConsumeCommand extends Command
                     continue;
                 }
 
-                if ($consumer->canBeExecuted($process))
-                {
-                    $consumer->process($process);
+                try {
+                    if ($consumer->canBeExecuted($process))
+                    {
+                        $consumer->process($process);
 
-                    $this->executedProcesses++;
+                        $this->executedProcesses++;
 
-                    // jic to avoid shelly's 429 error
-                    sleep(1);
+                        // jic to avoid shelly's 429 error
+                        sleep(1);
+                    }
+                } catch (ShellyRateLimitException $e) {
+                    ++$this->failedProcesses;
+                    $this->logger->error($e->getMessage(), ['process' => $processName, 'process_id' => $process->getId()]);
                 }
 
                 break;

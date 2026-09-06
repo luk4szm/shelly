@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Exception\ShellyRateLimitException;
 use App\Service\Shelly\Switch\ShellySwitchService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,9 +37,15 @@ class ShellySwitchCommand extends Command
         $deviceId = $input->getArgument('device_id') ?: $io->ask('Please type shelly device id');
         $action   = $input->getArgument('shelly_command') ?: $io->choice('Please select the shelly command', ["on", "off", "status"]);
 
-        $status = $action === 'status'
-            ? $this->switchService->getStatus($deviceId)
-            : $this->switchService->switch($deviceId, 0, $action);
+        try {
+            $status = $action === 'status'
+                ? $this->switchService->getStatus($deviceId)
+                : $this->switchService->switch($deviceId, 0, $action);
+        } catch (ShellyRateLimitException $e) {
+            $io->error($e->getMessage());
+
+            return Command::FAILURE;
+        }
 
         dump(json_encode($status) ?? null);
 

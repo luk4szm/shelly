@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Exception\ShellyRateLimitException;
 use App\Service\Shelly\Cover\ShellyCoverService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -35,16 +36,22 @@ class ShellyCoverCommand extends Command
         $command = $input->getArgument('shelly_command')
             ?: $io->choice('Please select the shelly command', ["open", "close", "stop"]);
 
-        switch ($command) {
-            case 'open':
-                $status = $this->coverService->open();
-                break;
-            case 'close':
-                $status = $this->coverService->close();
-                break;
-            case 'stop':
-                $status = $this->coverService->stop();
-                break;
+        try {
+            switch ($command) {
+                case 'open':
+                    $status = $this->coverService->open();
+                    break;
+                case 'close':
+                    $status = $this->coverService->close();
+                    break;
+                case 'stop':
+                    $status = $this->coverService->stop();
+                    break;
+            }
+        } catch (ShellyRateLimitException $e) {
+            $io->error($e->getMessage());
+
+            return Command::FAILURE;
         }
 
         dump($status ?? null);

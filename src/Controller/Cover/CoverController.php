@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Cover;
 
+use App\Exception\ShellyRateLimitException;
 use App\Service\Shelly\Cover\ShellyCoverService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,11 +34,9 @@ final class CoverController extends AbstractController
     {
         try {
             $lastDirection = $coverService->getLastDirection();
+        } catch (ShellyRateLimitException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            if (str_starts_with($e->getMessage(), 'HTTP/1.1 429 Too Many Requests')) {
-                return $this->json(['error' => 'Too many requests. Wait 1 second and try again.'], Response::HTTP_TOO_MANY_REQUESTS);
-            }
-
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 

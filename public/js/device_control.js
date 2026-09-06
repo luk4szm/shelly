@@ -90,7 +90,7 @@ $(document).ready(function () {
         let currentActionIndex = 0;
 
         function finalizeScene(message, isSuccess) {
-            getStatusDisplay().append(`<div>${message}</div>`);
+            getStatusDisplay().append($('<div>').text(message));
             button.removeClass('btn-azure').addClass(isSuccess ? 'btn-success' : 'btn-danger');
 
             setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
@@ -115,7 +115,7 @@ $(document).ready(function () {
                     setTimeout(executeNextAction, sceneStepDelay);
                 },
                 error: function (response) {
-                    const errorMsg = `Błąd przy: ${step.text}`;
+                    const errorMsg = response.responseJSON?.error || `Błąd przy: ${step.text}`;
                     console.error("Błąd podczas wykonywania akcji AJAX:", response);
                     finalizeScene(errorMsg, false);
                 }
@@ -282,7 +282,7 @@ $(document).ready(function () {
                         }
                     },
                     error: function (xhr, status, error) {
-                        const errorMsg = `Błąd podczas sprawdzania statusu ${deviceNameGenitive}: ${error}`;
+                        const errorMsg = xhr.responseJSON?.error || `Błąd podczas sprawdzania statusu ${deviceNameGenitive}: ${error}`;
                         console.error("Błąd podczas sprawdzania statusu AJAX:", error);
                         finalizeScene(errorMsg, false);
                     }
@@ -349,8 +349,7 @@ $(document).ready(function () {
                     }
                 } else {
                     // Original non-scene logic
-                    textSpan.text('Gotowe!');
-                    button.removeClass('btn-azure').addClass('btn-success');
+                    textSpan.text('Wysyłanie...');
                     const apiUrl = apiUrls[controller];
 
                     if (apiUrl) {
@@ -368,6 +367,8 @@ $(document).ready(function () {
                             contentType: controller === 'switch' ? 'application/json' : undefined,
                             data: controller === 'switch' ? JSON.stringify(requestData) : requestData,
                             success: function () {
+                                textSpan.text('Gotowe!');
+                                button.removeClass('btn-azure').addClass('btn-success');
                                 console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
                                 if (controller === 'switch') {
                                     button.data('action', action === 'on' ? 'off' : 'on');
@@ -380,8 +381,8 @@ $(document).ready(function () {
                             },
                             error: function (response) {
                                 console.error("Błąd podczas wykonywania akcji AJAX:", response);
-                                textSpan.text('Wystąpił błąd');
-                                button.removeClass('btn-success').addClass('btn-danger');
+                                textSpan.text(response.responseJSON?.error || 'Wystąpił błąd');
+                                button.removeClass('btn-azure btn-success').addClass('btn-danger');
                             },
                             complete: function() {
                                 // Po określonym czasie zresetuj przycisk, niezależnie od wyniku
@@ -421,7 +422,8 @@ $(document).ready(function () {
 
         const apiUrl = readApiUrls[controller];
 
-        clickedSpan.addClass('is-loading').removeClass('bg-light-lt bg-red bg-green');
+        clickedSpan.addClass('is-loading').removeClass('bg-light-lt bg-red bg-green bg-warning');
+        clickedSpan.siblings('.device-read-error').remove();
 
         $.ajax({
             type: "GET",
@@ -449,6 +451,9 @@ $(document).ready(function () {
                 console.error(`Błąd podczas sprawdzania statusu dla \"${controller}\":`, error);
 
                 clickedSpan.addClass('bg-warning');
+                $('<span class="device-read-error text-danger">')
+                    .text(xhr.responseJSON?.error || 'Nie udało się odczytać stanu urządzenia.')
+                    .insertAfter(clickedSpan);
             },
             complete: function () {
                 clickedSpan.removeClass('is-loading');

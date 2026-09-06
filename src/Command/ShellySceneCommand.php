@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Exception\ShellyRateLimitException;
 use App\Service\Shelly\Scene\ShellySceneService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -34,7 +35,13 @@ class ShellySceneCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $sceneId = $input->getArgument('scene_id') ?: $io->ask('Please type shelly scene id');
-        $status  = $this->sceneService->trigger($sceneId);
+        try {
+            $status  = $this->sceneService->trigger($sceneId);
+        } catch (ShellyRateLimitException $e) {
+            $io->error($e->getMessage());
+
+            return Command::FAILURE;
+        }
 
         dump(json_encode($status) ?? null);
 

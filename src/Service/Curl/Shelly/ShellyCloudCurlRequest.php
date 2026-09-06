@@ -2,6 +2,7 @@
 
 namespace App\Service\Curl\Shelly;
 
+use App\Exception\ShellyRateLimitException;
 use App\Model\Device\Valve\ValveDevice;
 use App\Model\Device\Light\LightDevice;
 use App\Service\Curl\Curl;
@@ -10,6 +11,16 @@ class ShellyCloudCurlRequest extends Curl
 {
     private const URL    = 'https://shelly-164-eu.shelly.cloud/v2/devices/api';
     private const METHOD = 'POST';
+
+    protected function retryDelays(): array
+    {
+        return [1, 2, 3];
+    }
+
+    protected function onRateLimitExhausted(): void
+    {
+        throw new ShellyRateLimitException();
+    }
 
     /**
      * @param string             $deviceId
