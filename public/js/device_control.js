@@ -451,9 +451,6 @@ $(document).ready(function () {
                 console.error(`Błąd podczas sprawdzania statusu dla \"${controller}\":`, error);
 
                 clickedSpan.addClass('bg-warning');
-                $('<span class="device-read-error text-danger">')
-                    .text(xhr.responseJSON?.error || 'Nie udało się odczytać stanu urządzenia.')
-                    .insertAfter(clickedSpan);
             },
             complete: function () {
                 clickedSpan.removeClass('is-loading');
