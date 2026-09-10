@@ -6,6 +6,11 @@ $(document).ready(function () {
     const apiCallDelay = 1000; // 1 second delay between API calls to respect Shelly Cloud limits
     const statusClearDelay = 3000; // 3 seconds to clear the status display
     const getStatusDisplay = () => $('.scene-controller-status');
+    const dryRun = window.DEVICE_CONTROL_DRY_RUN === true;
+
+    if (dryRun) {
+        console.warn('Sceny działają w trybie dry-run — żadne żądania sterujące nie są wysyłane.');
+    }
 
     /**
      * Funkcja pomocnicza do resetowania przycisku do jego pierwotnego stanu.
@@ -104,6 +109,15 @@ $(document).ready(function () {
         }
 
         function performActionAjax(step, apiUrl, dataToSend) {
+            if (dryRun) {
+                console.info(`[dry-run] PATCH ${apiUrl}`, dataToSend);
+                setTimeout(() => {
+                    currentActionIndex++;
+                    setTimeout(executeNextAction, sceneStepDelay);
+                }, 150);
+                return;
+            }
+
             $.ajax({
                 type: "PATCH",
                 url: apiUrl,
@@ -144,6 +158,13 @@ $(document).ready(function () {
                 const mapsWebUrl = `https://maps.app.goo.gl/${mapHash}?g_st=ac`;
 
                 try {
+                    if (dryRun) {
+                        console.info(`[dry-run] Nawigacja do ${mapsWebUrl}`);
+                        currentActionIndex++;
+                        setTimeout(executeNextAction, sceneStepDelay);
+                        return;
+                    }
+
                     // Proste przejście — najlepsza kompatybilność na mobile
                     window.location.href = mapsWebUrl;
 
@@ -244,10 +265,7 @@ $(document).ready(function () {
                 const statusSpanId = `status-check-result-${step.controller}-${currentActionIndex}`;
                 getStatusDisplay().append(`<div>Sprawdzam status ${deviceNameGenitive}: <span id="${statusSpanId}"></span></div>`);
 
-                $.ajax({
-                    type: "GET",
-                    url: readApiUrl,
-                    success: function (response) {
+                const handleStatusResponse = function (response) {
                         let isCurrentlyOpen = false;
                         if (step.controller === 'gate' || step.controller === 'garage') {
                             isCurrentlyOpen = response.is_open === true;
@@ -280,13 +298,27 @@ $(document).ready(function () {
                             // Add delay before performing the action (avoid shelly cloud 429 response)
                             setTimeout(() => performActionAjax(step, apiUrl, { "direction": step.action }), apiCallDelay);
                         }
-                    },
-                    error: function (xhr, status, error) {
+                };
+
+                if (dryRun) {
+                    // Zwracamy stan przeciwny do żądanego, aby w widoku pojawił się każdy etap.
+                    const simulatedResponse = step.controller === 'covers'
+                        ? { last_direction: step.action === 'close' ? 'open' : 'close' }
+                        : { is_open: step.action === 'close' };
+                    console.info(`[dry-run] GET ${readApiUrl}`, simulatedResponse);
+                    setTimeout(() => handleStatusResponse(simulatedResponse), 150);
+                } else {
+                    $.ajax({
+                        type: "GET",
+                        url: readApiUrl,
+                        success: handleStatusResponse,
+                        error: function (xhr, status, error) {
                         const errorMsg = xhr.responseJSON?.error || `Błąd podczas sprawdzania statusu ${deviceNameGenitive}: ${error}`;
                         console.error("Błąd podczas sprawdzania statusu AJAX:", error);
                         finalizeScene(errorMsg, false);
-                    }
-                });
+                        }
+                    });
+                }
             } else {
                 // Dla innych kontrolerów lub akcji, wyświetl oryginalny tekst i przejdź bezpośrednio
                 getStatusDisplay().append(`<div>${step.text}</div>`);

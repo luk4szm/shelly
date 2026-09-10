@@ -92,6 +92,10 @@
 <!-- BEGIN PAGE SCRIPTS -->
 <script src="{{ asset('assets/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ asset('libs/apexcharts/dist/apexcharts.js') }}" defer></script>
+<script>
+    // Dostępne tylko na środowisku dev i tylko po dopisaniu ?scene-dry-run=1.
+    window.DEVICE_CONTROL_DRY_RUN = {{ app.environment == 'dev' and app.request.query.get('scene-dry-run') == '1' ? 'true' : 'false' }};
+</script>
 {% block modals %}{% endblock %}
 <!-- BEGIN MODAL -->
 <div class="modal modal-blur fade" id="scene_modal" tabindex="-1" aria-labelledby="sceneModalLabel" aria-hidden="true">
