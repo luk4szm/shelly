@@ -198,7 +198,7 @@ class WeatherController extends AbstractController
         }
 
         $today = new \DateTimeImmutable('today');
-        $out['forecast'] = ['temperature' => [], 'seaLevelPressure' => []];
+        $out['forecast'] = ['temperature' => [], 'seaLevelPressure' => [], 'humidity' => []];
         if ($from <= $today && $to >= $today) {
             $forecastFrom = $today->modify('+1 day');
             $forecastUntil = $today->modify('+4 days');

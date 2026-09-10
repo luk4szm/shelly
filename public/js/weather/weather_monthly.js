@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             renderSingleCandle(elTemp, { get current() { return tempChart; }, set current(v) { tempChart = v; } }, 'Temperatura', raw?.temperature || [], '°C', dateParam, raw?.forecast?.temperature || []);
             renderSingleCandle(elPress, { get current() { return pressChart; }, set current(v) { pressChart = v; } }, 'Ciśnienie (SLP)', raw?.seaLevelPressure || [], 'hPa', dateParam, raw?.forecast?.seaLevelPressure || []);
-            renderSingleCandle(elHum, { get current() { return humChart; }, set current(v) { humChart = v; } }, 'Wilgotność', raw?.humidity || [], '%', dateParam);
+            renderSingleCandle(elHum, { get current() { return humChart; }, set current(v) { humChart = v; } }, 'Wilgotność', raw?.humidity || [], '%', dateParam, raw?.forecast?.humidity || []);
         } catch {
             if (currentLoad !== loadId) return;
             [tempChart, pressChart, humChart].forEach(chart => chart?.destroy());

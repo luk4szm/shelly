@@ -9,11 +9,11 @@ class WeatherForecastGraphHandler
     /** @param WeatherForecast[] $forecasts Ordered by forecast time ascending. */
     public static function dailyCandles(array $forecasts): array
     {
-        $days = ['temperature' => [], 'seaLevelPressure' => []];
+        $days = ['temperature' => [], 'seaLevelPressure' => [], 'humidity' => []];
         foreach ($forecasts as $forecast) {
             $timestamp = \DateTimeImmutable::createFromInterface($forecast->getTime())
                 ->setTime(0, 0)->getTimestamp() * 1000;
-            foreach (['temperature' => $forecast->getTemperature(), 'seaLevelPressure' => $forecast->getAirPressure()] as $field => $value) {
+            foreach (['temperature' => $forecast->getTemperature(), 'seaLevelPressure' => $forecast->getAirPressure(), 'humidity' => $forecast->getHumidity()] as $field => $value) {
                 if ($value === null) {
                     continue;
                 }
