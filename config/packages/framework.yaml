@@ -2,6 +2,10 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    assets:
+        version: '%env(APP_ASSET_VERSION)%'
+        version_format: '%%s?%%s'
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
