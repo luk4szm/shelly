@@ -20,7 +20,7 @@ final class ShellyProcessConsumeCommandTest extends TestCase
     public function testContinuesAfterRateLimitAndReportsFailure(bool $failInCondition): void
     {
         $failed = (new RecurringProcess())->setName('failed');
-        $next = (new RecurringProcess())->setName('next');
+        $next   = (new RecurringProcess())->setName('next');
         $recurring = $this->createMock(RecurringProcessRepository::class);
         $recurring->method('findProcessToExecute')->willReturn([$failed, $next]);
         $scheduled = $this->createMock(ScheduledProcessRepository::class);
