@@ -62,8 +62,10 @@ $(document).ready(function () {
     const scenes = {
         'coming': [ // Wracam do domu
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'lighting', action: 'outside', scene_id: '1788212050480', text: 'Sprawdzam, czy włączyć światła zewnętrzne...' },
             { controller: 'garage', action: 'open', text: 'Otwieranie garażu...' },
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'lighting', action: 'inside', scene_id: '1789077304598', text: 'Sprawdzam, czy włączyć światła wewnętrzne...' },
             { controller: 'switch', action: 'on', device_id: '64b708097270', channel: 0, text: 'Włączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ],
@@ -71,6 +73,7 @@ $(document).ready(function () {
             { controller: 'covers', action: 'close', text: 'Zamykanie rolet...' },
             { controller: 'garage', action: 'close', text: 'Zamykanie garażu...' },
             { controller: 'gate', action: 'open', text: 'Otwieranie bramy...' },
+            { controller: 'scene', action: '1776464366415', text: 'Wyłączanie wszystkich świateł...' },
             { controller: 'switch', action: 'off', device_id: '64b708097270', channel: 0, text: 'Wyłączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_away', text: 'Zmieniam tryb domu na: <b>nieobecność</b>...' }
         ],
@@ -87,6 +90,8 @@ $(document).ready(function () {
         ],
         'waking': [ // Pobudka
             { controller: 'covers', action: 'open', text: 'Otwieranie rolet...' },
+            { controller: 'lighting', action: 'inside', scene_id: '1789077304598', text: 'Sprawdzam, czy włączyć światła wewnętrzne...' },
+            { controller: 'lighting', action: 'outside', scene_id: '1788212050480', text: 'Sprawdzam, czy włączyć światła zewnętrzne...' },
             { controller: 'switch', action: 'on', device_id: '64b708097270', channel: 0, text: 'Włączanie pompy CWU...' },
             { controller: 'config', action: 'set_occupancy_mode_home', text: 'Zmieniam tryb domu na: <b>w domu</b>...' }
         ]
@@ -236,6 +241,50 @@ $(document).ready(function () {
                 statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, sceneRunUrl, {});
+                return;
+            }
+
+            if (step.controller === 'lighting') {
+                const checkUrl = `/scene/lighting-check/${step.action}`;
+                statusDisplay.append($('<div>').text(step.text));
+
+                if (dryRun) {
+                    console.info(`[dry-run] GET ${checkUrl}`);
+                    currentActionIndex++;
+                    setTimeout(executeNextAction, 150);
+                    return;
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: checkUrl,
+                    success: function (response) {
+                        if (!response.should_turn_on) {
+                            statusDisplay.append($('<div>').text(
+                                response.enabled
+                                    ? `Jest wystarczająco jasno (${response.insolation}), pomijam.`
+                                    : 'Automatyczne światła są wyłączone, pomijam.'
+                            ));
+                            currentActionIndex++;
+                            setTimeout(executeNextAction, sceneStepDelay);
+                            return;
+                        }
+
+                        const sceneStep = {
+                            ...step,
+                            controller: 'scene',
+                            action: step.scene_id,
+                            text: step.action === 'outside'
+                                ? 'Włączanie świateł zewnętrznych...'
+                                : 'Włączanie świateł wewnętrznych...'
+                        };
+                        performActionAjax(sceneStep, `${apiUrls.scene}/${step.scene_id}`, {});
+                    },
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.error || `Nie udało się sprawdzić nasłonecznienia (${step.action}).`;
+                        finalizeScene(errorMsg, false);
+                    }
+                });
                 return;
             }
 

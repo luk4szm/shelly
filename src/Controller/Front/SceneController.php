@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Front;
 
 use App\Entity\Scene;
+use App\Enum\InsolationLevel;
 use App\Repository\ConfigRepository;
 use App\Repository\SceneRepository;
+use App\Service\AirQuality\InsolationService;
 use App\Service\Shelly\Scene\ShellySceneService;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +36,26 @@ final class SceneController extends AbstractController
         $sceneService->trigger((string)$scene->getShellyId());
 
         return $this->json([]);
+    }
+
+    #[Route('/lighting-check/{group}', name: 'lighting_check', requirements: ['group' => 'inside|outside'], methods: ['GET'])]
+    public function lightingCheck(
+        string            $group,
+        ConfigRepository  $configRepository,
+        InsolationService $insolationService,
+    ): Response
+    {
+        $configName = sprintf('auto_light_%s', $group);
+        $threshold  = $group === 'outside' ? InsolationLevel::OutdoorLightsOn : InsolationLevel::IndoorLightsOn;
+        $insolation = $insolationService->getActualInsolation();
+        $enabled    = $configRepository->getValueByName($configName) === '1';
+
+        return $this->json([
+            'enabled'        => $enabled,
+            'insolation'     => $insolation,
+            'threshold'      => $threshold->value,
+            'should_turn_on' => $enabled && $insolation < $threshold->value,
+        ]);
     }
 
     #[Route('/modal', name: 'modal', methods: ['GET'])]
