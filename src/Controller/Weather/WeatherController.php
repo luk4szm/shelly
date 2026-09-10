@@ -157,7 +157,11 @@ class WeatherController extends AbstractController
     }
 
     #[Route('/get-atmosphere-monthly-candles', name: 'atmosphere_monthly_candles', methods: ['GET'])]
-    public function getAtmosphereMonthlyCandles(Request $request, AirQualityRepository $airQualityRepository): Response
+    public function getAtmosphereMonthlyCandles(
+        Request $request,
+        AirQualityRepository $airQualityRepository,
+        WeatherForecastRepository $forecastRepository,
+    ): Response
     {
         $dateParam = $request->query->get('date');
 
@@ -191,6 +195,22 @@ class WeatherController extends AbstractController
             $out['temperature'][]      = [$ts, $mapToFloats('temperature', $r)];
             $out['humidity'][]         = [$ts, $mapToFloats('humidity', $r)];
             $out['seaLevelPressure'][] = [$ts, $mapToFloats('seaLevelPressure', $r)];
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $out['forecast'] = ['temperature' => [], 'seaLevelPressure' => []];
+        if ($from <= $today && $to >= $today) {
+            $forecastFrom = $today->modify('+1 day');
+            $forecastUntil = $today->modify('+4 days');
+            if ($dateParam && preg_match('/^\d{4}-\d{2}$/', $dateParam)) {
+                $monthEnd = \DateTimeImmutable::createFromMutable($to)->modify('+1 day')->setTime(0, 0);
+                $forecastUntil = min($forecastUntil, $monthEnd);
+            }
+            if ($forecastFrom < $forecastUntil) {
+                $out['forecast'] = WeatherForecastGraphHandler::dailyCandles(
+                    $forecastRepository->findForRange($forecastFrom, $forecastUntil)
+                );
+            }
         }
 
         return $this->json($out);

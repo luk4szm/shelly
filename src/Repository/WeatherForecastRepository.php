@@ -16,6 +16,19 @@ class WeatherForecastRepository extends CrudRepository
         parent::__construct($registry, WeatherForecast::class);
     }
 
+    /** @return WeatherForecast[] */
+    public function findForRange(\DateTimeInterface $from, \DateTimeInterface $until): array
+    {
+        return $this->createQueryBuilder('wf')
+            ->where('wf.time >= :from')
+            ->andWhere('wf.time < :until')
+            ->setParameter('from', $from)
+            ->setParameter('until', $until)
+            ->orderBy('wf.time', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findForecast(): array
     {
         return $this->createQueryBuilder('wf')
