@@ -8,6 +8,16 @@ $(document).ready(function () {
     const getStatusDisplay = () => $('.scene-controller-status');
     const dryRun = window.DEVICE_CONTROL_DRY_RUN === true;
 
+    function getSceneStatusDisplay(button) {
+        const modalStatus = button.closest('#scene_modal').find('.scene-controller-status');
+        if (modalStatus.length) {
+            return modalStatus.first();
+        }
+
+        const sceneStatus = button.closest('.scene-hideable-div').find('.scene-controller-status');
+        return sceneStatus.length ? sceneStatus.first() : getStatusDisplay().first();
+    }
+
     if (dryRun) {
         console.warn('Sceny działają w trybie dry-run — żadne żądania sterujące nie są wysyłane.');
     }
@@ -93,15 +103,16 @@ $(document).ready(function () {
 
     function executeScene(button, sceneActions) {
         let currentActionIndex = 0;
+        const statusDisplay = getSceneStatusDisplay(button);
 
         function finalizeScene(message, isSuccess) {
-            getStatusDisplay().append($('<div>').text(message));
+            statusDisplay.append($('<div>').text(message));
             button.removeClass('btn-azure').addClass(isSuccess ? 'btn-success' : 'btn-danger');
 
             setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
 
             setTimeout(() => {
-                getStatusDisplay().empty();
+                statusDisplay.empty();
                 if (isSuccess) {
                     button.closest('.scene-hideable-div').hide();
                 }
@@ -186,7 +197,7 @@ $(document).ready(function () {
                     finalizeScene(errorMsg, false);
                     return;
                 }
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "sleeping" });
                 return;
@@ -200,7 +211,7 @@ $(document).ready(function () {
                     finalizeScene(errorMsg, false);
                     return;
                 }
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "home" });
                 return;
@@ -214,7 +225,7 @@ $(document).ready(function () {
                     finalizeScene(errorMsg, false);
                     return;
                 }
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, configApiUrl, { "name": "occupancy_mode", "value": "away" });
                 return;
@@ -222,7 +233,7 @@ $(document).ready(function () {
 
             if (step.controller === 'scene') {
                 const sceneRunUrl = `${apiUrls['scene']}/${step.action}`;
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, sceneRunUrl, {});
                 return;
@@ -230,7 +241,7 @@ $(document).ready(function () {
 
             if (step.controller === 'switch') {
                 const switchApiUrl = apiUrls['switch'];
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                statusDisplay.append(`<div>${step.text}</div>`);
 
                 performActionAjax(step, switchApiUrl, {
                     "deviceId": step.device_id,
@@ -263,7 +274,7 @@ $(document).ready(function () {
                 const deviceNameGenitive = deviceNamesGenitive[step.controller];
 
                 const statusSpanId = `status-check-result-${step.controller}-${currentActionIndex}`;
-                getStatusDisplay().append(`<div>Sprawdzam status ${deviceNameGenitive}: <span id="${statusSpanId}"></span></div>`);
+                statusDisplay.append(`<div>Sprawdzam status ${deviceNameGenitive}: <span id="${statusSpanId}"></span></div>`);
 
                 const handleStatusResponse = function (response) {
                         let isCurrentlyOpen = false;
@@ -287,7 +298,7 @@ $(document).ready(function () {
                             skipMessage = 'zamknięte, pomijam';
                         }
 
-                        const resultSpan = $(`#${statusSpanId}`);
+                        const resultSpan = statusDisplay.find(`#${statusSpanId}`);
 
                         if (alreadyInDesiredPosition) {
                             resultSpan.html(`<span style="color: grey;">${skipMessage}</span>`);
@@ -321,7 +332,7 @@ $(document).ready(function () {
                 }
             } else {
                 // Dla innych kontrolerów lub akcji, wyświetl oryginalny tekst i przejdź bezpośrednio
-                getStatusDisplay().append(`<div>${step.text}</div>`);
+                        statusDisplay.append(`<div>${step.text}</div>`);
                 performActionAjax(step, apiUrl, { "direction": step.action });
             }
         }
@@ -364,19 +375,19 @@ $(document).ready(function () {
                     const sceneActions = scenes[action];
                     if (sceneActions) {
                         const sceneName = sceneDisplayNames[action] || action; // Pobierz nazwę sceny
-                        getStatusDisplay().html(`<div>Rozpoczynanie sceny <strong>${sceneName}</strong>...</div>`); // Zaktualizowany komunikat
+                        getSceneStatusDisplay(button).html(`<div>Rozpoczynanie sceny <strong>${sceneName}</strong>...</div>`); // Zaktualizowany komunikat
                         button.removeClass('btn-azure').addClass('btn-success');
                         executeScene(button, sceneActions);
                     } else {
                         const errorMsg = `Błąd: Nie zdefiniowano sceny dla akcji: ${action}`;
                         console.error(errorMsg);
-                        getStatusDisplay().html(`<div>${errorMsg}</div>`);
+                        getSceneStatusDisplay(button).html(`<div>${errorMsg}</div>`);
                         button.removeClass('btn-azure').addClass('btn-danger');
                         setTimeout(() => {
                             resetButtonState(button);
                         }, feedbackDisplayDuration);
                         setTimeout(() => {
-                            getStatusDisplay().html('');
+                            getSceneStatusDisplay(button).empty();
                         }, statusClearDelay);
                     }
                 } else {
