@@ -278,6 +278,9 @@ $(document).ready(function () {
                                 ? 'Włączanie świateł zewnętrznych...'
                                 : 'Włączanie świateł wewnętrznych...'
                         };
+                        statusDisplay.append($('<div>').text(
+                            `Niewystarczająca jasność (${response.insolation}), ${sceneStep.text.toLowerCase()}`
+                        ));
                         performActionAjax(sceneStep, `${apiUrls.scene}/${step.scene_id}`, {});
                     },
                     error: function (xhr) {
