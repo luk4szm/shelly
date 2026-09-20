@@ -64,7 +64,7 @@ class AirQualityRepository extends CrudRepository
         return $this->createQueryBuilder('aq')
             ->select('aq.insolation')
             ->where('aq.insolation IS NOT NULL')
-            ->orderBy('aq.createdAt', 'DESC')
+            ->orderBy('aq.measuredAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getSingleScalarResult();

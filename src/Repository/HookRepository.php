@@ -32,21 +32,9 @@ class HookRepository extends CrudRepository
 
     public function findLastPowerHookForDevice(string $device): array
     {
-        $hooks = $this->createQueryBuilderForHooksByDevice($device)
-            ->andWhere('hook.createdAt >= :date')
-            ->setParameter('date', new \DateTime("-7 day"))
-            ->orderBy('hook.id', 'DESC')
-            ->setMaxResults(250)
-            ->getQuery()
-            ->getResult();
-
-        if (!count($hooks) < 250) {
-            return $hooks;
-        }
-
         return $this->createQueryBuilderForHooksByDevice($device)
             ->setMaxResults(250)
-            ->orderBy('hook.id', 'DESC')
+            ->orderBy('hook.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -75,7 +63,7 @@ class HookRepository extends CrudRepository
         return $this->createQueryBuilderForHooksByDevice($device)
             ->andWhere('hook.createdAt < :date')
             ->setParameter('date', (clone $date)->setTime(0, 0))
-            ->orderBy('hook.id', order: 'DESC')
+            ->orderBy('hook.createdAt', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -88,7 +76,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.property = :property')
             ->setParameter('device', $device)
             ->setParameter('property', 'state')
-            ->orderBy('hook.id', order: 'DESC')
+            ->orderBy('hook.createdAt', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -101,7 +89,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.property = :property')
             ->setParameter('device', $device)
             ->setParameter('property', 'power')
-            ->orderBy('hook.id', order: 'DESC')
+            ->orderBy('hook.createdAt', order: 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -114,7 +102,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.property = :property')
             ->setParameter('device', $location)
             ->setParameter('property', 'temp')
-            ->orderBy('hook.id', 'DESC')
+            ->orderBy('hook.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -127,7 +115,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.property = :property')
             ->setParameter('device', $location)
             ->setParameter('property', 'humidity')
-            ->orderBy('hook.id', 'DESC')
+            ->orderBy('hook.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -200,7 +188,7 @@ class HookRepository extends CrudRepository
             ->andWhere('hook.property = :property')
             ->setParameter('device', $location)
             ->setParameter('property', 'pressure')
-            ->orderBy('hook.id', 'DESC')
+            ->orderBy('hook.createdAt', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
