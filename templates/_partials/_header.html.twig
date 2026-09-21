@@ -245,6 +245,50 @@
                     <a href="./profile.html" class="dropdown-item">Profile</a>
                     <a href="#" class="dropdown-item">Feedback</a>
                     <div class="dropdown-divider"></div>
+                    <label class="dropdown-item d-flex d-md-none align-items-center" for="mobile-theme-toggle">
+                        <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon dropdown-item-icon hide-theme-dark"
+                                aria-hidden="true"
+                        >
+                            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>
+                        </svg>
+                        <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon dropdown-item-icon hide-theme-light"
+                                aria-hidden="true"
+                        >
+                            <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
+                            <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>
+                        </svg>
+                        <span>Tryb ciemny</span>
+                        <span class="form-check form-switch ms-auto mb-0">
+                            <input
+                                    id="mobile-theme-toggle"
+                                    class="form-check-input m-0"
+                                    type="checkbox"
+                                    role="switch"
+                                    aria-label="Przełącz tryb ciemny"
+                            >
+                        </span>
+                    </label>
+                    <div class="dropdown-divider d-md-none"></div>
                     <a href="{{ path('app_front_settings_index') }}" class="dropdown-item">Settings</a>
                     <a href="{{ path('app_logout') }}" class="dropdown-item">Wyloguj</a>
                 </div>
