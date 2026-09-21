@@ -173,7 +173,7 @@
                                     <tr{{ row.totalActiveTime < 60 ? ' class="text-muted"' }}>
                                         <td class="text-muted">{{ loop.index }}</td>
                                         <td class="text-center">
-                                            <a class="link-white" href="{{ path('app_front_device_daily', {'device': device.name, 'date': row.date|date('Y-m-d')}) }}">
+                                            <a class="text-body-emphasis" href="{{ path('app_front_device_daily', {'device': device.name, 'date': row.date|date('Y-m-d')}) }}">
                                                 {{ row.date|date('d.m.Y') }}
                                             </a>
                                         </td>
