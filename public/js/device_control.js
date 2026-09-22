@@ -393,118 +393,236 @@ $(document).ready(function () {
     }
 
 
-    $(document)
-        .on('mousedown touchstart', '.long-press-btn', function (e) {
-            // Ignoruj kliknięcie, jeśli przycisk jest już wyłączony
-            if ($(this).is(':disabled')) {
-                return;
+    const maxLongPressMovement = 12;
+    let activeLongPress = null;
+
+    function cancelActiveLongPress() {
+        if (!activeLongPress) {
+            return;
+        }
+
+        clearTimeout(activeLongPress.timer);
+
+        const button = activeLongPress.button;
+        activeLongPress = null;
+
+        if (button.hasClass('is-holding') && !button.data('action-triggered')) {
+            resetButtonState(button);
+        }
+    }
+
+    function executeLongPressAction(button) {
+        button.data('action-triggered', true);
+        button.prop('disabled', true);
+
+        const textSpan = button.find('span');
+        const controller = button.data('controller');
+        const action = button.data('action');
+
+        if (controller === 'scene') {
+            const sceneActions = scenes[action];
+
+            if (sceneActions) {
+                const sceneName = sceneDisplayNames[action] || action;
+
+                getSceneStatusDisplay(button).html(
+                    `<div>Rozpoczynanie sceny <strong>${sceneName}</strong>...</div>`
+                );
+
+                button.removeClass('btn-azure is-holding').addClass('btn-success');
+                executeScene(button, sceneActions);
+            } else {
+                const errorMsg = `Błąd: Nie zdefiniowano sceny dla akcji: ${action}`;
+
+                console.error(errorMsg);
+                getSceneStatusDisplay(button).html(`<div>${errorMsg}</div>`);
+                button.removeClass('btn-azure is-holding').addClass('btn-danger');
+
+                setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
+                setTimeout(() => getSceneStatusDisplay(button).empty(), statusClearDelay);
             }
-            e.preventDefault();
 
-            const button = $(this);
-            button.data('action-triggered', false);
+            return;
+        }
 
-            const textSpan = button.find('span');
+        textSpan.text('Wysyłanie...');
+        button.removeClass('is-holding');
 
-            // Zapisz stan początkowy (tylko tekst), jeśli jeszcze nie zapisano
-            if (!button.data('original-text')) {
-                button.data('original-text', textSpan.text());
+        const apiUrl = apiUrls[controller];
+
+        if (!apiUrl) {
+            console.error(
+                'Nie można było ustalić adresu API dla urządzenia o nazwie:',
+                controller
+            );
+            resetButtonState(button);
+            return;
+        }
+
+        const requestData = controller === 'switch'
+            ? {
+                deviceId: button.data('device-id'),
+                channel: button.data('channel'),
+                action: action
             }
+            : { direction: action };
 
-            textSpan.text('Przytrzymaj...');
-            button.addClass('is-holding');
+        $.ajax({
+            type: 'PATCH',
+            url: apiUrl,
+            contentType: controller === 'switch' ? 'application/json' : undefined,
+            data: controller === 'switch' ? JSON.stringify(requestData) : requestData,
+            success: function () {
+                textSpan.text('Gotowe!');
+                button.removeClass('btn-azure').addClass('btn-success');
+                console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
 
-            const holdTimer = setTimeout(function () {
-                button.data('action-triggered', true);
-
-                // Wyłącz przycisk, aby zapobiec dalszym interakcjom
-                button.prop('disabled', true);
-
-                const controller = button.data('controller');
-                const action = button.data('action');
-
-                if (controller === 'scene') {
-                    const sceneActions = scenes[action];
-                    if (sceneActions) {
-                        const sceneName = sceneDisplayNames[action] || action; // Pobierz nazwę sceny
-                        getSceneStatusDisplay(button).html(`<div>Rozpoczynanie sceny <strong>${sceneName}</strong>...</div>`); // Zaktualizowany komunikat
-                        button.removeClass('btn-azure').addClass('btn-success');
-                        executeScene(button, sceneActions);
-                    } else {
-                        const errorMsg = `Błąd: Nie zdefiniowano sceny dla akcji: ${action}`;
-                        console.error(errorMsg);
-                        getSceneStatusDisplay(button).html(`<div>${errorMsg}</div>`);
-                        button.removeClass('btn-azure').addClass('btn-danger');
-                        setTimeout(() => {
-                            resetButtonState(button);
-                        }, feedbackDisplayDuration);
-                        setTimeout(() => {
-                            getSceneStatusDisplay(button).empty();
-                        }, statusClearDelay);
-                    }
-                } else {
-                    // Original non-scene logic
-                    textSpan.text('Wysyłanie...');
-                    const apiUrl = apiUrls[controller];
-
-                    if (apiUrl) {
-                        const requestData = controller === 'switch'
-                            ? {
-                                "deviceId": button.data('device-id'),
-                                "channel": button.data('channel'),
-                                "action": action
-                            }
-                            : { "direction": action };
-
-                        $.ajax({
-                            type: "PATCH",
-                            url: apiUrl,
-                            contentType: controller === 'switch' ? 'application/json' : undefined,
-                            data: controller === 'switch' ? JSON.stringify(requestData) : requestData,
-                            success: function () {
-                                textSpan.text('Gotowe!');
-                                button.removeClass('btn-azure').addClass('btn-success');
-                                console.log(`Akcja '${action}' dla '${controller}' wykonana pomyślnie.`);
-                                if (controller === 'switch') {
-                                    button.data('action', action === 'on' ? 'off' : 'on');
-                                    button.data('original-text', action === 'on' ? 'Wyłącz' : 'Włącz');
-                                    button.closest('#device_status').find('.device-switch-state')
-                                        .removeClass('bg-light-lt bg-success')
-                                        .addClass(action === 'on' ? 'bg-success' : 'bg-light-lt');
-                                    $(document).trigger('device:switch-success', [button]);
-                                }
-                            },
-                            error: function (response) {
-                                console.error("Błąd podczas wykonywania akcji AJAX:", response);
-                                textSpan.text(response.responseJSON?.error || 'Wystąpił błąd');
-                                button.removeClass('btn-azure btn-success').addClass('btn-danger');
-                            },
-                            complete: function() {
-                                // Po określonym czasie zresetuj przycisk, niezależnie od wyniku
-                                setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
-                            }
-                        });
-                    } else {
-                        console.error('Nie można było ustalić adresu API dla urządzenia o nazwie: ', controller);
-                        // Jeśli nie ma API, natychmiast zresetuj
-                        resetButtonState(button);
-                    }
+                if (controller === 'switch') {
+                    button.data('action', action === 'on' ? 'off' : 'on');
+                    button.data('original-text', action === 'on' ? 'Wyłącz' : 'Włącz');
+                    button.closest('#device_status').find('.device-switch-state')
+                        .removeClass('bg-light-lt bg-success')
+                        .addClass(action === 'on' ? 'bg-success' : 'bg-light-lt');
+                    $(document).trigger('device:switch-success', [button]);
                 }
-
-            }, holdDuration);
-
-            // Zapisz ID timera w danych przycisku, aby uniknąć konfliktu
-            button.data('holdTimer', holdTimer);
-        })
-        .on('mouseup mouseleave touchend touchmove', '.long-press-btn', function () {
-            const button = $(this);
-            clearTimeout(button.data('holdTimer'));
-
-            // Resetuj przycisk tylko wtedy, gdy akcja NIE została uruchomiona
-            if (button.hasClass('is-holding') && !button.data('action-triggered')) {
-                resetButtonState(button);
+            },
+            error: function (response) {
+                console.error('Błąd podczas wykonywania akcji AJAX:', response);
+                textSpan.text(response.responseJSON?.error || 'Wystąpił błąd');
+                button.removeClass('btn-azure btn-success').addClass('btn-danger');
+            },
+            complete: function () {
+                setTimeout(() => resetButtonState(button), feedbackDisplayDuration);
             }
         });
+    }
+
+    $(document).on('pointerdown', '.long-press-btn', function (event) {
+        const pointerEvent = event.originalEvent;
+        const button = $(this);
+
+        if (button.is(':disabled')) {
+            return;
+        }
+
+        if (
+            pointerEvent.isPrimary === false
+            || (pointerEvent.pointerType === 'mouse' && pointerEvent.button !== 0)
+        ) {
+            return;
+        }
+
+        cancelActiveLongPress();
+
+        const textSpan = button.find('span');
+
+        if (!button.data('original-text')) {
+            button.data('original-text', textSpan.text());
+        }
+
+        button.data('action-triggered', false);
+        button.addClass('is-holding');
+        textSpan.text('Przytrzymaj...');
+
+        const pressState = {
+            button: button,
+            pointerId: pointerEvent.pointerId,
+            startX: pointerEvent.clientX,
+            startY: pointerEvent.clientY,
+            armed: false,
+            timer: null
+        };
+
+        pressState.timer = setTimeout(function () {
+            if (activeLongPress !== pressState) {
+                return;
+            }
+
+            pressState.armed = true;
+            textSpan.text('Puść, aby wykonać');
+        }, holdDuration);
+
+        activeLongPress = pressState;
+        button.data('holdTimer', pressState.timer);
+    });
+
+    $(document).on('pointermove', function (event) {
+        if (!activeLongPress) {
+            return;
+        }
+
+        const pointerEvent = event.originalEvent;
+
+        if (pointerEvent.pointerId !== activeLongPress.pointerId) {
+            return;
+        }
+
+        const deltaX = pointerEvent.clientX - activeLongPress.startX;
+        const deltaY = pointerEvent.clientY - activeLongPress.startY;
+        const distance = Math.hypot(deltaX, deltaY);
+        const buttonElement = activeLongPress.button[0];
+        const elementUnderPointer = document.elementFromPoint(
+            pointerEvent.clientX,
+            pointerEvent.clientY
+        );
+        const pointerStillOnButton = elementUnderPointer
+            && buttonElement.contains(elementUnderPointer);
+
+        if (distance > maxLongPressMovement || !pointerStillOnButton) {
+            cancelActiveLongPress();
+        }
+    });
+
+    $(document).on('pointerup', function (event) {
+        if (!activeLongPress) {
+            return;
+        }
+
+        const pointerEvent = event.originalEvent;
+
+        if (pointerEvent.pointerId !== activeLongPress.pointerId) {
+            return;
+        }
+
+        clearTimeout(activeLongPress.timer);
+
+        const pressState = activeLongPress;
+        const button = pressState.button;
+        const buttonElement = button[0];
+        const elementUnderPointer = document.elementFromPoint(
+            pointerEvent.clientX,
+            pointerEvent.clientY
+        );
+        const releasedOnButton = elementUnderPointer
+            && buttonElement.contains(elementUnderPointer);
+
+        activeLongPress = null;
+
+        if (pressState.armed && releasedOnButton) {
+            executeLongPressAction(button);
+        } else {
+            resetButtonState(button);
+        }
+    });
+
+    $(document).on('pointercancel lostpointercapture', function () {
+        cancelActiveLongPress();
+    });
+
+    window.addEventListener('scroll', cancelActiveLongPress, true);
+    window.addEventListener('blur', cancelActiveLongPress);
+    window.addEventListener('pagehide', cancelActiveLongPress);
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            cancelActiveLongPress();
+        }
+    });
+
+    $(document).on('click', '.long-press-btn', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    });
 
     $(document).on('click', 'span[data-role="check_status"]', function () {
         const clickedSpan = $(this);
