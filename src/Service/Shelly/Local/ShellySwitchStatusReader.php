@@ -50,6 +50,8 @@ final readonly class ShellySwitchStatusReader
             isset($result['source']) ? (string) $result['source'] : null,
             $rpcResult->endpoint,
             $rpcResult->connection,
+            $rpcResult->responseTimeMs,
+            $rpcResult->totalTimeMs,
         );
     }
 }

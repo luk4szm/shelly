@@ -61,12 +61,14 @@ final class ShellyRpcSwitchCommand extends Command
         }
 
         $output->writeln(json_encode([
-            'device' => $device->getName(),
-            'component' => sprintf('%s:%d', $device->getComponentType()->value, $device->getChannel()),
-            'action' => $action,
-            'endpoint' => $result->endpoint,
-            'connection' => $result->connection,
-            'rpc_result' => $result->data,
+            'device'           => $device->getName(),
+            'component'        => sprintf('%s:%d', $device->getComponentType()->value, $device->getChannel()),
+            'action'           => $action,
+            'endpoint'         => $result->endpoint,
+            'connection'       => $result->connection,
+            'response_time_ms' => $result->responseTimeMs,
+            'total_time_ms'    => $result->totalTimeMs,
+            'rpc_result'       => $result->data,
         ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         return self::SUCCESS;

@@ -11,5 +11,7 @@ final readonly class RpcResult
         public array  $data,
         public string $endpoint,
         public string $connection,
+        public float  $responseTimeMs,
+        public float  $totalTimeMs,
     ) {}
 }

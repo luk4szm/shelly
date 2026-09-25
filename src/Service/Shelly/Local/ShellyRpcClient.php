@@ -70,13 +70,20 @@ final readonly class ShellyRpcClient
         }
 
         $failures = [];
+        $operationStartedAt = hrtime(true);
 
         foreach ($endpoints as $endpoint) {
+            $attemptStartedAt = hrtime(true);
+
             try {
+                $data = $this->send($endpoint['address'], $method, $params);
+
                 return new RpcResult(
-                    $this->send($endpoint['address'], $method, $params),
+                    $data,
                     $endpoint['address'],
                     $endpoint['connection'],
+                    self::elapsedMilliseconds($attemptStartedAt),
+                    self::elapsedMilliseconds($operationStartedAt),
                 );
             } catch (TransportExceptionInterface $exception) {
                 $failures[] = sprintf('%s: %s', $endpoint['address'], $exception->getMessage());
@@ -92,6 +99,11 @@ final readonly class ShellyRpcClient
             ),
             previous: $lastException,
         );
+    }
+
+    private static function elapsedMilliseconds(int $startedAt): float
+    {
+        return round((hrtime(true) - $startedAt) / 1_000_000, 2);
     }
 
     /**
