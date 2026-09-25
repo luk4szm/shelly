@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace App\Service\Shelly\Local;
 
+use App\Enum\ShellyComponentType;
 use App\Exception\ShellyDeviceUnavailableException;
 use App\Exception\ShellyRpcException;
 use App\Model\Device\ShellyRpcDeviceInterface;
 use App\Model\Shelly\RpcResult;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ShellyRpcClient
 {
     private const CONNECT_TIMEOUT_SECONDS = 1.0;
-    private const MAX_DURATION_SECONDS = 2.0;
-    public function __construct(private HttpClientInterface $httpClient)
-    {
-    }
+    private const MAX_DURATION_SECONDS    = 2.0;
+
+    public function __construct(
+        private HttpClientInterface $httpClient,
+    ) {}
 
     public function read(ShellyRpcDeviceInterface $device, string $method, array $params = []): RpcResult
     {
@@ -28,6 +33,26 @@ final readonly class ShellyRpcClient
             ));
         }
 
+        return $this->request($device, $method, $params);
+    }
+
+    public function setSwitch(ShellyRpcDeviceInterface $device, bool $on): RpcResult
+    {
+        if ($device->getComponentType() !== ShellyComponentType::Switch) {
+            throw new \InvalidArgumentException(sprintf(
+                'Shelly device "%s" is not configured as a switch.',
+                $device->getName(),
+            ));
+        }
+
+        return $this->request($device, 'Switch.Set', [
+            'id' => $device->getChannel(),
+            'on' => $on,
+        ]);
+    }
+
+    private function request(ShellyRpcDeviceInterface $device, string $method, array $params): RpcResult
+    {
         $endpoints = [
             ['address' => $device->getHostname(), 'connection' => 'mdns'],
         ];
@@ -45,7 +70,6 @@ final readonly class ShellyRpcClient
         }
 
         $failures = [];
-        $lastException = null;
 
         foreach ($endpoints as $endpoint) {
             try {
@@ -70,7 +94,16 @@ final readonly class ShellyRpcClient
         );
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param string $endpoint
+     * @param string $method
+     * @param array  $params
+     * @return array<string, mixed>
+     * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     */
     private function send(string $endpoint, string $method, array $params): array
     {
         $payload = [
