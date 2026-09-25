@@ -28,4 +28,11 @@ final readonly class ShellySwitchWriter
 
         return $this->rpcClient->setSwitch($device, $on);
     }
+
+    public function setIfConfigured(string $deviceId, int $channel, bool $on): ?RpcResult
+    {
+        $device = $this->registry->findByDeviceIdAndChannel($deviceId, $channel);
+
+        return $device === null ? null : $this->set($device->getName(), $on);
+    }
 }

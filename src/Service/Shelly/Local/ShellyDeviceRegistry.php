@@ -34,6 +34,30 @@ final class ShellyDeviceRegistry
             ?? throw new \InvalidArgumentException(sprintf('Unknown Shelly RPC device "%s".', $name));
     }
 
+    public function findByDeviceIdAndChannel(string $deviceId, int $channel): ?ShellyRpcDeviceInterface
+    {
+        $deviceId = strtolower($deviceId);
+        $match    = null;
+
+        foreach ($this->devices as $device) {
+            if (strtolower($device->getDeviceId()) !== $deviceId || $device->getChannel() !== $channel) {
+                continue;
+            }
+
+            if ($match !== null) {
+                throw new \LogicException(sprintf(
+                    'Multiple Shelly RPC devices match device ID "%s" and channel %d.',
+                    $deviceId,
+                    $channel,
+                ));
+            }
+
+            $match = $device;
+        }
+
+        return $match;
+    }
+
     /** @return list<string> */
     public function getDeviceNames(): array
     {
