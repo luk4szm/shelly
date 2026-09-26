@@ -6,13 +6,16 @@ namespace App\Controller\Front;
 
 use App\Entity\DeviceDailyStats;
 use App\Entity\Hook;
+use App\Exception\ShellyRpcException;
 use App\Model\DateRange;
 use App\Model\Device\PowerMeter\Boiler;
 use App\Model\Device\Relay\Relay;
+use App\Model\Device\ShellyRpcDeviceInterface;
 use App\Repository\DeviceDailyStatsRepository;
 use App\Repository\HookRepository;
 use App\Service\DailyStats\DailyStatsCalculatorInterface;
 use App\Service\DeviceStatus\DeviceStatusHelperInterface;
+use App\Service\Shelly\Local\ShellySwitchStatusReader;
 use App\Service\Shelly\Switch\ShellySwitchService;
 use App\Utils\Hook\GraphHandler\PowerGraphHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +27,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/device/{device}', name: 'app_front_device_')]
 class DeviceController extends AbstractController
 {
+    public function __construct(
+        private readonly ShellySwitchStatusReader $localSwitchStatusReader,
+    ) {}
+
     #[Route('/daily', name: 'daily')]
     public function daily(
         #[AutowireIterator('app.shelly.device_status_helper')]
@@ -283,8 +290,23 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * Resolves the model by the Shelly device id exposed by the status helper.
-     * Only models extending Relay may be controlled from the device history pages.
+     * Retrieves the switch data for a device, providing information such as
+     * device ID, channel, power status, and other parameters.
+     *
+     * This method checks if the provided device class is compatible with the
+     * Relay or ShellyRpcDeviceInterface classes. Depending on the compatibility,
+     * it fetches and returns device-specific information by interacting with
+     * the ShellySwitchService or local device status reader services.
+     *
+     * If the device is of type ShellyRpcDeviceInterface, it attempts to obtain
+     * switch power and state information via RPC. Fallback mechanisms are in
+     * place to handle offline devices or exceptions during the status retrieval.
+     *
+     * @param DeviceStatusHelperInterface $helper              Provides helper methods related to the device's attributes and actions.
+     * @param ShellySwitchService         $shellySwitchService Service responsible for retrieving switch status from Shelly devices.
+     *
+     * @return array|null Returns an array with switch data including device ID, channel, power status, and other relevant details,
+     *                    or null if the device class is not supported.
      */
     private function getSwitchData(
         DeviceStatusHelperInterface $helper,
@@ -298,6 +320,26 @@ class DeviceController extends AbstractController
 
         $channel = defined($deviceClass . '::CHANNEL') ? $deviceClass::CHANNEL : 0;
         $isOn    = null;
+
+        if (is_a($deviceClass, ShellyRpcDeviceInterface::class, true)) {
+            $power = null;
+
+            try {
+                $status = $this->localSwitchStatusReader->read($helper->getDeviceName());
+                $isOn   = $status->output;
+                $power  = $status->power;
+            } catch (ShellyRpcException) {
+                // Keep the page available while the local device is offline.
+            }
+
+            return [
+                'deviceId' => $helper->getDeviceId(),
+                'channel'  => $channel,
+                'isOn'     => $isOn,
+                'power'    => $power,
+                'localRpc' => true,
+            ];
+        }
 
         try {
             $status = $shellySwitchService->getStatus($helper->getDeviceId());

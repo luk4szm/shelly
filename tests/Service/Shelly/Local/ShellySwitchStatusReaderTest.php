@@ -30,6 +30,12 @@ final class ShellySwitchStatusReaderTest extends TestCase
         ], JSON_THROW_ON_ERROR)));
         $reader = new ShellySwitchStatusReader($registry, new ShellyRpcClient($httpClient));
 
+        $actual = $reader->read('girlanda')->toArray();
+
+        self::assertGreaterThanOrEqual(0.0, $actual['response_time_ms']);
+        self::assertGreaterThanOrEqual($actual['response_time_ms'], $actual['total_time_ms']);
+        unset($actual['response_time_ms'], $actual['total_time_ms']);
+
         self::assertSame([
             'device' => 'girlanda',
             'host' => 'ShellyPlus2PM-345F45193B80.local',
@@ -42,6 +48,6 @@ final class ShellySwitchStatusReaderTest extends TestCase
             'voltage' => 218.9,
             'current' => 0.115,
             'source' => 'HTTP_in',
-        ], $reader->read('girlanda')->toArray());
+        ], $actual);
     }
 }

@@ -1,5 +1,7 @@
 {% set currentStatus = device.currentStatus|first %}
 {% set dailyStats = device.dailyStats|default(null) %}
+{% set isLocalRpc = device.switch is not null and device.switch.localRpc|default(false) %}
+{% set isDeviceStateUnknown = isLocalRpc and device.switch.isOn is null %}
 {% set isDeviceActive = device.switch is not null
     ? device.switch.isOn is same as(true)
     : (currentStatus and currentStatus.status == constant('App\\Model\\Status::ACTIVE')) %}
@@ -37,21 +39,30 @@
             <div class="card-body py-2">
                 <div class="row align-items-center">
                     <div class="col-auto p-1">
-                        <span class="device-switch-state {{ isDeviceActive ? 'bg-success' : 'bg-light-lt' }} avatar"></span>
+                        <span class="device-switch-state {{ isDeviceStateUnknown ? 'bg-secondary-lt' : (isDeviceActive ? 'bg-success' : 'bg-light-lt') }} avatar"></span>
                     </div>
                     <div class="col">
                         <div class="fw-bolder fs-3">
-                            {{ currentStatus ? currentStatus.lastValue : 0 }} W
+                            {% if isLocalRpc %}
+                                {{ device.switch.power is not null ? device.switch.power : '—' }} W
+                            {% else %}
+                                {{ currentStatus ? currentStatus.lastValue : 0 }} W
+                            {% endif %}
                         </div>
                         <div class="text-secondary text-capitalize fw-bold">
                             <a href="{{ path('app_front_device_daily', {'device': device.name}) }}" class="text-secondary">
                                 {{ device.name|trans({}, 'device') }}
                             </a>
                         </div>
+                        {% if isLocalRpc %}
+                            <div class="text-secondary small">
+                                Stan: {{ isDeviceStateUnknown ? 'nieznany' : (isDeviceActive ? 'włączona' : 'wyłączona') }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="col-auto text-end">
-                        <div class="ms-3 float-right font-weight-medium {{ isDeviceActive ? 'text-green' : 'text-yellow' }} current-status-duration">
-                            {{ currentStatus ? currentStatus.statusDuration|readableDurationTime : '00:00:00' }}
+                        <div class="ms-3 float-right font-weight-medium {{ isDeviceStateUnknown ? 'text-secondary' : (isDeviceActive ? 'text-green' : 'text-yellow') }} {{ isDeviceStateUnknown ? '' : 'current-status-duration' }}">
+                            {{ isDeviceStateUnknown ? '—' : (currentStatus ? currentStatus.statusDuration|readableDurationTime : '00:00:00') }}
                         </div>
                         <div class="float-right text-muted fs-base">
                             <span>&#8593; {{ dailyStats ? dailyStats.inclusions : 0 }}</span>
@@ -69,8 +80,9 @@
                                     data-controller="switch"
                                     data-action="{{ device.switch.isOn is same as(true) ? 'off' : 'on' }}"
                                     data-device-id="{{ device.switch.deviceId }}"
-                                    data-channel="{{ device.switch.channel }}">
-                                <span>{{ device.switch.isOn is same as(true) ? 'Wyłącz' : 'Włącz' }}</span>
+                                    data-channel="{{ device.switch.channel }}"
+                                    {% if isDeviceStateUnknown %}disabled{% endif %}>
+                                <span>{{ isDeviceStateUnknown ? 'Stan nieznany' : (device.switch.isOn is same as(true) ? 'Wyłącz' : 'Włącz') }}</span>
                             </button>
                             <div class="scene-controller-status"></div>
                         </div>
