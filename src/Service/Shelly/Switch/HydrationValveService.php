@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Shelly\Switch;
 
 use App\Model\Device\Valve\ValveDevice;
-use App\Service\Shelly\ShellyDeviceService;
+use App\Service\Shelly\Local\ShellyValveWriter;
 
-readonly class HydrationValveService extends ShellyDeviceService
+final readonly class HydrationValveService
 {
-    public function start(ValveDevice $device, int $toggleAfter = 0): void
+    public function __construct(
+        private ShellyValveWriter $valveWriter,
+    ) {}
+
+    public function start(ValveDevice $device, int $toggleAfter): void
     {
-        $this->curlRequest->valve($device, 'on', $toggleAfter);
+        $this->valveWriter->openValve($device, $toggleAfter);
     }
 
     public function stop(ValveDevice $device): void
     {
-        $this->curlRequest->valve($device, 'off');
+        $this->valveWriter->closeValve($device);
     }
 }

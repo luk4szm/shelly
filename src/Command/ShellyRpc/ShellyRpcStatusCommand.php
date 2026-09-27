@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command\ShellyRpc;
 
+use App\Enum\ShellyComponentType;
 use App\Exception\ShellyRpcException;
+use App\Model\Device\Valve\ValveDevice;
 use App\Service\Shelly\Local\ShellyDeviceRegistry;
+use App\Service\Shelly\Local\ShellyValveStatusReader;
 use App\Service\Shelly\Local\ShellySwitchStatusReader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -23,6 +26,7 @@ final class ShellyRpcStatusCommand extends Command
     public function __construct(
         private readonly ShellyDeviceRegistry     $registry,
         private readonly ShellySwitchStatusReader $statusReader,
+        private readonly ShellyValveStatusReader  $valveStatusReader,
     ) {
         parent::__construct();
     }
@@ -38,7 +42,14 @@ final class ShellyRpcStatusCommand extends Command
         $deviceName = (string)$input->getArgument('device');
 
         try {
-            $status = $this->statusReader->read($deviceName);
+            $device = $this->registry->getDevice($deviceName);
+            $status = match ($device->getComponentType()) {
+                ShellyComponentType::Switch => $this->statusReader->read($deviceName)->toArray(),
+                ShellyComponentType::Light => $device instanceof ValveDevice
+                    ? $this->valveStatusReader->read($deviceName)
+                    : throw new ShellyRpcException(sprintf('Status is unsupported for "%s".', $deviceName)),
+                default => throw new ShellyRpcException(sprintf('Status is unsupported for "%s".', $deviceName)),
+            };
         } catch (\InvalidArgumentException $exception) {
             $io->error($exception->getMessage());
             $io->writeln(sprintf('Available devices: %s', implode(', ', $this->registry->getDeviceNames())));
@@ -51,7 +62,7 @@ final class ShellyRpcStatusCommand extends Command
         }
 
         $output->writeln(json_encode(
-            $status->toArray(),
+            $status,
             JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
         ));
 

@@ -7,7 +7,9 @@ namespace App\Service\Shelly\Local;
 use App\Enum\ShellyComponentType;
 use App\Exception\ShellyDeviceUnavailableException;
 use App\Exception\ShellyRpcException;
+use App\Exception\ShellyWriteOutcomeUnknownException;
 use App\Model\Device\ShellyRpcDeviceInterface;
+use App\Model\Device\Valve\ValveDevice;
 use App\Model\Shelly\RpcResult;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -49,6 +51,55 @@ final readonly class ShellyRpcClient
             'id' => $device->getChannel(),
             'on' => $on,
         ]);
+    }
+
+    /** Shelly exposes these valve outputs as Light components in its RPC protocol. */
+    public function setValve(ValveDevice $device, bool $on, int $toggleAfter = 0): RpcResult
+    {
+        if ($device->getComponentType() !== ShellyComponentType::Light) {
+            throw new \InvalidArgumentException(sprintf('Shelly device "%s" is not configured as a light.', $device->getName()));
+        }
+
+        if ($on && ($toggleAfter < 1 || $toggleAfter > 604800)) {
+            throw new \InvalidArgumentException('Valve opening requires a positive toggle_after of at most 604800 seconds.');
+        }
+
+        $params = ['id' => $device->getChannel(), 'on' => $on];
+
+        if ($on) {
+            $params['brightness']   = 100;
+            $params['toggle_after'] = $toggleAfter;
+        }
+
+        // Verify the physical device before writing, especially when a DHCP fallback IP is used.
+        // The write itself is sent once: retrying after a timeout could extend watering.
+        $endpoint = $this->read($device, 'Shelly.GetDeviceInfo');
+
+        if (strtolower((string) ($endpoint->data['mac'] ?? '')) !== strtolower($device->getDeviceId())) {
+            throw new ShellyRpcException(sprintf(
+                'Shelly device identity mismatch for "%s" at %s; Light.Set was not sent.',
+                $device->getName(),
+                $endpoint->endpoint,
+            ));
+        }
+        $startedAt = hrtime(true);
+
+        try {
+            $data = $this->send($endpoint->endpoint, 'Light.Set', $params);
+        } catch (TransportExceptionInterface|ShellyRpcException $exception) {
+            throw new ShellyWriteOutcomeUnknownException(sprintf(
+                'Light.Set outcome for Shelly device "%s" is unknown; the command was not retried.',
+                $device->getName(),
+            ), previous: $exception);
+        }
+
+        return new RpcResult(
+            $data,
+            $endpoint->endpoint,
+            $endpoint->connection,
+            self::elapsedMilliseconds($startedAt),
+            $endpoint->totalTimeMs + self::elapsedMilliseconds($startedAt),
+        );
     }
 
     private function request(ShellyRpcDeviceInterface $device, string $method, array $params): RpcResult
@@ -168,10 +219,26 @@ final readonly class ShellyRpcClient
             ));
         }
 
-        $result = $data['result'] ?? null;
+        if (!array_key_exists('result', $data)) {
+            throw new ShellyRpcException(sprintf('Shelly RPC "%s" returned an invalid response.', $method));
+        }
+
+        $result = $data['result'];
+
+        if ($method === 'Light.Set' && $result === null) {
+            return [];
+        }
 
         if (!is_array($result)) {
             throw new ShellyRpcException(sprintf('Shelly RPC "%s" returned an invalid response.', $method));
+        }
+
+        if ($method === 'Light.Set' && isset($result['results'])) {
+            foreach ($result['results'] as $channelResult) {
+                if ($channelResult !== null) {
+                    throw new ShellyRpcException(sprintf('Shelly RPC "%s" did not apply to all channels.', $method));
+                }
+            }
         }
 
         return $result;
