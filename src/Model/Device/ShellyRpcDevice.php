@@ -43,7 +43,7 @@ trait ShellyRpcDevice
         return $this::GENERATION;
     }
 
-    public function getProfile(): string
+    public function getProfile(): ?string
     {
         return $this::PROFILE;
     }

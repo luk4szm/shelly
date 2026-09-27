@@ -24,5 +24,5 @@ interface ShellyRpcDeviceInterface extends DeviceInterface
 
     public function getGeneration(): int;
 
-    public function getProfile(): string;
+    public function getProfile(): ?string;
 }

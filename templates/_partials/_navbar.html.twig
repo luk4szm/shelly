@@ -62,7 +62,15 @@
                                     </div>
                                     <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'tv'}) }}"> Tv </a>
                                     <a class="dropdown-item" href="{{ path('app_front_device_monthly', {'device': 'hydrofor'}) }}"> Hydrofor </a>
-                                    <a class="dropdown-item" href="{{ path('app_front_device_daily', {'device': 'girlanda'}) }}"> Girlanda </a>
+                                    <div class="dropend">
+                                        <a class="dropdown-item dropdown-toggle show" href="#lights" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="true">
+                                            Światła
+                                        </a>
+                                        <div class="dropdown-menu show" data-bs-popper="static">
+                                            <a class="dropdown-item" href="{{ path('app_front_device_daily', {'device': 'girlanda'}) }}"> Girlanda </a>
+                                            <a class="dropdown-item" href="{{ path('app_front_device_daily', {'device': 'driveway-lights'}) }}"> Światła podjazdu </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
