@@ -51,9 +51,7 @@ class TvHookSubscriber implements EventSubscriberInterface
             }
 
             $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 60);
-            sleep(1);
             $this->shellyLightService->turnOn(new TvLedsBoard(), white: 40);
-            sleep(1);
             $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 10);
 
             // Mark in cache that lights are on
@@ -76,16 +74,12 @@ class TvHookSubscriber implements EventSubscriberInterface
             if ($this->insolationService->getActualInsolation() <= InsolationLevel::IndoorLightsOn->value) {
                 // Sequence of turning on the mood light
                 $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
-                sleep(1);
                 $this->shellyLightService->turnOn(new TvLedsBoard(), white: 10);
-                sleep(1);
                 $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 5);
             } else {
                 // Turn off lights sequence
                 $this->shellyLightService->turnOff(new TvLedsMonitor());
-                sleep(1);
                 $this->shellyLightService->turnOff(new TvLedsBoard());
-                sleep(1);
                 $this->shellyLightService->turnOff(new TvLedsCabinet());
             }
 

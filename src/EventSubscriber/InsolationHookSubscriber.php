@@ -59,15 +59,11 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
 
                 if (!$tvLightsStatusCache->isHit() && $tvLightsStatusCache->get() !== true) {
                     $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
-                    sleep(1);
                     $this->shellyLightService->turnOn(new TvLedsBoard(), white: 10);
-                    sleep(1);
                     $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 5);
-                    sleep(1);
                 }
 
                 $this->shellyLightService->turnOn(new KitchenLedsTop(), white: 65);
-                sleep(1);
                 $this->shellyLightService->turnOn(new KitchenLedsBottom(), white: 10);
             }
 

@@ -9,6 +9,7 @@ use App\Exception\ShellyDeviceUnavailableException;
 use App\Exception\ShellyRpcException;
 use App\Exception\ShellyWriteOutcomeUnknownException;
 use App\Model\Device\ShellyRpcDeviceInterface;
+use App\Model\Device\Light\LocalWhiteLightDevice;
 use App\Model\Device\Valve\ValveDevice;
 use App\Model\Shelly\RpcResult;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -71,8 +72,29 @@ final readonly class ShellyRpcClient
             $params['toggle_after'] = $toggleAfter;
         }
 
+        return $this->writeLightComponent($device, $params);
+    }
+
+    public function setLedLight(LocalWhiteLightDevice $device, bool $on, ?int $brightness = null): RpcResult
+    {
+        if ($on && $brightness !== null && ($brightness < 1 || $brightness > 100)) {
+            throw new \InvalidArgumentException('LED brightness must be between 1 and 100.');
+        }
+
+        $params = ['id' => $device->getChannel(), 'on' => $on];
+
+        if ($on && $brightness !== null) {
+            $params['brightness'] = $brightness;
+        }
+
+        return $this->writeLightComponent($device, $params);
+    }
+
+    /** @param array<string, int|bool> $params */
+    private function writeLightComponent(ShellyRpcDeviceInterface $device, array $params): RpcResult
+    {
         // Verify the physical device before writing, especially when a DHCP fallback IP is used.
-        // The write itself is sent once: retrying after a timeout could extend watering.
+        // The write itself is sent once: retrying after a timeout may apply an old command twice.
         $endpoint = $this->read($device, 'Shelly.GetDeviceInfo');
 
         if (strtolower((string) ($endpoint->data['mac'] ?? '')) !== strtolower($device->getDeviceId())) {
