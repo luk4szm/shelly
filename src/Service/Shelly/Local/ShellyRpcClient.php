@@ -9,6 +9,7 @@ use App\Exception\ShellyDeviceUnavailableException;
 use App\Exception\ShellyRpcException;
 use App\Exception\ShellyWriteOutcomeUnknownException;
 use App\Model\Device\ShellyRpcDeviceInterface;
+use App\Model\Device\Light\LocalRgbwLightDevice;
 use App\Model\Device\Light\LocalWhiteLightDevice;
 use App\Model\Device\Valve\ValveDevice;
 use App\Model\Shelly\RpcResult;
@@ -72,7 +73,7 @@ final readonly class ShellyRpcClient
             $params['toggle_after'] = $toggleAfter;
         }
 
-        return $this->writeLightComponent($device, $params);
+        return $this->writeVerified($device, 'Light.Set', $params);
     }
 
     public function setLedLight(LocalWhiteLightDevice $device, bool $on, ?int $brightness = null): RpcResult
@@ -87,11 +88,60 @@ final readonly class ShellyRpcClient
             $params['brightness'] = $brightness;
         }
 
-        return $this->writeLightComponent($device, $params);
+        return $this->writeVerified($device, 'Light.Set', $params);
     }
 
-    /** @param array<string, int|bool> $params */
-    private function writeLightComponent(ShellyRpcDeviceInterface $device, array $params): RpcResult
+    /** @param list<int> $colors */
+    public function setRgbw(
+        LocalRgbwLightDevice $device,
+        bool                 $on,
+        ?int                 $brightness = null,
+        ?int                 $white = null,
+        array                $colors = [],
+    ): RpcResult
+    {
+        $params = ['id' => $device->getChannel(), 'on' => $on];
+
+        if ($on) {
+            if ($brightness !== null && ($brightness < 1 || $brightness > 100)) {
+                throw new \InvalidArgumentException('RGBW brightness must be between 1 and 100.');
+            }
+
+            if ($white !== null && ($white < 0 || $white > 255)) {
+                throw new \InvalidArgumentException('RGBW white level must be between 0 and 255.');
+            }
+
+            if ($colors !== []) {
+                if (count($colors) !== 3 || array_keys($colors) !== [0, 1, 2]) {
+                    throw new \InvalidArgumentException('RGBW color must contain red, green and blue values.');
+                }
+
+                foreach ($colors as $color) {
+                    if (!is_int($color) || $color < 0 || $color > 255) {
+                        throw new \InvalidArgumentException('RGBW color values must be integers between 0 and 255.');
+                    }
+                }
+
+                $params['rgb'] = $colors;
+            } elseif ($white !== null && $white > 0) {
+                // White-only automation must not re-enable a previously stored RGB color.
+                $params['rgb'] = [0, 0, 0];
+            }
+
+            if ($brightness !== null) {
+                $params['brightness'] = $brightness;
+            }
+
+            if ($white !== null) {
+                $params['white'] = $white;
+            }
+        }
+
+        return $this->writeVerified($device, 'RGBW.Set', $params);
+    }
+
+    /** @param array<string, mixed> $params */
+    private function writeVerified(ShellyRpcDeviceInterface $device, string $method, array $params): RpcResult
     {
         // Verify the physical device before writing, especially when a DHCP fallback IP is used.
         // The write itself is sent once: retrying after a timeout may apply an old command twice.
@@ -99,18 +149,20 @@ final readonly class ShellyRpcClient
 
         if (strtolower((string) ($endpoint->data['mac'] ?? '')) !== strtolower($device->getDeviceId())) {
             throw new ShellyRpcException(sprintf(
-                'Shelly device identity mismatch for "%s" at %s; Light.Set was not sent.',
+                'Shelly device identity mismatch for "%s" at %s; %s was not sent.',
                 $device->getName(),
                 $endpoint->endpoint,
+                $method,
             ));
         }
         $startedAt = hrtime(true);
 
         try {
-            $data = $this->send($endpoint->endpoint, 'Light.Set', $params);
+            $data = $this->send($endpoint->endpoint, $method, $params);
         } catch (TransportExceptionInterface|ShellyRpcException $exception) {
             throw new ShellyWriteOutcomeUnknownException(sprintf(
-                'Light.Set outcome for Shelly device "%s" is unknown; the command was not retried.',
+                '%s outcome for Shelly device "%s" is unknown; the command was not retried.',
+                $method,
                 $device->getName(),
             ), previous: $exception);
         }
@@ -247,7 +299,7 @@ final readonly class ShellyRpcClient
 
         $result = $data['result'];
 
-        if ($method === 'Light.Set' && $result === null) {
+        if (in_array($method, ['Light.Set', 'RGBW.Set'], true) && $result === null) {
             return [];
         }
 
@@ -255,7 +307,7 @@ final readonly class ShellyRpcClient
             throw new ShellyRpcException(sprintf('Shelly RPC "%s" returned an invalid response.', $method));
         }
 
-        if ($method === 'Light.Set' && isset($result['results'])) {
+        if (in_array($method, ['Light.Set', 'RGBW.Set'], true) && isset($result['results'])) {
             foreach ($result['results'] as $channelResult) {
                 if ($channelResult !== null) {
                     throw new ShellyRpcException(sprintf('Shelly RPC "%s" did not apply to all channels.', $method));

@@ -6,7 +6,7 @@ namespace App\Tests\Service\Shelly\Local;
 
 use App\Exception\ShellyRpcException;
 use App\Exception\ShellyWriteOutcomeUnknownException;
-use App\Model\Device\Light\BedLeds;
+use App\Model\Device\Light\LightDevice;
 use App\Model\Device\Light\KitchenLedsBottom;
 use App\Model\Device\Light\KitchenLedsTop;
 use App\Model\Device\Light\LocalWhiteLightDevice;
@@ -19,6 +19,7 @@ use App\Service\Shelly\Local\ShellyDeviceRegistry;
 use App\Service\Shelly\Local\ShellyLedStatusReader;
 use App\Service\Shelly\Local\ShellyLedWriter;
 use App\Service\Shelly\Local\ShellyRpcClient;
+use App\Service\Shelly\Local\ShellyRgbwWriter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -46,7 +47,8 @@ final class ShellyLedRpcTest extends TestCase
         });
         $cloud = $this->createMock(ShellyCloudCurlRequest::class);
         $cloud->expects(self::never())->method('light');
-        $service = new ShellyLightService($cloud, new ShellyLedWriter(new ShellyRpcClient($httpClient)));
+        $rpcClient = new ShellyRpcClient($httpClient);
+        $service = new ShellyLightService($cloud, new ShellyLedWriter($rpcClient), new ShellyRgbwWriter($rpcClient));
 
         self::assertSame([], $service->turnOn($device, white: $brightness));
 
@@ -82,24 +84,32 @@ final class ShellyLedRpcTest extends TestCase
         });
         $cloud = $this->createMock(ShellyCloudCurlRequest::class);
         $cloud->expects(self::never())->method('light');
-        $service = new ShellyLightService($cloud, new ShellyLedWriter(new ShellyRpcClient($httpClient)));
+        $rpcClient = new ShellyRpcClient($httpClient);
+        $service = new ShellyLightService($cloud, new ShellyLedWriter($rpcClient), new ShellyRgbwWriter($rpcClient));
 
         $service->turnOff(new TvLedsBoard());
 
         self::assertSame(['id' => 0, 'on' => false], $calls[1]['params']);
     }
 
-    public function testUnconfiguredBedLedsStillUseCloud(): void
+    public function testUnconfiguredLightStillUsesCloud(): void
     {
         $httpClient = new MockHttpClient();
+        $device = new class extends LightDevice {
+            public const NAME = 'unconfigured-light';
+            public const TYPE = 'rgbw';
+            public const DEVICE_ID = 'unconfigured-device';
+            public const CHANNEL = 0;
+        };
         $cloud = $this->createMock(ShellyCloudCurlRequest::class);
         $cloud->expects(self::once())
             ->method('light')
-            ->with(self::isInstanceOf(BedLeds::class), 'on', 50, 5, [123, 244, 41])
+            ->with($device, 'on', 50, 5, [123, 244, 41])
             ->willReturn(['cloud' => true]);
-        $service = new ShellyLightService($cloud, new ShellyLedWriter(new ShellyRpcClient($httpClient)));
+        $rpcClient = new ShellyRpcClient($httpClient);
+        $service = new ShellyLightService($cloud, new ShellyLedWriter($rpcClient), new ShellyRgbwWriter($rpcClient));
 
-        self::assertSame(['cloud' => true], $service->turnOn(new BedLeds(), brightness: 50, white: 5, colors: [123, 244, 41]));
+        self::assertSame(['cloud' => true], $service->turnOn($device, brightness: 50, white: 5, colors: [123, 244, 41]));
         self::assertSame(0, $httpClient->getRequestsCount());
     }
 

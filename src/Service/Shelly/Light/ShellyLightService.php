@@ -3,22 +3,29 @@
 namespace App\Service\Shelly\Light;
 
 use App\Model\Device\Light\LightDevice;
+use App\Model\Device\Light\LocalRgbwLightDevice;
 use App\Model\Device\Light\LocalWhiteLightDevice;
 use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
 use App\Service\Shelly\Local\ShellyLedWriter;
+use App\Service\Shelly\Local\ShellyRgbwWriter;
 use App\Service\Shelly\ShellyDeviceService;
 
 readonly class ShellyLightService extends ShellyDeviceService
 {
     public function __construct(
-        ShellyCloudCurlRequest  $curlRequest,
-        private ShellyLedWriter $ledWriter,
+        ShellyCloudCurlRequest   $curlRequest,
+        private ShellyLedWriter  $ledWriter,
+        private ShellyRgbwWriter $rgbwWriter,
     ) {
         parent::__construct($curlRequest);
     }
 
     public function turnOn(LightDevice $device, int $brightness = null, int $white = null, array $colors = []): array
     {
+        if ($device instanceof LocalRgbwLightDevice) {
+            return $this->rgbwWriter->turnOn($device, $brightness, $white, $colors)->data;
+        }
+
         if ($device instanceof LocalWhiteLightDevice) {
             if ($colors !== []) {
                 throw new \InvalidArgumentException('RGB colors cannot be set on a white LED channel.');
@@ -32,6 +39,10 @@ readonly class ShellyLightService extends ShellyDeviceService
 
     public function turnOff(LightDevice $device): array
     {
+        if ($device instanceof LocalRgbwLightDevice) {
+            return $this->rgbwWriter->turnOff($device)->data;
+        }
+
         if ($device instanceof LocalWhiteLightDevice) {
             return $this->ledWriter->turnOff($device)->data;
         }
