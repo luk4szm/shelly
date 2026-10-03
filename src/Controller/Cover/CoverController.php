@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Cover;
 
+use App\Exception\ShellyDeviceUnavailableException;
 use App\Service\Shelly\Cover\ShellyCoverService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,8 @@ final class CoverController extends AbstractController
     {
         try {
             $status = $coverService->getStatus();
+        } catch (ShellyDeviceUnavailableException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_SERVICE_UNAVAILABLE);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

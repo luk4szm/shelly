@@ -51,10 +51,24 @@ final class CoverControllerTest extends TestCase
 
         $response = $controller->read($service);
 
-        self::assertSame(500, $response->getStatusCode());
+        self::assertSame(503, $response->getStatusCode());
         $body = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
         self::assertArrayHasKey('error', $body);
         self::assertArrayNotHasKey('state', $body);
+    }
+
+    public function testOtherReadFailuresRemainServerErrors(): void
+    {
+        $service = $this->service(new MockHttpClient(new MockResponse(
+            '{"id":1,"result":{"id":0,"last_direction":"open"}}',
+        )));
+        $controller = new CoverController();
+        $controller->setContainer(new Container());
+
+        $response = $controller->read($service);
+
+        self::assertSame(500, $response->getStatusCode());
+        self::assertStringContainsString('no valid state', $response->getContent());
     }
 
     public function testInvalidDirectionDoesNotSendMovementCommand(): void
