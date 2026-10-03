@@ -17,11 +17,11 @@ class CoverController extends AbstractController
     public function cover(ShellyCoverService $coverService, CoverLogReader $logReader): Response
     {
         try {
-            $lastDirection = $coverService->getLastDirection();
+            $status = $coverService->getStatus();
         } catch (\Exception $e) { }
 
         return $this->render('remote/cover.html.twig', [
-            'last_direction' => $lastDirection ?? null,
+            'last_direction' => $status['last_direction'] ?? null,
             'parsedLogs'     => $logReader->getParsedLogs(),
         ]);
     }

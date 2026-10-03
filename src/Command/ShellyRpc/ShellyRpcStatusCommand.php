@@ -9,11 +9,13 @@ use App\Exception\ShellyRpcException;
 use App\Model\Device\Light\LocalWhiteLightDevice;
 use App\Model\Device\Light\LocalRgbwLightDevice;
 use App\Model\Device\Valve\ValveDevice;
+use App\Model\Device\Cover\RollerCover;
 use App\Service\Shelly\Local\ShellyDeviceRegistry;
 use App\Service\Shelly\Local\ShellyLedStatusReader;
 use App\Service\Shelly\Local\ShellyRgbwStatusReader;
 use App\Service\Shelly\Local\ShellyValveStatusReader;
 use App\Service\Shelly\Local\ShellySwitchStatusReader;
+use App\Service\Shelly\Local\ShellyCoverStatusReader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -33,6 +35,7 @@ final class ShellyRpcStatusCommand extends Command
         private readonly ShellyValveStatusReader  $valveStatusReader,
         private readonly ShellyLedStatusReader    $ledStatusReader,
         private readonly ShellyRgbwStatusReader   $rgbwStatusReader,
+        private readonly ShellyCoverStatusReader  $coverStatusReader,
     ) {
         parent::__construct();
     }
@@ -53,6 +56,7 @@ final class ShellyRpcStatusCommand extends Command
                 $device instanceof ValveDevice => $this->valveStatusReader->read($deviceName),
                 $device instanceof LocalWhiteLightDevice => $this->ledStatusReader->read($deviceName),
                 $device instanceof LocalRgbwLightDevice => $this->rgbwStatusReader->read($deviceName),
+                $device instanceof RollerCover => $this->coverStatusReader->read($deviceName),
                 $device->getComponentType() === ShellyComponentType::Switch => $this->statusReader->read($deviceName)->toArray(),
                 default => throw new ShellyRpcException(sprintf('Status is unsupported for "%s".', $deviceName)),
             };

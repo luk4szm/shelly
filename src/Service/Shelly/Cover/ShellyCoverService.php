@@ -2,22 +2,20 @@
 
 namespace App\Service\Shelly\Cover;
 
-use App\Model\Controller\Cover;
-use App\Service\Curl\Shelly\ShellyCloudCurlRequest;
-use App\Service\Shelly\ShellyDeviceService;
+use App\Model\Device\Cover\RollerCover;
+use App\Service\Shelly\Local\ShellyCoverStatusReader;
+use App\Service\Shelly\Local\ShellyCoverWriter;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
-readonly class ShellyCoverService extends ShellyDeviceService
+readonly class ShellyCoverService
 {
     public function __construct(
-        ShellyCloudCurlRequest  $curlRequest,
-        private LoggerInterface $coverControllerLogger,
-        private Security        $security,
-    )
-    {
-        parent::__construct($curlRequest);
-    }
+        private ShellyCoverWriter       $coverWriter,
+        private ShellyCoverStatusReader $statusReader,
+        private LoggerInterface         $coverControllerLogger,
+        private Security                $security,
+    ) {}
 
     public function open(): array
     {
@@ -29,11 +27,9 @@ readonly class ShellyCoverService extends ShellyDeviceService
             ],
         );
 
-        $this->curlRequest->cover(Cover::DEVICE_ID, 'open');
-
-        sleep(25);
-
-        return $this->curlRequest->cover(Cover::DEVICE_ID, 'open');
+        // The old cloud flow repeated Open after 25 seconds because the motors were too weak.
+        // The replacement motors are expected to fully open with a single command.
+        return $this->coverWriter->set(RollerCover::NAME, 'open')->data;
     }
 
     public function close(): array
@@ -46,22 +42,26 @@ readonly class ShellyCoverService extends ShellyDeviceService
             ],
         );
 
-        return $this->curlRequest->cover(Cover::DEVICE_ID, 'close');
+        return $this->coverWriter->set(RollerCover::NAME, 'close')->data;
     }
 
     public function stop(): array
     {
-        return $this->curlRequest->cover(Cover::DEVICE_ID, 'stop');
+        return $this->coverWriter->set(RollerCover::NAME, 'stop')->data;
     }
 
+    /** @return array<string, mixed> */
+    public function getStatus(): array
+    {
+        return $this->statusReader->read(RollerCover::NAME);
+    }
+
+    /**
+     * @deprecated - use getStatus() instead
+     * @return string|null
+     */
     public function getLastDirection(): ?string
     {
-        $status = $this->getStatus(Cover::DEVICE_ID);
-
-        if (isset($status['error'])) {
-            throw new \RuntimeException($status['error']);
-        }
-
-        return $status[0]['status']['cover:0']['last_direction'];
+        return $this->getStatus()['last_direction'];
     }
 }

@@ -1,3 +1,13 @@
+function shouldReadPositionBeforeSceneAction(controller, action) {
+    return ['gate', 'garage'].includes(controller) && ['open', 'close'].includes(action);
+}
+
+function coverDirectionIndicatorClass(lastDirection) {
+    return lastDirection === 'open'
+        ? 'bg-green'
+        : lastDirection === 'close' ? 'bg-red' : 'bg-warning';
+}
+
 $(document).ready(function () {
     // time must be the same as in css for .long-press-btn
     const holdDuration = 350;
@@ -312,8 +322,8 @@ $(document).ready(function () {
                 return;
             }
 
-            // Sprawdź status urządzenia przed wysłaniem żądania, aby uniknąć zbędnych akcji
-            if (['gate', 'garage', 'covers'].includes(step.controller) && (step.action === 'open' || step.action === 'close')) {
+            // Only gate and garage have position checks; the cover controller cannot confirm physical position.
+            if (shouldReadPositionBeforeSceneAction(step.controller, step.action)) {
                 const readApiUrl = readApiUrls[step.controller];
                 if (!readApiUrl) {
                     const errorMsg = `Błąd konfiguracji dla odczytu statusu ${step.controller}`;
@@ -322,19 +332,14 @@ $(document).ready(function () {
                     return;
                 }
 
-                const deviceNamesGenitive = { 'gate': 'bramy', 'garage': 'garażu', 'covers': 'rolet' }; // Genitive for "status bramy/garażu/rolet"
+                const deviceNamesGenitive = { 'gate': 'bramy', 'garage': 'garażu' }; // Genitive for status messages
                 const deviceNameGenitive = deviceNamesGenitive[step.controller];
 
                 const statusSpanId = `status-check-result-${step.controller}-${currentActionIndex}`;
                 statusDisplay.append(`<div>Sprawdzam status ${deviceNameGenitive}: <span id="${statusSpanId}"></span></div>`);
 
                 const handleStatusResponse = function (response) {
-                        let isCurrentlyOpen = false;
-                        if (step.controller === 'gate' || step.controller === 'garage') {
-                            isCurrentlyOpen = response.is_open === true;
-                        } else if (step.controller === 'covers') {
-                            isCurrentlyOpen = response.last_direction === 'open';
-                        }
+                        const isCurrentlyOpen = response.is_open === true;
 
                         let alreadyInDesiredPosition = false;
                         let actionMessage = '';
@@ -345,7 +350,7 @@ $(document).ready(function () {
                             actionMessage = 'otwieram!';
                             skipMessage = 'otwarte, pomijam';
                         } else if (step.action === 'close') {
-                            alreadyInDesiredPosition = !isCurrentlyOpen; // If action is 'close', and it's not open (i.e., closed)
+                            alreadyInDesiredPosition = !isCurrentlyOpen;
                             actionMessage = 'zamykam!';
                             skipMessage = 'zamknięte, pomijam';
                         }
@@ -365,9 +370,7 @@ $(document).ready(function () {
 
                 if (dryRun) {
                     // Zwracamy stan przeciwny do żądanego, aby w widoku pojawił się każdy etap.
-                    const simulatedResponse = step.controller === 'covers'
-                        ? { last_direction: step.action === 'close' ? 'open' : 'close' }
-                        : { is_open: step.action === 'close' };
+                    const simulatedResponse = { is_open: step.action === 'close' };
                     console.info(`[dry-run] GET ${readApiUrl}`, simulatedResponse);
                     setTimeout(() => handleStatusResponse(simulatedResponse), 150);
                 } else {
@@ -383,8 +386,8 @@ $(document).ready(function () {
                     });
                 }
             } else {
-                // Dla innych kontrolerów lub akcji, wyświetl oryginalny tekst i przejdź bezpośrednio
-                        statusDisplay.append(`<div>${step.text}</div>`);
+                // Covers always receive the requested action, regardless of their reported controller state.
+                statusDisplay.append(`<div>${step.text}</div>`);
                 performActionAjax(step, apiUrl, { "direction": step.action });
             }
         }
@@ -642,6 +645,11 @@ $(document).ready(function () {
             type: "GET",
             url: apiUrl,
             success: function (response) {
+                if (controller === 'covers') {
+                    clickedSpan.addClass(coverDirectionIndicatorClass(response.last_direction));
+                    return;
+                }
+
                 let status;
 
                 switch (controller) {
@@ -649,15 +657,14 @@ $(document).ready(function () {
                     case 'garage':
                         status = response.is_open === true;
                         break;
-                    case 'covers':
-                        status = response.last_direction === 'open';
-                        break;
                 }
 
                 if (status === true) {
                     clickedSpan.addClass('bg-green');
-                } else {
+                } else if (status === false) {
                     clickedSpan.addClass('bg-red');
+                } else {
+                    clickedSpan.addClass('bg-warning');
                 }
             },
             error: function (xhr, status, error) {

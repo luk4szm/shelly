@@ -9,6 +9,7 @@ use App\Exception\ShellyDeviceUnavailableException;
 use App\Exception\ShellyRpcException;
 use App\Exception\ShellyWriteOutcomeUnknownException;
 use App\Model\Device\ShellyRpcDeviceInterface;
+use App\Model\Device\Cover\RollerCover;
 use App\Model\Device\Light\LocalRgbwLightDevice;
 use App\Model\Device\Light\LocalWhiteLightDevice;
 use App\Model\Device\Valve\ValveDevice;
@@ -53,6 +54,19 @@ final readonly class ShellyRpcClient
             'id' => $device->getChannel(),
             'on' => $on,
         ]);
+    }
+
+    public function setCover(RollerCover $device, string $action): RpcResult
+    {
+        if (!in_array($action, ['open', 'close', 'stop'], true)) {
+            throw new \InvalidArgumentException(sprintf('Unsupported cover action "%s".', $action));
+        }
+
+        return $this->writeVerified($device, match ($action) {
+            'open'  => 'Cover.Open',
+            'close' => 'Cover.Close',
+            'stop'  => 'Cover.Stop',
+        }, ['id' => $device->getChannel()]);
     }
 
     /** Shelly exposes these valve outputs as Light components in its RPC protocol. */
@@ -140,7 +154,15 @@ final readonly class ShellyRpcClient
         return $this->writeVerified($device, 'RGBW.Set', $params);
     }
 
-    /** @param array<string, mixed> $params */
+    /**
+     * @param ShellyRpcDeviceInterface $device
+     * @param string                   $method
+     * @param array<string, mixed>     $params
+     * @return RpcResult
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     */
     private function writeVerified(ShellyRpcDeviceInterface $device, string $method, array $params): RpcResult
     {
         // Verify the physical device before writing, especially when a DHCP fallback IP is used.
@@ -299,7 +321,7 @@ final readonly class ShellyRpcClient
 
         $result = $data['result'];
 
-        if (in_array($method, ['Light.Set', 'RGBW.Set'], true) && $result === null) {
+        if (in_array($method, ['Light.Set', 'RGBW.Set', 'Cover.Open', 'Cover.Close', 'Cover.Stop'], true) && $result === null) {
             return [];
         }
 
