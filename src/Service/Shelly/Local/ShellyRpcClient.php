@@ -56,6 +56,18 @@ final readonly class ShellyRpcClient
         ]);
     }
 
+    public function setVerifiedSwitch(ShellyRpcDeviceInterface $device, bool $on): RpcResult
+    {
+        if ($device->getComponentType() !== ShellyComponentType::Switch) {
+            throw new \InvalidArgumentException(sprintf('Shelly device "%s" is not configured as a switch.', $device->getName()));
+        }
+
+        return $this->writeVerified($device, 'Switch.Set', [
+            'id' => $device->getChannel(),
+            'on' => $on,
+        ]);
+    }
+
     public function setCover(RollerCover $device, string $action): RpcResult
     {
         if (!in_array($action, ['open', 'close', 'stop'], true)) {

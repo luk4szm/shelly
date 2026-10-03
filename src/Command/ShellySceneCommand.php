@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Exception\ShellyRateLimitException;
 use App\Service\Shelly\Scene\ShellySceneService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:scene',
-    description: 'Control shelly switch command',
+    description: 'Run a local Shelly lighting scene',
 )]
 class ShellySceneCommand extends Command
 {
@@ -26,7 +25,7 @@ class ShellySceneCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('scene_id', InputArgument::OPTIONAL, 'Shelly scene id')
+            ->addArgument('scene_id', InputArgument::OPTIONAL, 'Scene id')
         ;
     }
 
@@ -34,17 +33,17 @@ class ShellySceneCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $sceneId = $input->getArgument('scene_id') ?: $io->ask('Please type shelly scene id');
+        $sceneId = $input->getArgument('scene_id') ?: $io->ask('Please type scene id');
         try {
-            $status  = $this->sceneService->trigger($sceneId);
-        } catch (ShellyRateLimitException $e) {
+            $result = $this->sceneService->trigger((string) $sceneId);
+        } catch (\InvalidArgumentException $e) {
             $io->error($e->getMessage());
 
             return Command::FAILURE;
         }
 
-        dump(json_encode($status) ?? null);
+        $output->writeln(json_encode($result->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
-        return Command::SUCCESS;
+        return $result->isSuccessful() ? Command::SUCCESS : Command::FAILURE;
     }
 }

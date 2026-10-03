@@ -5,6 +5,16 @@ document.addEventListener('DOMContentLoaded', function () {
         button.addEventListener('click', function () {
             const shellyId = this.getAttribute('data-shelly-id');
             const url = `/scene/run/${shellyId}`;
+            const sceneRow = this.closest('.row');
+            const messageContainer = sceneRow.querySelector('.scene-name').parentElement;
+            let errorElement = messageContainer.querySelector('.scene-run-error');
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.className = 'scene-run-error text-danger small mt-1';
+                errorElement.setAttribute('role', 'alert');
+                messageContainer.appendChild(errorElement);
+            }
+            errorElement.textContent = '';
 
             // Wysłanie zapytania AJAX (PATCH)
             fetch(url, {
@@ -14,15 +24,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) {
-                    console.error('Błąd podczas uruchamiania sceny');
-                    // Opcjonalnie: jeśli wystąpi błąd, możemy od razu przywrócić ikonę
+                    const data = await response.json().catch(() => ({}));
+                    errorElement.textContent = data.error || 'Nie udało się uruchomić sceny.';
                     this.classList.remove('active');
                 }
             })
             .catch(error => {
                 console.error('Network error:', error);
+                errorElement.textContent = 'Błąd połączenia podczas uruchamiania sceny.';
                 this.classList.remove('active');
             });
 

@@ -29,6 +29,17 @@ final readonly class ShellySwitchWriter
         return $this->rpcClient->setSwitch($device, $on);
     }
 
+    public function setVerified(string $deviceName, bool $on): RpcResult
+    {
+        $device = $this->registry->getDevice($deviceName);
+
+        if ($device->getComponentType() !== ShellyComponentType::Switch) {
+            throw new ShellyRpcException(sprintf('Shelly device "%s" is not a switch.', $deviceName));
+        }
+
+        return $this->rpcClient->setVerifiedSwitch($device, $on);
+    }
+
     public function setIfConfigured(string $deviceId, int $channel, bool $on): ?RpcResult
     {
         $device = $this->registry->findByDeviceIdAndChannel($deviceId, $channel);

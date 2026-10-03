@@ -5,18 +5,16 @@ namespace App\EventSubscriber;
 use App\Enum\DaylightMode;
 use App\Enum\InsolationLevel;
 use App\Event\Hook\InsolationHookEvent;
-use App\Model\Device\Light\KitchenLedsBottom;
-use App\Model\Device\Light\KitchenLedsTop;
-use App\Model\Device\Light\TvLedsBoard;
-use App\Model\Device\Light\TvLedsCabinet;
-use App\Model\Device\Light\TvLedsMonitor;
 use App\Model\Scene\TurnOffKitchenLightsScene;
 use App\Model\Scene\TurnOffLightsScene;
 use App\Model\Scene\TurnOffOutsideLightsScene;
+use App\Model\Scene\TurnOnKitchenLightsScene;
 use App\Model\Scene\TurnOnOutsideLightsScene;
+use App\Model\Scene\TurnOnTvLedsScene;
 use App\Repository\ConfigRepository;
-use App\Service\Shelly\Light\ShellyLightService;
 use App\Service\Shelly\Scene\ShellySceneService;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
@@ -24,9 +22,11 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private ConfigRepository        $configRepository,
-        private ShellyLightService      $shellyLightService,
         private ShellySceneService      $shellySceneService,
         private NamespacedPoolInterface $cache,
+        private LoggerInterface         $logger,
+        #[Autowire('%env(bool:LOCAL_LIGHTING_AUTOMATION_ENABLED)%')]
+        private bool                    $localLightingAutomationEnabled,
     ) {
     }
 
@@ -39,6 +39,10 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
 
     public function onInsolationChange(InsolationHookEvent $event): void
     {
+        if (!$this->localLightingAutomationEnabled) {
+            return;
+        }
+
         $insolation = $event->getInsolation();
         $config     = $this->configRepository->getAllValues();
 
@@ -58,13 +62,10 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
                 $tvLightsStatusCache = $this->cache->getItem(TvHookSubscriber::TV_ON_CACHE_KEY);
 
                 if (!$tvLightsStatusCache->isHit() && $tvLightsStatusCache->get() !== true) {
-                    $this->shellyLightService->turnOn(new TvLedsMonitor(), white: 15);
-                    $this->shellyLightService->turnOn(new TvLedsBoard(), white: 10);
-                    $this->shellyLightService->turnOn(new TvLedsCabinet(), white: 5);
+                    $this->triggerScene(TurnOnTvLedsScene::ID);
                 }
 
-                $this->shellyLightService->turnOn(new KitchenLedsTop(), white: 65);
-                $this->shellyLightService->turnOn(new KitchenLedsBottom(), white: 10);
+                $this->triggerScene(TurnOnKitchenLightsScene::ID);
             }
 
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Twilight);
@@ -84,7 +85,7 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
                 $config['occupancy_mode'] === 'home'
                 && $config['auto_light_outside'] === '1'
             ) {
-                $this->shellySceneService->trigger(TurnOnOutsideLightsScene::ID);
+                $this->triggerScene(TurnOnOutsideLightsScene::ID);
             }
 
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Night);
@@ -100,7 +101,7 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
             $insolation > InsolationLevel::OutdoorLightsOff->value
             && $config['daylight_mode'] === DaylightMode::Night->value
         ) {
-            $this->shellySceneService->trigger(TurnOffOutsideLightsScene::ID);
+            $this->triggerScene(TurnOffOutsideLightsScene::ID);
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Twilight);
 
             return;
@@ -118,15 +119,24 @@ readonly class InsolationHookSubscriber implements EventSubscriberInterface
 
             if ($tvLightsStatusCache->isHit() && $tvLightsStatusCache->get() === true) {
                 // turn off kitchen lights scene
-                $this->shellySceneService->trigger(TurnOffKitchenLightsScene::ID);
+                $this->triggerScene(TurnOffKitchenLightsScene::ID);
             } else {
                 // turn off all lights scene
-                $this->shellySceneService->trigger(TurnOffLightsScene::ID);
+                $this->triggerScene(TurnOffLightsScene::ID);
             }
 
             $this->configRepository->updateValueByName('daylight_mode', DaylightMode::Day);
 
             return;
+        }
+    }
+
+    private function triggerScene(int $sceneId): void
+    {
+        $result = $this->shellySceneService->trigger($sceneId);
+
+        if (!$result->isSuccessful()) {
+            $this->logger->warning('Local lighting scene partially failed.', $result->toArray());
         }
     }
 }

@@ -33,7 +33,21 @@ final class SceneController extends AbstractController
         ShellySceneService                                      $sceneService,
     ): Response
     {
-        $sceneService->trigger((string)$scene->getShellyId());
+        try {
+            $result = $sceneService->trigger((string) $scene->getShellyId());
+        } catch (\InvalidArgumentException $exception) {
+            return $this->json(['error' => $exception->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if (!$result->isSuccessful()) {
+            $failedNames = array_column($result->failed, 'device');
+
+            return $this->json([
+                'error'     => sprintf('Nie udało się wykonać sceny dla: %s.', implode(', ', $failedNames)),
+                'completed' => $result->completed,
+                'failed'    => $result->failed,
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
 
         return $this->json([]);
     }

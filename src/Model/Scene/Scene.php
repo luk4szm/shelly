@@ -2,7 +2,7 @@
 
 namespace App\Model\Scene;
 
-abstract class Scene
+abstract class Scene implements SceneInterface
 {
     public function getId(): int
     {

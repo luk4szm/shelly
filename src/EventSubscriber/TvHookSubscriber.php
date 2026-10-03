@@ -10,6 +10,7 @@ use App\Model\Device\Light\TvLedsMonitor;
 use App\Model\Device\PowerMeter\Tv;
 use App\Service\AirQuality\InsolationService;
 use App\Service\Shelly\Light\ShellyLightService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
@@ -21,6 +22,8 @@ class TvHookSubscriber implements EventSubscriberInterface
         private readonly ShellyLightService      $shellyLightService,
         private readonly InsolationService       $insolationService,
         private readonly NamespacedPoolInterface $cache,
+        #[Autowire('%env(bool:LOCAL_LIGHTING_AUTOMATION_ENABLED)%')]
+        private readonly bool                    $localLightingAutomationEnabled,
     ) {
     }
 
@@ -33,6 +36,10 @@ class TvHookSubscriber implements EventSubscriberInterface
 
     public function onTvPowerChange(TvHookEvent $event): void
     {
+        if (!$this->localLightingAutomationEnabled) {
+            return;
+        }
+
         $hook = $event->getHook();
 
         if ($hook->getProperty() !== 'power') {
